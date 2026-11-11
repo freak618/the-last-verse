@@ -3642,7 +3642,7 @@ const SND_FILES={whoosh:['whoosh',.5],jump:['jump',.7],land:['land',.45],special
   roar:['crowd-roar',.7],thunder:['thunder',.8],smash:['bottle-smash',.7],navtick:['menu-move',.45],navok:['menu-confirm',.7],navback:['menu-back',.55],
   lock:['fighter-lock',.8],gong:['gong',.75],select:['menu-select',.7]};
 const SBUF2={};let sndLoading=false,sndLast={},realRain=null;
-const ANN_FILES=['ann-round1','ann-round2','ann-final','ann-fight','ann-ko','ann-knockout','ann-finished','ann-gameover','ann-continue'];
+const ANN_FILES=['ann-round1','ann-round2','ann-round3','ann-timeup','ann-final','ann-fight','ann-ko','ann-knockout','ann-finished','ann-gameover','ann-continue'];
 const MENU_VOX={'btower': 'm-buildtower', 'tourney': 'm-tournament', 'jukebox': 'm-jukebox', 'campaign': 'm-campaign', 'versus': 'm-versus', 'learn': 'm-learn', 'custom': 'm-customize', 'options': 'm-options', 'story': 'm-story', 'tower': 'm-towers', 'pvp': 'm-local', 'cpu': 'm-vscpu', 'online': 'm-online', 'watch': 'm-spectate', 'training': 'm-training', 'moves': 'm-movelist', 'fighters': 'm-yourfighters', 'records': 'm-records', 'opt-controls': 'm-controls', 'opt-audio': 'm-audio', 'opt-video': 'm-video', 'opt-game': 'm-gameplay'};
 ANN_FILES.push(...new Set(Object.values(MENU_VOX)),'m-lastverse','m-tournament2','ann-unbroken');
 let voxT=0;function menuSay(k){clearTimeout(voxT);let f=MENU_VOX[k]||k;if(f==='m-tournament'&&REAL_RANDOM()<.5)f='m-tournament2';if(f)voxT=setTimeout(()=>annPlay(f),170)}
@@ -4653,7 +4653,7 @@ function feWatchFight(){
   if(!G.f1||G.demo||G.mode!=='fight'||(typeof NET!=='undefined'&&NET.resim))return;
   const b=G.banner,bk=b?G.round+':'+b.text+':'+(G.type==='tower'&&G.tower?G.tower.i:''):null;
   if(b&&b.t<30&&bk!==FW.banner){FW.banner=bk;const t=b.text;
-    const clip=t==='Final Round'?'ann-final':t==='Round 1'?'ann-round1':t==='Round 2'?'ann-round2':null;
+    const clip=t==='Final Round'?'ann-final':t==='Round 1'?'ann-round1':t==='Round 2'?'ann-round2':t==='Round 3'?'ann-round3':null;
     if(clip){FW.combo=annPlay(clip)}                       /* these clips say the round, then FIGHT! on the beat */
     else if(t==='Fight'){if(!FW.combo)annPlay('ann-fight');FW.combo=false}
     if(!FW.combo&&t!=='Fight'){if(/^Round (\d)/.test(t))say('Round '+NUMW[+RegExp.$1]+'.');else if(/^Floor (\d+)/.test(t))say('Floor '+NUMW[+RegExp.$1]+'.')}}
@@ -4662,7 +4662,7 @@ function feWatchFight(){
   if(r&&rk!==FW.re){FW.re=rk;FW.said=false;if(G.type!=='training'){
     if(r.text==='Finished'){if(!annPlay('ann-finished'))say('Last verse!',{rate:.75})}
     else if(r.text==='K.O.'){const over=r.winner&&G.wins[r.winner===G.f1?0:1]>=(G.need||2);annPlay(over?'ann-knockout':'ann-ko')}
-    else if(r.text==='Time')say('Time.')}}
+    else if(r.text==='Time'){if(!annPlay('ann-timeup'))say('Time.')}}}
   if(r&&!FW.said&&r.t>52&&G.type!=='training'){FW.said=true;if(r.winner){const fl=r.winner.hp>=100;const nm=r.winner.c.name+' wins.',cut=r.text!=='Finished';if(fl&&annPlay('ann-unbroken'))setTimeout(()=>say(nm,{cut}),2100);else say((fl?'Unbroken. ':'')+nm,{cut})}}
 }
 function launchPicked(stage){
