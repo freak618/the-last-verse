@@ -1,0 +1,34 @@
+# Sends the game to itch.io every time main changes.
+# Needs the repository secret BUTLER_API_KEY (an itch.io API key).
+# The itch.io page is set by the repository variable ITCH_GAME (username/game), default below.
+name: Publish to itch.io
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  itch:
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      ITCH_GAME: ${{ vars.ITCH_GAME || 'freak618/the-last-verse' }}
+    steps:
+      - name: Skip until the itch.io key is added
+        if: env.BUTLER_API_KEY == ''
+        run: echo "::notice::Add the BUTLER_API_KEY secret to turn on itch.io uploads."
+      - uses: actions/checkout@v4
+        if: env.BUTLER_API_KEY != ''
+      - name: Gather the game files
+        if: env.BUTLER_API_KEY != ''
+        run: |
+          mkdir build
+          cp -r index.html sheets music media sfx build/
+      - name: Install butler
+        if: env.BUTLER_API_KEY != ''
+        run: |
+          curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler && chmod +x butler/butler
+          ./butler/butler -V
+      - name: Upload to itch.io
+        if: env.BUTLER_API_KEY != ''
+        run: ./butler/butler push build "$ITCH_GAME:html" --userversion "${GITHUB_SHA::7}"
