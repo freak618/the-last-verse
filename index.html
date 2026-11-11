@@ -3661,6 +3661,7 @@ function pickVoice(){try{const vs=speechSynthesis.getVoices()||[];ANN.voice=vs.f
 try{if(window.speechSynthesis){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}}catch(e){}
 const ANNOUNCER_ON=false; /* announcer voice switched off for now; set true to bring it back */
 function say(text,{pitch=.1,rate=.8,cut=true}={}){
+  return;   /* no computer voice: only the recorded clips speak */
   if(!ANNOUNCER_ON)return;
   if(!S.announcer||muted||!text)return;
   try{if(!window.speechSynthesis)return;if(cut)speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(ANN.voice)u.voice=ANN.voice;
