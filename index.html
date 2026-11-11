@@ -4245,7 +4245,7 @@ const FE_CATS=()=>[
   {id:'versus',name:'Versus',modes:[
     {id:'pvp',name:'Local Versus',glyph:'⚔',desc:'Two players, one keyboard or two controllers. Enter a Verse Code on the VS screen.'},
     {id:'cpu',name:'Vs CPU',glyph:'☠',desc:'Pick your fighter. The CPU picks its own.'},
-    (window.claude?{id:'online',name:'Online',glyph:'◉',soon:true,desc:'Online play works on the website version: freak618.github.io/the-last-verse'}:{id:'online',name:'Online',glyph:'◉',desc:'Host a match or join a friend with a four-letter code.'}),
+    (window.claude?{id:'online',name:'Online',glyph:'◉',soon:'On the website',desc:'Online play at freak618.github.io/the-last-verse'}:{id:'online',name:'Online',glyph:'◉',desc:'Host a match or join a friend with a four-letter code.'}),
     {id:'watch',name:'Spectate',glyph:'◎',desc:'Pick both fighters and the stage, then sit back. The CPU plays both sides.'}]},
   {id:'learn',name:'Learn',modes:[
     {id:'training',name:'Training',glyph:'✚',desc:'Endless meter, no timer. Health refills when you stop.'},
@@ -4275,7 +4275,7 @@ function feMain(){
     const c=cats[FE.cat];FE.mode=clamp(FE.mode,0,c.modes.length-1);
     ov.querySelectorAll('.fe-cat').forEach((b,i)=>b.classList.toggle('on',i===FE.cat));
     const M=document.getElementById('feModes');
-    M.innerHTML=c.modes.map((m,i)=>`<button class="fe-mode${i===FE.mode?' on':''}${m.soon?' soon':''}" data-mi="${i}" data-nav><span class="g">${m.glyph}</span><b>${esc(m.name)}</b>${m.soon?'<i class="fe-soon">Coming soon</i>':''}</button>`).join('');
+    M.innerHTML=c.modes.map((m,i)=>`<button class="fe-mode${i===FE.mode?' on':''}${m.soon?' soon':''}" data-mi="${i}" data-nav><span class="g">${m.glyph}</span><b>${esc(m.name)}</b>${m.soon?`<i class="fe-soon">${m.soon===true?'Coming soon':esc(m.soon)}</i>`:''}</button>`).join('');
     document.getElementById('feDesc').textContent=c.modes[FE.mode].desc;
     {const key=FE.cat+':'+FE.mode;if(FE.voxKey&&FE.voxKey!==key){const pc=+FE.voxKey.split(':')[0];menuSay(pc!==FE.cat?c.id:c.modes[FE.mode].id)}FE.voxKey=key}
     if(focus){const b=M.querySelector('.fe-mode.on');if(b)b.focus({preventScroll:true})}
