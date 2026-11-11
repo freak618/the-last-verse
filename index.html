@@ -1270,12 +1270,15 @@ function drawLayeredFull(im,F,w,h){
   // the floor: a coded layer built from the painting's own floor, widened to cover the whole arena.
   // At the line the fighters stand on it moves exactly with the world (depth 1), so blood, shadows and feet stay planted;
   // nearer the horizon it slows down, below the feet it speeds up, like a real floor in perspective
-  const FC=floorCanvas(F,im),cx=FC.width/2,N=40;
+  // drawn one screen pixel row at a time (like the old arcade line-scroll) straight from the painting, never mirrored:
+  // each row is widened smoothly toward the front, so the floor fans out in perspective with no seams or steps
+  const fh=(ih-hz)*F.scale,N=Math.max(24,Math.ceil(fh*R*(cam.z||1))),iw=im.width;
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
   for(let i=0;i<N;i++){
     const v0=hz+(ih-hz)*i/N,v1=hz+(ih-hz)*(i+1)/N,vm=(v0+v1)/2;
     const p=vm<=ft?pz+(1-pz)*(vm-hz)/(ft-hz):1+(pB-1)*(vm-ft)/(ih-ft);
-    const ws=W+(WW-W)*p+120,sw=Math.min(FC.width,ws/F.scale);useCam(p);
-    ctx.drawImage(FC,cx-sw/2,v0-hz,sw,v1-v0,(WW-W)/2*p-(ws-W)/2,y0+v0*F.scale,ws,(v1-v0)*F.scale+1.2);
+    const ws=Math.max(w,W+(WW-W)*p+80);useCam(p);
+    ctx.drawImage(im,0,v0,iw,v1-v0,(WW-W)/2*p-(ws-W)/2,y0+v0*F.scale,ws,(v1-v0)*F.scale+.5/R);
   }
 }
 /* the painting's floor, mirrored out to both sides so the floor reaches the arena walls without stretching */
