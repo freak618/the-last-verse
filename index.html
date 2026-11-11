@@ -938,7 +938,7 @@ function cutPose(f,st){
   return{lean,rot,dx,dy,sx,sy,ux};
 }
 /* fighter heights, tuned by the developer in Developer Mode (a local tweak in the editor still wins) */
-const CHAR_SIZE={"madcounty":1.06,"puff":1.2,"panduh":1.22,"impeny":1.15,"tdc":1.1,"specs":1.18,"ranger2":1.19,"key":1.15,"lion":1.16,"puff2":1.11,"panduh2":1.12,"kutty":1.19,"modert":1.1,"krenshaw":1.19,"mykill":1.14,"unhappy":1.14,"siintay":1.16,"azfallen":1.18,"beeker":1.15,"bonez":1.15,"darkone":1.18,"freekshow":1.01,"striff":1.08,"pow":0.9,"kingnubs":1.08,"hobie":1.1,"zay":1.1,"bodmon":1.12,"jason":1.16,"ged":1.14,"nate":1.15,"blindfury":1.09,"uncledubb":1.18,"markbone":1.14,"dreywall":1.07,"nyteshade":1.18,"tat":1.22,"fkg":1.14,"amtrak":1.14,"hippie":1.14,"meknik":1.22,"ashley":1.1,"triple6":1.15,"blessed1":1.13,"emillion":1.19,"zacpacillo":1.15,"cartoon":0.98,"trussup":1.15,"mystic":1.11,"bash":1.13,"bunghole":1.08,"grimee":1.12,"rathovgod":1.09,"kayspaidz":1.18,"dabbalette":1.1,"preach":1.16,"marshall":1.08,"otice":1.12,"tyjah":1.13,"1eye":1.11,"mrgreen":1.09,"smith":1.14,"freakyp":1.16,"tactics":1.11,"deadlight":1.11,"frodo":1.04,"midnightinyami":1.15,"darling":0.97,"enokh":1.01};
+const CHAR_SIZE={"madcounty":1.06,"puff":1.19,"panduh":1.19,"impeny":1.06,"tdc":1.03,"specs":1.15,"ranger2":1.16,"key":1.1,"lion":1.13,"puff2":1.06,"panduh2":1.07,"kutty":1.15,"modert":1.09,"krenshaw":1.16,"mykill":1.08,"unhappy":1.05,"siintay":1.1,"azfallen":1.15,"beeker":1.14,"bonez":1.13,"darkone":1.18,"freekshow":1.09,"striff":1.08,"pow":0.9,"kingnubs":1.08,"hobie":1.1,"zay":1.1,"bodmon":1.12,"jason":1.14,"ged":1.1,"nate":1.08,"blindfury":1.09,"uncledubb":1.13,"markbone":1.1,"dreywall":1.09,"nyteshade":1.18,"tat":1.22,"fkg":1.14,"amtrak":1.14,"hippie":1.14,"meknik":1.19,"ashley":1.1,"triple6":1.15,"blessed1":1.09,"emillion":1.16,"zacpacillo":1.15,"cartoon":0.99,"trussup":1.15,"mystic":1.11,"bash":1.12,"bunghole":1.08,"grimee":1.12,"rathovgod":1.14,"kayspaidz":1.08,"dabbalette":1.06,"preach":1.09,"marshall":1.05,"otice":1.12,"tyjah":1.13,"1eye":1.11,"mrgreen":1.09,"smith":1.1,"freakyp":1.15,"tactics":1.08,"deadlight":1.11,"frodo":1,"midnightinyami":1.1,"darling":1,"enokh":1.07};
 function charSize(c){const t=S.charTune&&S.charTune[c.id];return t||CHAR_SIZE[c.id]||c.size||1}
 function drawCut(g,f,st){
   if(!CUT.ok)return;
@@ -2174,9 +2174,11 @@ function lifeInit(e,stg){
   for(const f of C.speakers||[])e.props.push(mkProp('speaker',Math.round(WW*f)));
   if(C.slick)addSlick(e,Math.round(WW*C.slick[0]),C.slick[1],C.slick[2],true);
   if(C.wire)e.wires.push({x:Math.round(WW*C.wire),t:Math.round(WW*C.wire)%97,period:300});
-  {const L=G.type!=='online'&&S.objTune&&S.objTune[stg.id];if(L)buildObjs(e,L)}
+  {const L=(G.type!=='online'&&S.objTune&&S.objTune[stg.id])||OBJ_DEFAULT[stg.id];if(L)buildObjs(e,L)}
   LIFE.reset(stg,C);
 }
+/* object layouts tuned in Developer Mode and built into the game */
+const OBJ_DEFAULT={"gathering":[{"t":"prop","k":"can","x":0.27,"sc":1.04},{"t":"prop","k":"can","x":0.838,"sc":1.06},{"t":"prop","k":"speaker","x":0.05,"sc":1},{"t":"prop","k":"speaker","x":0.782,"sc":1},{"t":"item","k":"faygo","x":0.14,"sc":1},{"t":"item","k":"faygo","x":0.87,"sc":1}]};
 /* object layouts saved from Developer Mode (positions as a share of arena width, so they survive width changes) */
 const OBJ_KINDS={prop:['crate','can','tires','bench','news','dumpster','pallet','bags','barrel','ac','speaker'],item:['chair','brick','pipe','plank','bottle','beer','faygo','donut','banana'],wire:['wire'],slick:['oil','beer','faygo']};
 const SLICK_COL={oil:'#141418',beer:'#c8962e',faygo:'#e8262e'};
