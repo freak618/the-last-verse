@@ -4658,7 +4658,7 @@ function feWatchFight(){
     if(r.text==='Finished'){if(!annPlay('ann-finished'))say('Last verse!',{rate:.75})}
     else if(r.text==='K.O.'){const over=r.winner&&G.wins[r.winner===G.f1?0:1]>=(G.need||2);annPlay(over?'ann-knockout':'ann-ko')}
     else if(r.text==='Time')say('Time.')}}
-  if(r&&!FW.said&&r.t>52&&G.type!=='training'){FW.said=true;if(r.winner){const fl=r.winner.hp>=100;const nm=r.winner.c.name+' wins.',cut=r.text!=='Finished';if(fl&&annPlay('ann-unbroken'))setTimeout(()=>say(nm,{cut}),3300);else say((fl?'Unbroken. ':'')+nm,{cut})}}
+  if(r&&!FW.said&&r.t>52&&G.type!=='training'){FW.said=true;if(r.winner){const fl=r.winner.hp>=100;const nm=r.winner.c.name+' wins.',cut=r.text!=='Finished';if(fl&&annPlay('ann-unbroken'))setTimeout(()=>say(nm,{cut}),2100);else say((fl?'Unbroken. ':'')+nm,{cut})}}
 }
 function launchPicked(stage){
   chEl.textContent={pvp:'Rust City · 2 Players',cpu:'Rust City · Vs CPU',training:'Rust City · Training',watch:'Rust City · Spectating'}[G.type]||chEl.textContent;
