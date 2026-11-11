@@ -3281,52 +3281,60 @@ function testRoom(){
     bc.postMessage({t:'hello',peer:me,p:mine});return api};
   return{join:name=>Promise.resolve(mk(name)),presence(){return Promise.resolve()},onPeers(){return()=>{}},peers:()=>[]};
 }
-/* ---------- online outside Claude: PeerJS (free public broker) carries the lobby presence; gameplay still goes peer to peer ---------- */
-const PEERJS_URL='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
-function loadPeerJS(){if(window.Peer)return Promise.resolve(true);if(loadPeerJS.p)return loadPeerJS.p;
-  return loadPeerJS.p=new Promise(ok=>{const sc=document.createElement('script');sc.src=PEERJS_URL;sc.onload=()=>ok(!!window.Peer);sc.onerror=()=>{loadPeerJS.p=null;ok(false)};document.head.appendChild(sc)})}
-function peerRoom(name){
+/* ---------- online outside Claude: a tiny mailbox over the free PeerJS signalling server (no extra script).
+   It carries the lobby, the WebRTC handshake, and the inputs when a direct link can't be made. ---------- */
+const SIG_URL=QS.get('sig')||'wss://0.peerjs.com:443/';
+function sigRoom(name,role){
   const HOST='lastverse-'+String(name).replace(/[^a-z0-9-]/gi,'').toLowerCase();
-  const peers=new Map(),hs=new Set(),conns=new Map();let mine={},me=null,peer=null,ready=false,closed=false,isHost=false;const cbs=new Set();
+  const me=role==='host'?HOST:'lv'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);
+  const token=Math.random().toString(36).slice(2,12);
+  const peers=new Map(),heard=new Map(),hs=new Set(),errs=new Set();let mine={},ws=null,closed=false,other=role==='host'?null:HOST,inpPend=null,inpT=0,inpTimer=null,hb=null,watch=null;
   const snap=()=>[...peers.values()];
   const fire=(j,u,l)=>{const ch={peers:snap(),joined:j,updated:u,left:l};hs.forEach(h=>{try{h(ch)}catch(e){}})};
   const mkP=(id,p)=>Object.freeze({peer:id,by:null,isMe:false,sameTab:false,kind:'viewer',guest:true,presence:Object.freeze(p||{}),updatedAt:Date.now()});
-  const setPeer=(id,p)=>{if(id===me)return;const had=peers.has(id),q=mkP(id,p);peers.set(id,q);had?fire([],[q],[]):fire([q],[],[])};
-  const dropPeer=id=>{const q=peers.get(id);if(q){peers.delete(id);fire([],[],[q])}};
-  const sendAll=(m,except)=>conns.forEach((c,id)=>{if(id!==except&&c.open)try{c.send(m)}catch(e){}});
-  const wire=c=>{
-    c.on('open',()=>{conns.set(c.peer,c);
-      if(isHost){c.send({t:'p',peer:me,p:mine});peers.forEach((q,id)=>{if(id!==c.peer)c.send({t:'p',peer:id,p:q.presence})})}
-      else c.send({t:'p',peer:me,p:mine});
-      ready=true;cbs.forEach(h=>h(true))});
-    c.on('data',m=>{if(!m||typeof m!=='object')return;
-      if(m.t==='p'){setPeer(m.peer,m.p);if(isHost)sendAll({t:'p',peer:m.peer,p:m.p},c.peer)}
-      else if(m.t==='bye'){dropPeer(m.peer);if(isHost)sendAll(m,c.peer)}});
-    c.on('close',()=>{conns.delete(c.peer);if(isHost){dropPeer(c.peer);sendAll({t:'bye',peer:c.peer})}else{peers.forEach((q,id)=>dropPeer(id));ready=false;cbs.forEach(h=>h(false))}});
-  };
-  const start=()=>new Promise(ok=>{
-    const P=window.Peer;let tries=0;
-    const asHost=()=>{peer=new P(HOST,{debug:0});
-      peer.on('open',id=>{me=id;isHost=true;ready=true;cbs.forEach(h=>h(true));ok(true)});
-      peer.on('connection',c=>wire(c));
-      peer.on('error',e=>{if(e&&e.type==='unavailable-id'){try{peer.destroy()}catch(_){}asGuest()}else if(!ready)ok(false)})};
-    const asGuest=()=>{peer=new P({debug:0});
-      peer.on('open',id=>{me=id;const c=peer.connect(HOST,{reliable:true});wire(c);ok(true)});
-      peer.on('error',e=>{if(e&&e.type==='peer-unavailable'&&tries++<2&&!closed){try{peer.destroy()}catch(_){}setTimeout(asHost,400)}else if(!ready)ok(false)})};
-    asHost()});
-  const api={name,
-    presence(patch){for(const k in patch){if(patch[k]===null)delete mine[k];else mine[k]=patch[k]}const m={t:'p',peer:me,p:JSON.parse(JSON.stringify(mine))};sendAll(m);return Promise.resolve()},
-    peers:snap,onPeers(h){hs.add(h);return()=>hs.delete(h)},connected:()=>ready,
-    onConnection(h){cbs.add(h);if(ready)setTimeout(()=>h(true));return()=>cbs.delete(h)},
-    leave(){closed=true;try{sendAll({t:'bye',peer:me})}catch(e){}setTimeout(()=>{try{peer&&peer.destroy()}catch(e){}},150);return Promise.resolve()}};
-  return start().then(okd=>okd?api:null);
+  const merge=(id,patch,full)=>{const prev=full?{}:{...((peers.get(id)||{}).presence||{})};for(const k in patch){if(patch[k]===null)delete prev[k];else prev[k]=patch[k]}
+    const had=peers.has(id),q=mkP(id,prev);peers.set(id,q);had?fire([],[q],[]):fire([q],[],[])};
+  const drop=id=>{const q=peers.get(id);if(q){peers.delete(id);fire([],[],[q])}heard.delete(id)};
+  const issue=code=>errs.forEach(h=>{try{h({code})}catch(e){}});
+  const send=(dst,payload)=>{if(!dst||!ws||ws.readyState!==1)return;try{ws.send(JSON.stringify({type:'CANDIDATE',dst,payload}))}catch(e){}};
+  const flushInp=()=>{inpTimer=null;if(!inpPend)return;send(other,{t:'p',p:{inp:inpPend}});inpPend=null;inpT=performance.now()};
+  const api={name,sig:true,
+    presence(patch){for(const k in patch){if(patch[k]===null)delete mine[k];else mine[k]=patch[k]}
+      const keys=Object.keys(patch);
+      if(keys.length===1&&keys[0]==='inp'&&patch.inp){inpPend=patch.inp;if(performance.now()-inpT>=45)flushInp();else if(!inpTimer)inpTimer=setTimeout(flushInp,45)}
+      else send(other,{t:'p',p:JSON.parse(JSON.stringify(patch))});
+      return Promise.resolve()},
+    peers:snap,onPeers(h,e){hs.add(h);if(e)errs.add(e);return()=>{hs.delete(h);if(e)errs.delete(e)}},
+    leave(){closed=true;clearInterval(hb);clearInterval(watch);send(other,{t:'bye'});setTimeout(()=>{try{ws&&ws.close()}catch(e){}},150);return Promise.resolve()}};
+  return new Promise(ok=>{let settled=false;const done=v=>{if(!settled){settled=true;ok(v)}};
+    const t=setTimeout(()=>{done(null);try{ws&&ws.close()}catch(e){}},10000);
+    try{ws=new WebSocket(`${SIG_URL}peerjs?key=peerjs&id=${encodeURIComponent(me)}&token=${token}&version=1.5.4`)}catch(e){clearTimeout(t);done(null);return}
+    ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+      if(m.type==='OPEN'){clearTimeout(t);
+        hb=setInterval(()=>{try{ws.readyState===1&&ws.send('{"type":"HEARTBEAT"}')}catch(e){}},5000);
+        watch=setInterval(()=>{if(other&&heard.has(other)&&(NET.live||NET.dc&&NET.dc.readyState==='open'))heard.set(other,performance.now());if(other&&heard.has(other)&&performance.now()-heard.get(other)>12000){const o=other;drop(o);if(role==='host')other=null}},1000);
+        if(role==='guest')send(HOST,{t:'hi',p:mine});done(api);return}
+      if(m.type==='ID-TAKEN'){clearTimeout(t);done(role==='host'?'taken':null);return}
+      if(m.type==='ERROR'||m.type==='INVALID-KEY'){clearTimeout(t);done(null);return}
+      if(m.type==='EXPIRE'){if(m.src===other&&!peers.has(other))issue('missing');return}
+      if(m.type!=='CANDIDATE'||!m.payload||typeof m.payload!=='object')return;
+      const src=m.src,pl=m.payload;
+      if(role==='host'){if(!other||!peers.has(other))other=src;else if(src!==other){send(src,{t:'full'});return}}
+      else if(src!==HOST)return;
+      heard.set(src,performance.now());
+      if(pl.t==='hi'){merge(src,pl.p||{},true);send(src,{t:'p',p:JSON.parse(JSON.stringify(mine)),full:1})}
+      else if(pl.t==='p'&&pl.p)merge(src,pl.p,!!pl.full);
+      else if(pl.t==='bye'){drop(src);if(role==='host')other=null}
+      else if(pl.t==='full')issue('full')};
+    ws.onclose=()=>{clearInterval(hb);clearInterval(watch);if(!settled){clearTimeout(t);done(null)}else if(!closed){peers.forEach((q,id)=>drop(id));issue('closed')}};
+    ws.onerror=()=>{}});
 }
-function peerApi(){return{peerjs:true,join:name=>loadPeerJS().then(ok=>ok?peerRoom(name):null),presence(){return Promise.resolve()},onPeers(){return()=>{}},peers:()=>[]}}
+function sigApi(){return{sig:true,join:(name,role)=>sigRoom(name,role),presence(){return Promise.resolve()},onPeers(){return()=>{}},peers:()=>[]}}
 async function netApi(){
   if(NET.api)return NET.api;
   const t=testRoom();if(t)return NET.api=t;
   try{if(window.claude&&window.claude.use){const r=await window.claude.use('room');if(r)return NET.api=r}}catch(e){}
-  if(!window.claude&&await loadPeerJS())return NET.api=peerApi();
+  if(!window.claude&&typeof WebSocket!=='undefined')return NET.api=sigApi();
   return null;
 }
 const encIn=o=>{let m=0;ACTS.forEach((a,i)=>{if(o&&o[a])m|=1<<i});return m};
@@ -3341,7 +3349,7 @@ function setPres(patch){Object.assign(NET.pres,patch);for(const k in patch)if(pa
 function showNetMenu(msg){
   G.mode='select';G.type='online';G.importOpen=false;
   showOv(`<h2 class="ov-h">Online</h2>
-    <p class="ov-small">${window.claude?'Fight a friend over the internet. You both need this game open in Claude and signed in, so invite them from the Share menu first. Two tabs of your own work for testing.':'Fight a friend over the internet. Host a match, then send your friend the four-letter code. Two tabs of your own work for testing.'}</p>
+    <p class="ov-small">${window.claude?'Fight a friend over the internet. You both need this game open in Claude and signed in, so invite them from the Share menu first. Two tabs of your own work for testing.':'Fight a friend over the internet. Host a match, then send your friend the four-letter code. They open the game, pick Online and type it in.'}</p>
     <div class="row"><button class="btn red" data-act="nethost">Host a match</button><button class="btn" data-act="netjoinform">Join with a code</button><button class="btn" data-act="title">Back</button></div>
     <div class="row" id="netJoinRow" hidden><input id="netCode" class="netcode" maxlength="4" autocomplete="off" spellcheck="false" placeholder="CODE" aria-label="Room code"><button class="btn red" data-act="netjoin">Join</button></div>
     <p class="ov-p" id="netStatus" aria-live="polite">${msg||''}</p>`);
@@ -3363,15 +3371,16 @@ async function netOpen(role,code){
   NET.role=role;NET.code=code;NET.leaving=false;NET.noRTC=typeof RTCPeerConnection==='undefined';NET.pres={};NET.oppPres={};NET.opp=null;NET.mseq=0;NET.started=0;NET.myPick=null;NET.pending=null;NET.link='none';
   showNetLobby();
   let room=null;
-  try{room=await api.join('lv-'+code.toLowerCase())}catch(e){room=null}
-  if(!room&&api.peerjs){if(!NET.leaving)showNetMenu('Couldn’t reach the matchmaking server. Check your connection and try again.');return}
+  try{room=await api.join('lv-'+code.toLowerCase(),role)}catch(e){room=null}
+  if(room==='taken'){if(role==='host'&&!NET.leaving){ACT.nethost();return}room=null}
+  if(!room&&api.sig){if(!NET.leaving)showNetMenu('Couldn’t reach the matchmaking server. Check your connection and try again.');return}
   if(!room){room=api}  // named rooms unavailable: share the lobby and filter by code
   if(NET.leaving)return;
   NET.room=room;
   NET.unsub.push(room.onPeers(ch=>{
     for(const p of[...ch.joined,...ch.updated])if(!p.sameTab)netOnPres(p);
     for(const p of ch.left)if(p.peer===NET.opp)netOppLeft();
-  },e=>{if(!NET.leaving)showNetMenu('The online room closed ('+e.code+'). Try again.')}));
+  },e=>{if(NET.leaving)return;const c=e&&e.code;netLeave();G.type='online';showNetMenu(c==='missing'?'No match found with that code. Check the four letters and try again.':c==='full'?'That match already has two players.':c==='closed'?'Lost the connection to the online server. Try again.':'The online room closed ('+c+'). Try again.')}));
   setPres({lv:1,code:NET.code,role});
   const hb=setInterval(()=>{if(!NET.room){clearInterval(hb);return}if(!NET.live)setPres({hb:(Date.now()/1000|0)%100000})},1000);
   NET.unsub.push(()=>clearInterval(hb));
@@ -3427,7 +3436,7 @@ function netMaybeStart(){
   const op=NET.oppPres.pick,want=NET.mseq+1;
   if(!NET.myPick||!op||op.n!==want||!byId(op.id)||(NET.pres.pick||{}).n!==want)return;
   NET.mseq=want;
-  NET.pending={n:want,seed:(REAL_RANDOM()*2147483647)|0,stage:REAL_RANDOM()*STAGES.length|0,a:NET.myPick,b:op.id,ca:NET.myCrew||null,cb:(op.crew&&byId(op.crew)&&!byId(op.crew).custom&&!byId(op.crew).villain)?op.crew:null,link:NET.link};
+  NET.pending={n:want,seed:(REAL_RANDOM()*2147483647)|0,stage:REAL_RANDOM()*STAGES.length|0,a:NET.myPick,b:op.id,ca:NET.myCrew||null,cb:(op.crew&&byId(op.crew)&&!byId(op.crew).custom&&!byId(op.crew).villain)?op.crew:null,link:NET.link,dl:NET.link==='direct'?(NET.ping>140?4:NET.ping>80?3:2):4};
   setPres({start:NET.pending});netStatus('Starting…');
 }
 /* --- WebRTC (direct). Signalling rides on presence: the SDP as an array of lines --- */
@@ -3469,7 +3478,7 @@ function netSendRaw(m){
 }
 function netPingLoop(){if(!NET.dc||NET.dc.readyState!=='open')return;netSendRaw({t:'p',ts:performance.now()});setTimeout(netPingLoop,1000)}
 function netChStatus(){
-  const how=NET.link==='direct'?`direct${NET.ping?` · ${NET.ping} ms`:''}`:'via Claude';
+  const how=NET.link==='direct'?`direct${NET.ping?` · ${NET.ping} ms`:''}`:NET.api&&NET.api.sig?'relay':'via Claude';
   chEl.textContent=`Rust City · Online · ${how}`;
 }
 
@@ -3492,7 +3501,7 @@ function netBegin(st){
   NET.started=st.n;NET.mseq=Math.max(NET.mseq,st.n);NET.pending=null;
   NET.side=NET.role==='host'?0:1;NET.F=0;NET.local=new Map();NET.remote=new Map();NET.pred=new Map();NET.snaps=new Map();NET.hashes=new Map();
   NET.confirmed=-1;NET.remoteLatest=-1;NET.remoteF=0;NET.theirAdv=0;NET.rbFrom=null;NET.rollbacks=0;NET.maxDepth=0;NET.stall=0;NET.tickN=0;NET.ended=false;NET.desync=0;NET.dbg=[];NET.lastCk=0;
-  NET.delay=st.link==='direct'?2:3;NET.maxRB=st.link==='direct'?10:14;
+  NET.delay=st.dl||(st.link==='direct'?2:4);NET.maxRB=st.link==='direct'?12:20;
   for(let f=0;f<NET.delay;f++){NET.local.set(f,0);NET.remote.set(f,0)}NET.localHi=NET.delay-1;
   NET.rng=st.seed>>>0||1;NET.lastHeard=performance.now();
   SHARED=new WeakSet();CHARS.forEach(c=>SHARED.add(c));STAGES.forEach(x=>SHARED.add(x));SHARED.add(MOVES);
@@ -3568,7 +3577,7 @@ function netMatchOver(w){
     <p class="ov-small">${NET.rollbacks} rollbacks${NET.maxDepth?`, deepest ${NET.maxDepth} frames`:''}${NET.desync?` · ${NET.desync} sync warnings`:''}</p>`,true);
 }
 Object.assign(ACT,{
-  netmenu(){},
+  netmenu(){if(!window.claude)showNetMenu()},
   nethost(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ';let c='';for(let i=0;i<4;i++)c+=A[REAL_RANDOM()*A.length|0];netOpen('host',c)},
   netjoinform(){const r=document.getElementById('netJoinRow');r.hidden=false;const i=document.getElementById('netCode');i.focus();
     i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();ACT.netjoin()}}},
@@ -4236,7 +4245,7 @@ const FE_CATS=()=>[
   {id:'versus',name:'Versus',modes:[
     {id:'pvp',name:'Local Versus',glyph:'⚔',desc:'Two players, one keyboard or two controllers. Enter a Verse Code on the VS screen.'},
     {id:'cpu',name:'Vs CPU',glyph:'☠',desc:'Pick your fighter. The CPU picks its own.'},
-    {id:'online',name:'Online',glyph:'◉',soon:true,desc:'Coming soon. Online play is still being worked on.'},
+    (window.claude?{id:'online',name:'Online',glyph:'◉',soon:true,desc:'Online play works on the website version: freak618.github.io/the-last-verse'}:{id:'online',name:'Online',glyph:'◉',desc:'Host a match or join a friend with a four-letter code.'}),
     {id:'watch',name:'Spectate',glyph:'◎',desc:'Pick both fighters and the stage, then sit back. The CPU plays both sides.'}]},
   {id:'learn',name:'Learn',modes:[
     {id:'training',name:'Training',glyph:'✚',desc:'Endless meter, no timer. Health refills when you stop.'},
@@ -4287,7 +4296,7 @@ function feLaunch(id){
   G.btower=id==='btower';if(G.btower){ACT.mode({m:'tower'});return}
   const opt={'opt-controls':'controls','opt-audio':'audio','opt-video':'video','opt-game':'game'}[id];
   if(opt){showSettings(opt);return}
-  if(id==='online'){if(typeof SFX!=='undefined'&&SFX.back)try{SFX.back()}catch(e){}return}
+  if(id==='online'){if(window.claude){try{SFX.back&&SFX.back()}catch(e){}return}showNetMenu();return}
   if(id==='moves'){showMoves();return}
   if(id==='fighters'){showImport();return}
   if(id==='records'){feRecords();return}
