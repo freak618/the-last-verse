@@ -3300,7 +3300,8 @@ function sigRoom(name,role){
     const had=peers.has(id),q=mkP(id,prev);peers.set(id,q);had?fire([],[q],[]):fire([q],[],[])};
   const drop=id=>{const q=peers.get(id);if(q){peers.delete(id);fire([],[],[q])}heard.delete(id)};
   const issue=code=>errs.forEach(h=>{try{h({code})}catch(e){}});
-  const send=(dst,payload)=>{if(!dst||!ws||ws.readyState!==1)return;try{ws.send(JSON.stringify({type:'CANDIDATE',dst,payload}))}catch(e){}};
+  const send=(dst,payload)=>{if(!dst||!ws||ws.readyState!==1)return;/* the PeerJS server checks message shapes, so ride along inside a well-formed ICE candidate message */
+    try{ws.send(JSON.stringify({type:'CANDIDATE',dst,payload:{candidate:{candidate:'',sdpMLineIndex:0,sdpMid:'0'},type:'data',connectionId:'dc_lv',lv:payload}}))}catch(e){}};
   const flushInp=()=>{inpTimer=null;if(!inpPend)return;send(other,{t:'p',p:{inp:inpPend}});inpPend=null;inpT=performance.now()};
   const api={name,sig:true,
     presence(patch){for(const k in patch){if(patch[k]===null)delete mine[k];else mine[k]=patch[k]}
@@ -3321,8 +3322,8 @@ function sigRoom(name,role){
       if(m.type==='ID-TAKEN'){clearTimeout(t);done(role==='host'?'taken':null);return}
       if(m.type==='ERROR'||m.type==='INVALID-KEY'){clearTimeout(t);done(null);return}
       if(m.type==='EXPIRE'){if(m.src===other&&!peers.has(other))issue('missing');return}
-      if(m.type!=='CANDIDATE'||!m.payload||typeof m.payload!=='object')return;
-      const src=m.src,pl=m.payload;
+      if(m.type!=='CANDIDATE'||!m.payload||typeof m.payload!=='object'||!m.payload.lv||typeof m.payload.lv!=='object')return;
+      const src=m.src,pl=m.payload.lv;
       if(role==='host'){if(!other||!peers.has(other))other=src;else if(src!==other){send(src,{t:'full'});return}}
       else if(src!==HOST)return;
       heard.set(src,performance.now());
