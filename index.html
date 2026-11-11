@@ -3664,7 +3664,7 @@ function say(text,{pitch=.1,rate=.8,cut=true}={}){
   if(!ANNOUNCER_ON)return;
   if(!S.announcer||muted||!text)return;
   try{if(!window.speechSynthesis)return;if(cut)speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(ANN.voice)u.voice=ANN.voice;
-    u.pitch=pitch;u.rate=rate;u.volume=clamp(S.annVol*S.vol,0,1);speechSynthesis.speak(u)}catch(e){}
+    u.pitch=0;u.rate=Math.min(rate,.78);u.volume=clamp(S.annVol*S.vol,0,1);speechSynthesis.speak(u)}catch(e){}
   if(AC)tone(55,45,.5,'sine',.12*S.annVol);
 }
 
