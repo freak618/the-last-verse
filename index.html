@@ -452,7 +452,7 @@ body.phone.tpoff .frame .touch .tc,body.phone.inmenu.tpnomenu .frame .touch .tc{
 .touch .tdpad .au::after{border-bottom-color:#55555e;border-top:0}.touch .tdpad .ad::after{border-top-color:#55555e;border-bottom:0}
 .touch .tdpad .al::after{border-right-color:#55555e;border-left:0}.touch .tdpad .ar::after{border-left-color:#55555e;border-right:0}
 .touch .tdpad.pu .au,.touch .tdpad.pd .ad,.touch .tdpad.pl .al,.touch .tdpad.pr .ar{background:#111114;box-shadow:inset 0 2px 5px rgba(0,0,0,.8)}
-.touch .tdpad::before{content:"";position:absolute;inset:-9%;border-radius:50%;pointer-events:none}
+.touch .tdpad::before{content:"";position:absolute;inset:-6%;border-radius:50%;pointer-events:none}
 .touch button{position:absolute;font-family:var(--body);font-weight:800;color:#fff;pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent;
   user-select:none;-webkit-user-select:none;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;border:0}
 .touch button small{position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:calc(9px * var(--ts));font-weight:800;letter-spacing:.06em;text-transform:uppercase}
@@ -465,21 +465,21 @@ body.phone.tpoff .frame .touch .tc,body.phone.inmenu.tpnomenu .frame .touch .tc{
 body.phone.infight .touch .tsm[data-tb="8"]{display:none}
 body.phone.infight .touch .unmapped{display:none}
 /* --- sideways: Game Gear --- */
-body.phone .frame{--il:env(safe-area-inset-left,0px);--ir:env(safe-area-inset-right,0px);--side:calc(clamp(124px,19vw,200px) + max(var(--il),var(--ir)));
-  --sw:min(calc(100vw - var(--side) * 2),calc((100dvh - 64px) * 16 / 9));--sh:calc(var(--sw) * .5625);
+body.phone .frame{--il:env(safe-area-inset-left,0px);--ir:env(safe-area-inset-right,0px);--side:calc(clamp(102px,15vw,170px) + max(var(--il),var(--ir)));
+  --sw:min(calc(100vw - var(--side) * 2),calc((100dvh - 34px) * 16 / 9));--sh:calc(var(--sw) * .5625);
   background:radial-gradient(ellipse 80% 90% at 50% 45%,#3b3b41,#1f1f23 70%,#151518)}
-body.phone .frame .screen{width:var(--sw);margin-top:16px}
+body.phone .frame .screen{width:var(--sw);margin-top:14px}
 body.phone .frame .bar:has(#pauseBtn:not([hidden])){top:max(4px,env(safe-area-inset-top,0px))}
 .touch .gg{display:block}.touch .gb{display:none}
-.touch .tbz.gg{left:50%;top:calc(50dvh + 8px - var(--sh) / 2 - 30px);width:calc(var(--sw) + 30px);height:calc(var(--sh) + 44px);transform:translateX(-50%);
+.touch .tbz.gg{left:50%;top:calc(50dvh + 7px - var(--sh) / 2 - 22px);width:calc(var(--sw) + 16px);height:calc(var(--sh) + 30px);transform:translateX(-50%);
   background:#0c0c0e;border-radius:16px;box-shadow:0 0 0 2px #46464d,inset 0 0 0 1px #000}
-.touch .tbrand.gg{left:50%;top:calc(50dvh + 8px - var(--sh) / 2 - 24px);transform:translateX(-50%);font:italic 800 calc(11px * var(--ts))/1 var(--body);letter-spacing:.2em;color:#d9d6cf;white-space:nowrap}
+.touch .tbrand.gg{left:calc(50% - var(--sw) / 2 + 18px);top:calc(50dvh + 7px - var(--sh) / 2 - 17px);font:italic 800 calc(11px * var(--ts))/1 var(--body);letter-spacing:.2em;color:#d9d6cf;white-space:nowrap}
 .touch .tbrand.gg b{display:inline-block;width:7px;height:7px;margin-left:3px;border-radius:1px}
-.touch .tled.gg{left:calc(50% - var(--sw) / 2 - 8px);top:calc(50dvh + 8px - var(--sh) / 2 - 20px);width:6px;height:6px;border-radius:50%;background:#ff3030;box-shadow:0 0 6px #f22}
+.touch .tled.gg{left:calc(50% - var(--sw) / 2 + 4px);top:calc(50dvh + 7px - var(--sh) / 2 - 14px);width:6px;height:6px;border-radius:50%;background:#ff3030;box-shadow:0 0 6px #f22}
 .touch .tgrill.gg{right:calc(var(--ir) + 18px);bottom:max(10px,env(safe-area-inset-bottom,0px));width:44px;height:26px;background:repeating-radial-gradient(circle at 50% 50%,#0d0d0f 0 2px,transparent 2.5px 5px);opacity:.9}
-.touch .tdpad{--D:calc(min(var(--side) * .64,150px,44dvh) * var(--ts));left:calc(var(--il) + (var(--side) - var(--il)) / 2 - var(--D) / 2);top:calc(55dvh - var(--D) / 2)}
+.touch .tdpad{--D:calc(min(max(var(--side) * .78,84px),calc(var(--side) - 14px),150px,44dvh) * var(--ts));left:calc(var(--il) + (var(--side) - var(--il)) / 2 - var(--D) / 2);top:calc(55dvh - var(--D) / 2)}
 .touch .tdpad::before{background:radial-gradient(circle,#2a2a2f 0 62%,#18181b 63% 70%,transparent 71%)}
-.touch .tf{--pr:calc(var(--ir) + (var(--side) - var(--ir)) / 2);--b:calc(min(var(--side) * .34,62px,19dvh) * var(--ts));
+.touch .tf{--pr:calc(var(--ir) + (var(--side) - var(--ir)) / 2);--b:calc(min(max(var(--side) * .4,42px),62px,19dvh) * var(--ts));
   background:radial-gradient(circle at 38% 32%,#5d5d68,#2c2c33 70%);box-shadow:0 3px 0 #0b0b0d,0 4px 8px rgba(0,0,0,.6);color:#c9c6be}
 .touch .tf small{color:#a9a69e}
 .touch .tf.y{right:calc(var(--pr) + var(--b) * .1);top:calc(55dvh - var(--b) * 1.45)}
@@ -491,23 +491,23 @@ body.phone .frame .bar:has(#pauseBtn:not([hidden])){top:max(4px,env(safe-area-in
 .touch .tsh.l{left:calc(var(--il) + (var(--side) - var(--il)) / 2 - 27px * var(--ts));top:max(44px,calc(env(safe-area-inset-top,0px) + 40px))}
 .touch .tsh.r{right:calc(var(--ir) + (var(--side) - var(--ir)) / 2 - 27px * var(--ts));top:max(44px,calc(env(safe-area-inset-top,0px) + 40px))}
 .touch .tsm[data-tb="9"]{width:calc(22px * var(--ts));height:calc(22px * var(--ts));border-radius:50%;right:calc(var(--ir) + (var(--side) - var(--ir)) / 2 - 11px * var(--ts));
-  top:calc(55dvh + min(var(--side) * .34,62px,19dvh) * var(--ts) * 1.2 + 26px)}
+  top:calc(55dvh + min(max(var(--side) * .4,42px),62px,19dvh) * var(--ts) * 1.2 + 26px)}
 .touch .tsm[data-tb="8"]{width:calc(22px * var(--ts));height:calc(22px * var(--ts));border-radius:50%;left:calc(var(--il) + (var(--side) - var(--il)) / 2 - 11px * var(--ts));
-  top:calc(55dvh - min(var(--side) * .64,150px,44dvh) * var(--ts) / 2 - 44px)}
+  top:calc(55dvh - min(max(var(--side) * .78,84px),calc(var(--side) - 14px),150px,44dvh) * var(--ts) / 2 - 44px)}
 /* --- upright: Game Boy --- */
 @media (orientation:portrait){
-  body.phone .frame{--st:max(64px,calc(env(safe-area-inset-top,0px) + 40px));--sw:calc(100vw - 72px);--sh:calc(var(--sw) * .5625);
-    --ct:calc(var(--st) + var(--sh) + 66px);justify-content:flex-start;padding-top:var(--st);
+  body.phone .frame{--st:max(54px,calc(env(safe-area-inset-top,0px) + 36px));--sw:calc(100vw - 36px);--sh:calc(var(--sw) * .5625);
+    --ct:calc(var(--st) + var(--sh) + 58px);justify-content:flex-start;padding-top:var(--st);
     background:linear-gradient(170deg,#dcdad3,#c8c5bc 60%,#bdb9af)}
   body.phone .frame .screen{width:var(--sw);margin-top:0}
   body.phone .frame .bar:has(#pauseBtn:not([hidden])){top:max(10px,calc(env(safe-area-inset-top,0px) + 6px))}
   body.phone .frame .knob{background:rgba(60,60,80,.55);color:#fff}
   .touch .gg{display:none}.touch .gb{display:block}
-  .touch .tbz.gb{left:12px;right:12px;top:calc(var(--st) - 22px);height:calc(var(--sh) + 22px + 38px);background:#5e5f71;border-radius:10px 10px 46px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
-  .touch .tbrand.gb{left:24px;top:calc(var(--st) + var(--sh) + 10px);font:italic 800 calc(12px * var(--ts))/1 var(--body);letter-spacing:.16em;color:#c9c8d6;white-space:nowrap}
+  .touch .tbz.gb{left:8px;right:8px;top:calc(var(--st) - 12px);height:calc(var(--sh) + 12px + 34px);background:#5e5f71;border-radius:10px 10px 46px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
+  .touch .tbrand.gb{left:58px;top:calc(var(--st) + var(--sh) + 11px);font:italic 800 calc(12px * var(--ts))/1 var(--body);letter-spacing:.16em;color:#c9c8d6;white-space:nowrap}
   .touch .tbrand.gb b{display:none}
-  .touch .tled.gb{left:18px;top:calc(var(--st) + var(--sh) * .32);width:8px;height:8px;border-radius:50%;background:#ff2a2a;box-shadow:0 0 6px #f22}
-  .touch .tlbl.gb{left:15px;top:calc(var(--st) + var(--sh) * .32 + 12px);font:700 6px/1 var(--body);letter-spacing:.1em;color:#b9b8c8}
+  .touch .tled.gb{left:22px;top:calc(var(--st) + var(--sh) + 14px);width:8px;height:8px;border-radius:50%;background:#ff2a2a;box-shadow:0 0 6px #f22}
+  .touch .tlbl.gb{left:34px;top:calc(var(--st) + var(--sh) + 15px);font:700 6px/1 var(--body);letter-spacing:.1em;color:#b9b8c8}
   .touch .tgrill.gb{right:22px;bottom:max(22px,calc(env(safe-area-inset-bottom,0px) + 12px));width:70px;height:56px;transform:rotate(-28deg);
     background:repeating-linear-gradient(90deg,transparent 0 6px,#8d8a82 6px 11px);border-radius:6px;opacity:.8}
   .touch .tdpad{--D:calc(min(38vw,165px) * var(--ts));left:7vw;top:calc(var(--ct) + var(--b0) * 2.15 - var(--D) / 2)}
