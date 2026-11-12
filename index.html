@@ -1788,6 +1788,8 @@ const FX={
       {const[x,y]=P(970,200);glow(g,x,y,300*k,'190,210,255',.12+.04*Math.sin(t*.013))}
       [[1380,500],[900,620],[1174,554],[714,574],[1060,586],[1642,380],[1920,256],[2254,70]].forEach(([x0,y0],i)=>{const[x,y]=P(x0,y0);glow(g,x,y,60*k,i%2?'255,170,80':'200,120,255',.30+.2*Math.sin(t*.09+i*1.7)+CROWD.flash*.2)});
       {const[x,y]=P(1660,960);glow(g,x,y,320*k,'140,255,120',.10+.06*Math.sin(t*.03)+CROWD.flash*.18)}
+      // the clown's yellow eyes burn in the dark, flaring when someone gets hurt
+      for(const[x0,y0,r0]of[[1508,566,70],[1737,531,84]]){const[x,y]=P(x0,y0),a=.30+.14*Math.sin(t*.045)+.08*Math.sin(t*.17)+CROWD.flash*.35;glow(g,x,y,r0*2.6*k,'255,200,40',a*.55);glow(g,x,y,r0*1.1*k,'255,230,90',a)}
       g.restore()}
     else{g.save();g.globalCompositeOperation='screen';fogBand(g,rc,.60,.76,t,'170,140,220',.14+CROWD.flash*.12);fogBand(g,rc,.86,1,t*1.2,'130,200,170',.08);g.restore()}
   },
