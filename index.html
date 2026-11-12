@@ -4383,6 +4383,8 @@ const TRACKS=[
 ];
 const JB={el:null,i:-1,repeat:'all',userPaused:false,shown:-1};
 if(!Array.isArray(S.jbOff))S.jbOff=[];if(S.jbRandom===undefined)S.jbRandom=true;
+/* one-time reset: every song checked and shuffle on (new songs always start checked) */
+if(!S.jbAll1){S.jbOff=[];S.jbRandom=true;S.jbAll1=1;try{saveS()}catch(e){}}
 const jbOn=i=>TRACKS[i]&&!S.jbOff.includes(TRACKS[i].src);
 const jbOnList=()=>TRACKS.map((t,i)=>i).filter(jbOn);
 function jbToast(){const t=TRACKS[JB.i];if(!t||ov.querySelector('.fe-juke'))return;const scr=document.querySelector('.screen');if(!scr)return;
