@@ -3570,7 +3570,7 @@ function setPres(patch){Object.assign(NET.pres,patch);for(const k in patch)if(pa
 /* --- menus --- */
 /* ---------- live chat: one room for everyone, plus a room inside each online lobby ----------
    Messages go through a free Firebase Realtime Database. Paste its URL here to switch chat on. */
-const CHAT_DB='';
+const CHAT_DB='https://the-last-verse-default-rtdb.firebaseio.com';
 const CHAT={subs:new Set(),last:0};
 const CHAT_BAD=/n+[i1!]+g+[g3]+|f+[a@]+g+|r+[e3]+t+[a@]+r+d|k+[i1]+k+[e3]|c+h+[i1]+n+k|t+r+[a@]+n+n+y/gi;
 const chatClean=t=>String(t).replace(CHAT_BAD,m=>'*'.repeat(m.length));
