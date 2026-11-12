@@ -1921,11 +1921,10 @@ const FX={
     if(when==='back'){g.save();g.globalCompositeOperation='lighter';
       const flick=CROWD.flash>.5&&(CROWD.t%5<2)?.15:1,pulse=(.55+.25*Math.sin(t*.07))*flick+CROWD.flash*.4;
       const guitar=[[160,500],[230,470],[400,463],[700,458],[1000,452],[1050,330],[1200,300],[1380,290],[1520,340],[1560,470],[1550,600],[1520,655]];
-      for(const[x0,y0]of guitar){const[x,y]=P(x0,y0);glow(g,x,y,70*rc.k*2,'255,40,40',.22*pulse)}
       // LED chase along the four blue strings
       const sp=.004+CROWD.hype*.01;
       for(let s2=0;s2<4;s2++){const yy=[472,497,521,541][s2];for(let k=0;k<3;k++){const u=((t*sp+k/3+s2*.11)%1),[x,y]=P(175+u*1135,yy);
-        g.fillStyle=`rgba(120,170,255,${.75*flick})`;g.fillRect(x-30*rc.k,y-2,60*rc.k,4);glow(g,x,y,40*rc.k,'90,140,255',.35*flick)}}
+        g.fillStyle=`rgba(120,170,255,${.75*flick})`;g.fillRect(x-30*rc.k,y-2,60*rc.k,4)}}
       // the equalizer under the sign
       for(let b=0;b<9;b++){const hgt=.25+.75*Math.abs(Math.sin(t*(.09+b*.013)+b*1.3))*(.5+CROWD.hype*.7),[x,y]=P(948+b*13,592);
         const col=b<3?'90,255,120':b<6?'255,230,90':'255,90,200';g.fillStyle=`rgba(${col},.55)`;g.fillRect(x,y-hgt*48*rc.k,9*rc.k,hgt*48*rc.k)}
