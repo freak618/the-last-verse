@@ -1195,7 +1195,7 @@ const STAGES=[
    setup(){return{props:[mkProp('crate',240),mkProp('can',1380)],pend:[],puddles:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'pops',name:"Pop's Parking Lot",img:'pops',full:{scale:0.6,feet:900/1344,p:.15,floor:770,bands:[[0,262,.05],[262,770,.14]]},indoor:false,dry:true,wet:false,ambient:[120,90,90],grade:'#c0503a',rim:'rgba(255,120,110,.5)',farTone:'none',shadowL:[{x:1080,y:60,a:.44}],crowd:{groups:[{x0:40,x1:1770,y:840,s:.5,n:16}],front:8},
+ { id:'pops',name:"Pop's Parking Lot",img:'pops',full:{legacyFloor:1,scale:0.6,feet:900/1344,p:.15,floor:770,bands:[[0,262,.05],[262,770,.14]]},indoor:false,dry:true,wet:false,ambient:[120,90,90],grade:'#c0503a',rim:'rgba(255,120,110,.5)',farTone:'none',shadowL:[{x:1080,y:60,a:.44}],crowd:{groups:[{x0:40,x1:1770,y:840,s:.5,n:16}],front:8},
    setup(){return{props:[mkProp('tires',230),mkProp('bags',1390)],pend:[],puddles:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -1308,6 +1308,15 @@ function drawLayeredFull(im,F,w,h){
   // the floor: a coded layer built from the painting's own floor, widened to cover the whole arena.
   // At the line the fighters stand on it moves exactly with the world (depth 1), so blood, shadows and feet stay planted;
   // nearer the horizon it slows down, below the feet it speeds up, like a real floor in perspective
+  if(F.legacyFloor){
+  const FC=floorCanvas(F,im),cx=FC.width/2,N=40;
+  for(let i=0;i<N;i++){
+    const v0=hz+(ih-hz)*i/N,v1=hz+(ih-hz)*(i+1)/N,vm=(v0+v1)/2;
+    const p=vm<=ft?pz+(1-pz)*(vm-hz)/(ft-hz):1+(pB-1)*(vm-ft)/(ih-ft);
+    const ws=W+(WW-W)*p+120,sw=Math.min(FC.width,ws/F.scale);useCam(p);
+    ctx.drawImage(FC,cx-sw/2,v0-hz,sw,v1-v0,(WW-W)/2*p-(ws-W)/2,y0+v0*F.scale,ws,(v1-v0)*F.scale+1.2);
+  }
+    return}
   // drawn one screen pixel row at a time (like the old arcade line-scroll) straight from the painting, never mirrored:
   // each row is widened smoothly toward the front, so the floor fans out in perspective with no seams or steps
   const fh=(ih-hz)*F.scale,N=Math.max(24,Math.ceil(fh*R*(cam.z||1))),iw=im.width;
@@ -1343,7 +1352,7 @@ function drawStageBack(stg,t){
       // effects ride the backdrop exactly: same depth and same width as the painting's band behind them
       const rc=fullRect(stg),fx=FX[stg.id],BB=F.bands||[[0,F.floor||im.height,F.p]],bb=BB.find(b=>b[1]>=im.height*.55)||BB[BB.length-1],bp=bb[2];
       const rcb={...rc,x:(WW-W)/2*bp-(w-W)/2,p:bp,im},wsb=Math.max(w,W+(WW-W)*bp+80),bx=(WW-W)/2*bp-(wsb-W)/2;
-      useCam(bp);ctx.save();ctx.translate(bx,0);ctx.scale(wsb/w,1);ctx.translate(-rcb.x,0);
+      if(F.legacyFloor){useCam(F.p);ctx.save();Object.assign(rcb,{x:rc.x,p:rc.p})}else{useCam(bp);ctx.save();ctx.translate(bx,0);ctx.scale(wsb/w,1);ctx.translate(-rcb.x,0)}
       if(fx&&S.fx!==false){fx(ctx,rcb,t,'back');fx(ctx,rcb,t,'front')}
       if(S.fx!==false&&ALIVE[stg.id])aliveDraw(ALIVE[stg.id],ctx,rcb,t);
       ctx.restore();useCam(F.p);
@@ -1757,7 +1766,6 @@ const ALIVE_FX={
 function aliveDraw(list,g,rc,t){for(const e of list){const f=ALIVE_FX[e[0]];if(f)try{f(g,rc,t,e[1])}catch(_){}}}
 const ALIVE={
   riverfront:[['ripple',{x0:0,x1:2320,y0:700,y1:850,amp:3,sp:.05,glints:34,rgb:'190,210,255'}],['lightning',{x0:0,x1:2320,y0:0,y1:520,every:300,thunder:1}],['smoke',{x:1800,y:880,n:8,spread:900,rise:120,size:140,a:.12,rate:.0015,wind:.4,rgb:'150,165,200'}]],
-  pops:[['smoke',{x:900,y:760,n:12,spread:1700,rise:120,size:150,a:.13,rate:.0016,wind:.5,rgb:'150,140,150'}],['buzz',{x:1080,y:400,rx:180,ry:60,rgb:'255,240,220',drop:.06}],['buzz',{x:180,y:390,rx:90,ry:60,rgb:'255,80,80',drop:.1,seed:3}],['motes',{x0:850,x1:1350,y0:440,y1:560,n:10,size:5,rgb:'255,230,170',vx:.5,vy:.3}]],
   conservatory:[['beams',{at:[[550,0,'200,90,255'],[1250,0,'90,255,150'],[1350,0,'90,190,255'],[1600,0,'120,140,255'],[1930,0,'90,255,200']],len:900,w:300,a:.06,swing:.22}],['smoke',{x:250,y:850,n:9,spread:240,rise:260,size:140,a:.16,rate:.003,wind:.25,rgb:'120,110,200'}],['smoke',{x:2250,y:850,n:9,spread:240,rise:260,size:140,a:.16,rate:.003,wind:-.25,rgb:'120,110,200'}],['flame',{at:[[470,240,.5],[900,200,.5],[2100,160,.5]],size:30}],['motes',{x0:200,x1:2300,y0:100,y1:850,n:26,size:6,rgb:'255,220,160'}]],
   popsinside:[['beams',{at:[[870,240,'255,230,190'],[1000,340,'190,150,255'],[1130,340,'255,220,180'],[1330,340,'190,150,255'],[1460,340,'255,220,180'],[1560,240,'255,230,190']],len:600,w:260,a:.07,swing:.3}],['smoke',{x:1250,y:880,n:12,spread:900,rise:260,size:170,a:.14,rate:.0022,wind:.2,rgb:'150,120,210'}],['motes',{x0:800,x1:1700,y0:300,y1:850,n:22,size:5,rgb:'220,210,255'}]],
   soundhouse:[['buzz',{x:80,y:200,rx:140,ry:60,rgb:'255,90,90',drop:.14}],['motes',{x0:0,x1:2496,y0:80,y1:700,n:14,size:4,rgb:'255,240,200',vx:.4,vy:-.05,a:.35}],['wave',{x0:0,x1:2496,y0:0,y1:120,amp:2,sp:.03}]],
