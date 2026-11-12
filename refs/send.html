@@ -1,6 +1,0 @@
-<!doctype html><meta charset="utf-8"><title>send</title>
-<script>
-(async()=>{const f=new URLSearchParams(location.search).get('f')||'dabbalette.jpg';
-const b=await (await fetch(f)).arrayBuffer();
-(window.opener||parent).postMessage({lvref:f,buf:b},'*');document.title='sent';setTimeout(()=>window.close(),500)})();
-</script>
