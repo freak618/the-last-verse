@@ -831,7 +831,7 @@ const SHELVED=[{id:'apeshyt',cameo:true,sprite:'apeshyt',name:'Steele',title:'Cl
 const auraOf=c=>c.aura||c.accent||'#ffffff';
 const hexRGB=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
 const byId=id=>CHARS.find(c=>c.id===id);
-const UNLOCK_KEY='lastverse.unlocks',UNLOCK_HOW={tower:'Beat the Tower to unlock',story:'Beat Story mode to unlock',legend:'Clear the 10-floor Legend tower to unlock'};
+const UNLOCK_KEY='lastverse.unlocks',UNLOCK_HOW={tower:'Beat the Tower to unlock',story:'Beat Story mode to unlock',legend:'Clear the 20-floor Legend tower to unlock'};
 let UNL={};try{UNL=JSON.parse(localStorage.getItem(UNLOCK_KEY)||'{}')||{}}catch(e){UNL={}}
 const isUnlocked=c=>!c||!c.unlock||!!UNL[c.unlock];
 function grantUnlock(k){if(UNL[k])return false;UNL[k]=true;try{localStorage.setItem(UNLOCK_KEY,JSON.stringify(UNL))}catch(e){}return true}
@@ -3030,7 +3030,7 @@ function rosterScreen(o){
 function showSelectOld(){
   const second=G.pick.length>0,t=G.type;
   const who=t==='pvp'?(second?'Player Two, choose':'Player One, choose'):t==='training'?(second?'Choose your sparring partner':'Choose your fighter'):'Choose your fighter';
-  const sub={story:'Five fights to find who burned the Black Vinyl.',cpu:'One match against a random fighter.',pvp:'Two players, one keyboard or two gamepads.',tower:'Eight floors, one round each. Lose once and you start over.',training:'Endless meter, no timer, health refills when you stop.',online:'Online match. Fighters you made yourself stay offline for now.'}[t]||'';
+  const sub={story:'Five fights to find who burned the Black Vinyl.',cpu:'One match against a random fighter.',pvp:'Two players, one keyboard or two gamepads.',tower:'Ten, fifteen or twenty floors, one round each. Lose once and you start over.',training:'Endless meter, no timer, health refills when you stop.',online:'Online match. Fighters you made yourself stay offline for now.'}[t]||'';
   const list=CHARS.filter(c=>!c.villain&&!(t==='online'&&c.custom));
   const tags={};if(G.pick[0])tags[G.pick[0].id]='P1';
   const rightLabel={cpu:'CPU',story:'???',tower:'???',online:'Opponent'}[t]||(t==='training'?'Partner':'Player Two');
@@ -3181,7 +3181,7 @@ function renderHow(){
 function towerSetup(){
   const me=G.pick[0];
   if(G.type==='villains'){G.tower={order:VILLAIN_ORDER.map(byId),i:0};return}
-  const order=shuffle(playable().filter(x=>x!==me)).slice(0,G.towerLen||8);
+  const order=shuffle(playable().filter(x=>x!==me)).slice(0,G.towerLen||10);
   G.tower={order,i:0};
 }
 /* ---------- "Your fighters" screen ---------- */
@@ -4505,7 +4505,7 @@ function feAttract(){
   showCard();
 }
 function recTable(){
-  const tb=REC.tower||{},rows=[['Opener · 6 floors',tb[6]],['Headliner · 8 floors',tb[8]],['Legend · 10 floors',tb[10]],['Your tallest tower',REC.btower],['Story clears',REC.story],['Tournaments won',REC.tourneyWins],['Versus matches',REC.vs]];
+  const tb=REC.tower||{},rows=[['Opener · 10 floors',tb[10]],['Headliner · 15 floors',tb[15]],['Legend · 20 floors',tb[20]],['Your tallest tower',REC.btower],['Story clears',REC.story],['Tournaments won',REC.tourneyWins],['Versus matches',REC.vs]];
   return`<table class="fe-rt"><tbody>${rows.map(([a,b])=>`<tr><td>${a}</td><td>${b?(typeof b==='object'?`${esc(b.name)} · ${b.floors} floors`:b):'—'}</td></tr>`).join('')}</tbody></table>`;
 }
 
@@ -4513,7 +4513,7 @@ function recTable(){
 const FE_CATS=()=>[
   {id:'campaign',name:'Campaign',modes:[
     {id:'story',name:'Story',glyph:'☾',desc:'Fight every fighter in Rust City to find who burned the Black Vinyl.'},
-    {id:'tower',name:'Towers',glyph:'♜',desc:'Pick a tower of 6, 8 or 10 floors. One round a floor. Lose once and you start over.'},
+    {id:'tower',name:'Towers',glyph:'♜',desc:'Pick a tower of 10, 15 or 20 floors. One round a floor. Lose once and you start over.'},
     {id:'btower',name:'Build a Tower',glyph:'♖',desc:'Pick your fighter, then stack up to 30 opponents in the order you want to face them. One round a floor.'},
     {id:'tourney',name:'Tournament',glyph:'♚',desc:'Pick 16 fighters and build your own bracket. Play your fighter’s matches, watch or skip the rest.'}]},
   {id:'versus',name:'Versus',modes:[
@@ -4698,7 +4698,7 @@ function showSelect(){
 }
 
 /* ---------- tower pick: three towers, pick your fate ---------- */
-const TOWERS=[{n:6,name:'Opener',sub:'Six floors'},{n:8,name:'Headliner',sub:'Eight floors'},{n:10,name:'Legend',sub:'Ten floors'}];
+const TOWERS=[{n:10,name:'Opener',sub:'Ten floors'},{n:15,name:'Headliner',sub:'Fifteen floors'},{n:20,name:'Legend',sub:'Twenty floors'}];
 function feTowerPick(){
   G.mode='story';let k=clamp(FE.tower??1,0,2);
   feShow(`<div class="fe fe-tp">${feEmbers(16)}<div class="fe-sh"><span class="chip">${esc(G.pick[0].name)}</span><h2>Pick your fate</h2></div>
@@ -4706,8 +4706,8 @@ function feTowerPick(){
       <p class="fe-desc" id="tpTaunt"></p>${feBar([['nav','Choose'],['ok','Climb'],['back','Back']])}</div>`);
   const els=[...ov.querySelectorAll('.fe-tw')];
   const draw=()=>{els.forEach((b,i)=>b.classList.toggle('on',i===k));els[k].focus({preventScroll:true});
-    document.getElementById('tpTaunt').textContent=['Six floors? The short way up. Somebody’s scared.','Eight floors. A real night out.','Ten floors. Nobody’s made it to the top in years.'][k]};
-  const go=()=>{FE.tower=k;G.towerLen=TOWERS[k].n;SFX.navok();if(k===0)say('Six floors? Scared already?',{pitch:.05,rate:.75});else SFX.gong();towerSetup();feGate(()=>feLadder({}))};
+    document.getElementById('tpTaunt').textContent=['Ten floors? The short way up. Somebody’s scared.','Fifteen floors. A real night out.','Twenty floors. Nobody’s made it to the top in years.'][k]};
+  const go=()=>{FE.tower=k;G.towerLen=TOWERS[k].n;SFX.navok();if(k===0)say('Ten floors? Scared already?',{pitch:.05,rate:.75});else SFX.gong();towerSetup();feGate(()=>feLadder({}))};
   els.forEach((b,i)=>b.onclick=()=>{if(k===i)go();else{k=i;SFX.navtick();draw()}});
   FE.cur={id:'tower',input(m){if(m.a==='left'||m.a==='right'){k=(k+(m.a==='right'?1:-1)+3)%3;SFX.navtick();draw()}else if(m.a==='ok')go();else if(m.a==='back'){SFX.navback();G.type='tower';showSelect()}return true}};
   draw();
@@ -4788,9 +4788,9 @@ function endMatch(w){
     if(w===0){L.i++;
       if(L.i>=L.order.length){SFX.bell();
         const unlocks=[],earn=k=>{if(grantUnlock(k))CHARS.filter(c=>c.unlock===k).forEach(c=>unlocks.push(c))};
-        if(G.type==='tower'&&G.btower){const n=L.order.length;if(!REC.btower||n>=REC.btower.floors){REC.btower={name:G.c1.name,floors:n};saveRec()}if(n>=8)earn('tower');if(n>=10)earn('legend')}
+        if(G.type==='tower'&&G.btower){const n=L.order.length;if(!REC.btower||n>=REC.btower.floors){REC.btower={name:G.c1.name,floors:n};saveRec()}if(n>=10)earn('tower');if(n>=20)earn('legend')}
         else if(G.type==='tower'){const n=L.order.length;REC.tower=REC.tower||{};REC.tower[n]={name:G.c1.name,floors:n};saveRec();
-          if(n>=8)earn('tower');if(n>=10)earn('legend')}
+          if(n>=10)earn('tower');if(n>=20)earn('legend')}
         if(G.type==='story'){REC.story=(REC.story||0)+1;saveRec();earn('story')}
         const unlock=unlocks[0]||'';
         const head=G.type==='villains'?'Villains down':G.type==='tower'?(G.btower?'Top of your tower':'Top of the tower'):'The rain stops';
