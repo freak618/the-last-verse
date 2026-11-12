@@ -1333,9 +1333,13 @@ function drawStageBack(stg,t){
     if(im&&im.ok){const F=stg.full,w=im.width*F.scale,h=im.height*F.scale;
       if(F.floor&&S.depth!==false)drawLayeredFull(im,F,w,h);
       else{useCam(F.p);ctx.drawImage(im,(WW-W)/2*F.p-(w-W)/2,GROUND-h*F.feet,w,h)}
-      useCam(F.p);
-      const rc=fullRect(stg),fx=FX[stg.id];
-      if(fx&&S.fx!==false){fx(ctx,rc,t,'back');fx(ctx,rc,t,'front')}
+      // effects ride the backdrop exactly: same depth and same width as the painting's band behind them
+      const rc=fullRect(stg),fx=FX[stg.id],BB=F.bands||[[0,F.floor||im.height,F.p]],bb=BB.find(b=>b[1]>=im.height*.55)||BB[BB.length-1],bp=bb[2];
+      const rcb={...rc,x:(WW-W)/2*bp-(w-W)/2,p:bp,im},wsb=Math.max(w,W+(WW-W)*bp+80),bx=(WW-W)/2*bp-(wsb-W)/2;
+      useCam(bp);ctx.save();ctx.translate(bx,0);ctx.scale(wsb/w,1);ctx.translate(-rcb.x,0);
+      if(fx&&S.fx!==false){fx(ctx,rcb,t,'back');fx(ctx,rcb,t,'front')}
+      if(S.fx!==false&&ALIVE[stg.id])aliveDraw(ALIVE[stg.id],ctx,rcb,t);
+      ctx.restore();useCam(F.p);
       drawBackCrowd(stg,t);useCam(F.p)}
     useCam(1);ctx.drawImage(midCanvas(stg),0,0,WW,H);
     if(G.env){if(stg.draw)stg.draw(ctx,G.env,t);for(const p of G.env.props)drawProp(ctx,p,t)}
@@ -1664,6 +1668,105 @@ function cone(g,x,y,ang,len,w0,w1,rgb,a){
   if(a<=.005)return;g.save();g.translate(x,y);g.rotate(ang);
   const gr=g.createLinearGradient(0,0,0,len);gr.addColorStop(0,`rgba(${rgb},${a})`);gr.addColorStop(1,`rgba(${rgb},0)`);
   g.fillStyle=gr;g.beginPath();g.moveTo(-w0/2,0);g.lineTo(w0/2,0);g.lineTo(w1/2,len);g.lineTo(-w1/2,len);g.closePath();g.fill();g.restore()}
+/* ---------- living backdrops: coded motion laid over the paintings (water, smoke, soda, lightning, fire, cloth) ----------
+   every coordinate is in the painting's own pixels */
+const aH=n=>{const x=Math.sin(n*12.9898+78.233)*43758.5453;return x-Math.floor(x)};
+const ALIVE_FX={
+  // water: the painting itself is redrawn in thin rows that sway side to side, plus glints that come and go
+  ripple(g,rc,t,o){const im=rc.im,k=rc.k,st=Math.max(1,2/k|0);g.save();g.globalAlpha=o.alpha||.9;
+    for(let y=o.y0;y<o.y1;y+=st){const d=(y-o.y0)/(o.y1-o.y0),dx=Math.sin(y*.09+t*(o.sp||.05))*(o.amp||3)*(.4+d)+Math.sin(y*.031-t*.023)*(o.amp||3)*.5;
+      g.drawImage(im,o.x0,y,o.x1-o.x0,st,rc.x+(o.x0+dx)*k,rc.y+y*k,(o.x1-o.x0)*k,st*k+.6)}
+    g.restore();g.save();g.globalCompositeOperation='lighter';
+    const n=o.glints||24;for(let i=0;i<n;i++){const ph=(t*.012+aH(i)*7)%1,x=o.x0+aH(i+.5)*(o.x1-o.x0)+Math.sin(t*.01+i)*20,y=o.y0+aH(i+.25)*(o.y1-o.y0),a=Math.sin(ph*Math.PI)*(o.ga||.35);
+      g.fillStyle=`rgba(${o.rgb||'200,220,255'},${a})`;g.fillRect(rc.x+(x-18)*k,rc.y+y*k,36*k*(.5+aH(i+.7)),Math.max(1,2*k))}
+    g.restore()},
+  // cloth: columns of the painting bob up and down, like a banner or tent catching wind
+  wave(g,rc,t,o){const im=rc.im,k=rc.k,st=Math.max(1,2/k|0);g.save();
+    for(let x=o.x0;x<o.x1;x+=st){const dy=Math.sin(x*.012+t*(o.sp||.04))*(o.amp||4)+Math.sin(x*.004-t*.017)*(o.amp||4)*.6;
+      g.drawImage(im,x,o.y0,st,o.y1-o.y0,rc.x+x*k,rc.y+(o.y0+dy)*k,st*k+.6,(o.y1-o.y0)*k)}
+    g.restore()},
+  // smoke / steam / fog machine: soft puffs that rise, swell, drift with the wind and thin out
+  smoke(g,rc,t,o){const k=rc.k,n=o.n||10;g.save();
+    for(let i=0;i<n;i++){const u=((t*(o.rate||.004)*(1+aH(i)*.4)+i/n)%1),sx=o.x+(aH(i+.3)-.5)*(o.spread||40);
+      const x=sx+(o.wind||0)*u*300+Math.sin(t*.02+i)*12*u,y=o.y-(o.rise||300)*u,r=(o.size||50)*(.5+u*1.6),a=(o.a||.28)*Math.sin(Math.PI*Math.min(1,u*1.15))*(1-u*.4);
+      const[px,py]=[rc.x+x*k,rc.y+y*k],gr=g.createRadialGradient(px,py,0,px,py,r*k);gr.addColorStop(0,`rgba(${o.rgb||'150,150,160'},${a})`);gr.addColorStop(1,`rgba(${o.rgb||'150,150,160'},0)`);g.fillStyle=gr;g.fillRect(px-r*k,py-r*k,r*k*2,r*k*2)}
+    g.restore()},
+  // lightning: a jagged bolt forks across the sky now and then, with a flash
+  lightning(g,rc,t,o){const per=o.every||360,c=Math.floor((t+(o.off||0))/per),f=(t+(o.off||0))%per,hit=aH(c)<(o.chance||.8);
+    if(!hit)return;const ft=f-aH(c+.1)*per*.7;if(ft<0||ft>14)return;const k=rc.k,on=ft<3||(ft>6&&ft<9);
+    const a=on?1:.25;g.save();g.globalCompositeOperation='lighter';
+    g.fillStyle=`rgba(${o.rgb||'200,210,255'},${.16*a})`;g.fillRect(rc.x+o.x0*k,rc.y+o.y0*k,(o.x1-o.x0)*k,(o.y1-o.y0)*k);
+    const bolt=(x,y,len,ang,w,seed,depth)=>{let px=x,py=y;g.lineWidth=w*k;g.beginPath();g.moveTo(rc.x+px*k,rc.y+py*k);
+      for(let j=0;j<10;j++){const nx=px+Math.sin(ang)*len/10+(aH(seed+j)-.5)*len*.16,ny=py+Math.cos(ang)*len/10;g.lineTo(rc.x+nx*k,rc.y+ny*k);
+        if(depth<1&&aH(seed+j*3)<.18)bolt(nx,ny,len*.45,ang+(aH(seed+j*7)-.5)*1.4,w*.55,seed+j*31,depth+1);px=nx;py=ny}g.stroke()};
+    const bx=o.x0+aH(c+.2)*(o.x1-o.x0),L=(o.y1-o.y0)*(.7+aH(c+.4)*.3);
+    g.strokeStyle=`rgba(${o.rgb||'200,210,255'},${.35*a})`;g.shadowColor=`rgba(${o.rgb||'200,210,255'},1)`;g.shadowBlur=14*k*4;bolt(bx,o.y0,L,(aH(c+.6)-.5)*.5,7,c*97,0);
+    g.shadowBlur=0;g.strokeStyle=`rgba(255,255,255,${.9*a})`;bolt(bx,o.y0,L,(aH(c+.6)-.5)*.5,2.2,c*97,0);
+    if(ft===0&&o.thunder&&SFX.thunder&&G.mode==='fight')setTimeout(()=>SFX.thunder(),300+aH(c)*600);
+    g.restore()},
+  // soda / water spray: droplets fly out of a burst pipe in arcs and fall back
+  spray(g,rc,t,o){const k=rc.k,n=o.n||60,cols=o.cols||['255,255,255'];g.save();g.globalCompositeOperation='lighter';
+    for(let i=0;i<n;i++){const u=((t*(o.rate||.02)+aH(i))%1),an=o.ang+(aH(i+.2)-.5)*(o.spread||.5),v=(o.speed||600)*(.6+aH(i+.4)*.5);
+      const x=o.x+Math.sin(an)*v*u,y=o.y-Math.cos(an)*v*u+(o.grav||500)*u*u,r=(o.size||5)*(1-u*.5);
+      g.fillStyle=`rgba(${cols[i%cols.length]},${(1-u)*.85})`;g.beginPath();g.arc(rc.x+x*k,rc.y+y*k,Math.max(.8,r*k),0,Math.PI*2);g.fill()}
+    g.restore()},
+  // lava / water falls: the fall's own paint slides downward so it pours
+  flow(g,rc,t,o){const im=rc.im,k=rc.k,h=o.y1-o.y0,off=(t*(o.sp||2))%h;g.save();g.globalAlpha=o.alpha||.55;
+    g.beginPath();g.rect(rc.x+o.x0*k,rc.y+o.y0*k,(o.x1-o.x0)*k,h*k);g.clip();
+    g.drawImage(im,o.x0,o.y0,o.x1-o.x0,h-off,rc.x+o.x0*k,rc.y+(o.y0+off)*k,(o.x1-o.x0)*k,(h-off)*k);
+    g.drawImage(im,o.x0,o.y0+h-off,o.x1-o.x0,off,rc.x+o.x0*k,rc.y+o.y0*k,(o.x1-o.x0)*k,off*k);
+    g.globalCompositeOperation='lighter';for(let i=0;i<8;i++){const u=((t*.01+aH(i))%1);g.fillStyle=`rgba(${o.rgb||'255,200,120'},${.25*Math.sin(u*Math.PI)})`;g.fillRect(rc.x+(o.x0+aH(i+.3)*(o.x1-o.x0))*k,rc.y+(o.y0+u*h)*k,4*k,40*k)}
+    g.restore()},
+  // flames: little tongues of fire that lick and flicker over painted fires and candles
+  flame(g,rc,t,o){const k=rc.k;g.save();g.globalCompositeOperation='lighter';
+    for(const[x,y,sz]of o.at){const s=(sz||1)*(o.size||30);for(let j=0;j<3;j++){const fl=.75+.25*Math.sin(t*(.35+j*.13)+x*.1+j*2),hh=s*(1.1+j*.25)*fl,ww=s*(.45-j*.1),sw=Math.sin(t*.2+j+x)*ww*.4;
+      const[px,py]=[rc.x+(x+sw)*k,rc.y+y*k],gr=g.createRadialGradient(px,py-hh*k*.35,0,px,py-hh*k*.35,hh*k*.7);gr.addColorStop(0,`rgba(255,${200-j*50},${90-j*30},${.45/(j+1)})`);gr.addColorStop(1,'rgba(255,80,20,0)');
+      g.fillStyle=gr;g.beginPath();g.ellipse(px,py-hh*k*.35,ww*k,hh*k*.7,0,0,Math.PI*2);g.fill()}}
+    g.restore()},
+  // light beams that sweep slowly from fixtures
+  beams(g,rc,t,o){const k=rc.k;g.save();g.globalCompositeOperation='lighter';
+    o.at.forEach(([x,y,c],i)=>{const an=Math.sin(t*(o.sp||.012)+i*1.9)*(o.swing||.25)+(o.lean?o.lean[i]||0:0);cone(g,rc.x+x*k,rc.y+y*k,an,(o.len||700)*k,14*k,(o.w||260)*k,c||'255,240,220',(o.a||.07)*(.7+.3*Math.sin(t*.05+i)))});
+    g.restore()},
+  // fireworks: bursts of sparks that open and fall in the sky
+  fireworks(g,rc,t,o){const k=rc.k,per=o.every||90;g.save();g.globalCompositeOperation='lighter';
+    for(let j=0;j<3;j++){const tt=t+j*per/3,c=Math.floor(tt/per),u=(tt%per)/per,x=o.x0+aH(c*3+j)*(o.x1-o.x0),y=o.y0+aH(c*3+j+.5)*(o.y1-o.y0),col=o.cols[(c+j)%o.cols.length];
+      if(u<.15){g.fillStyle=`rgba(${col},.8)`;g.fillRect(rc.x+x*k-1,rc.y+(y+(1-u/.15)*300)*k,2,10*k);continue}
+      const v=(u-.15)/.85,R=(o.r||160)*Math.sqrt(v);for(let i=0;i<28;i++){const an=i/28*Math.PI*2,px=x+Math.cos(an)*R,py=y+Math.sin(an)*R+v*v*80;
+        g.fillStyle=`rgba(${col},${(1-v)*.9})`;g.fillRect(rc.x+px*k-1,rc.y+py*k-1,Math.max(1.5,4*k),Math.max(1.5,4*k))}
+      glow(g,rc.x+x*k,rc.y+y*k,R*k*1.2,col,.12*(1-v))}
+    g.restore()},
+  // floating specks: dust in light, fireflies, moths, embers
+  motes(g,rc,t,o){const k=rc.k,n=o.n||30;g.save();g.globalCompositeOperation='lighter';
+    for(let i=0;i<n;i++){const x=o.x0+((aH(i)*(o.x1-o.x0)+t*(o.vx||.2)*(1+aH(i+.1)))%(o.x1-o.x0)+(o.x1-o.x0))%(o.x1-o.x0)+Math.sin(t*.02+i)*30,
+      y=o.y0+((aH(i+.2)*(o.y1-o.y0)-t*(o.vy||.1)*(1+aH(i+.3)))%(o.y1-o.y0)+(o.y1-o.y0))%(o.y1-o.y0),a=(o.a||.5)*(.5+.5*Math.sin(t*.08+i*2.1));
+      glow(g,rc.x+x*k,rc.y+y*k,(o.size||8)*k,o.rgb||'255,230,180',a)}
+    g.restore()},
+  // a light that buzzes and drops out now and then (old neon, bad bulbs)
+  buzz(g,rc,t,o){const k=rc.k,c=Math.floor(t/7),off=aH(c+(o.seed||0))<(o.drop||.12);g.save();
+    if(off){g.globalCompositeOperation='source-over';g.fillStyle=`rgba(0,0,0,${o.dark||.35})`;g.beginPath();g.ellipse(rc.x+o.x*k,rc.y+o.y*k,o.rx*k,o.ry*k,0,0,Math.PI*2);g.fill()}
+    else{g.globalCompositeOperation='lighter';glow(g,rc.x+o.x*k,rc.y+o.y*k,o.rx*k,o.rgb,.10+.05*Math.sin(t*.9))}
+    g.restore()},
+};
+function aliveDraw(list,g,rc,t){for(const e of list){const f=ALIVE_FX[e[0]];if(f)try{f(g,rc,t,e[1])}catch(_){}}}
+const ALIVE={
+  riverfront:[['ripple',{x0:0,x1:2320,y0:700,y1:850,amp:3,sp:.05,glints:34,rgb:'190,210,255'}],['lightning',{x0:0,x1:2320,y0:0,y1:520,every:300,thunder:1}],['smoke',{x:1800,y:880,n:8,spread:900,rise:120,size:140,a:.12,rate:.0015,wind:.4,rgb:'150,165,200'}]],
+  pops:[['smoke',{x:900,y:760,n:12,spread:1700,rise:120,size:150,a:.13,rate:.0016,wind:.5,rgb:'150,140,150'}],['buzz',{x:1080,y:400,rx:180,ry:60,rgb:'255,240,220',drop:.06}],['buzz',{x:180,y:390,rx:90,ry:60,rgb:'255,80,80',drop:.1,seed:3}],['motes',{x0:850,x1:1350,y0:440,y1:560,n:10,size:5,rgb:'255,230,170',vx:.5,vy:.3}]],
+  conservatory:[['beams',{at:[[550,0,'200,90,255'],[1250,0,'90,255,150'],[1350,0,'90,190,255'],[1600,0,'120,140,255'],[1930,0,'90,255,200']],len:900,w:300,a:.06,swing:.22}],['smoke',{x:250,y:850,n:9,spread:240,rise:260,size:140,a:.16,rate:.003,wind:.25,rgb:'120,110,200'}],['smoke',{x:2250,y:850,n:9,spread:240,rise:260,size:140,a:.16,rate:.003,wind:-.25,rgb:'120,110,200'}],['flame',{at:[[470,240,.5],[900,200,.5],[2100,160,.5]],size:30}],['motes',{x0:200,x1:2300,y0:100,y1:850,n:26,size:6,rgb:'255,220,160'}]],
+  popsinside:[['beams',{at:[[870,240,'255,230,190'],[1000,340,'190,150,255'],[1130,340,'255,220,180'],[1330,340,'190,150,255'],[1460,340,'255,220,180'],[1560,240,'255,230,190']],len:600,w:260,a:.07,swing:.3}],['smoke',{x:1250,y:880,n:12,spread:900,rise:260,size:170,a:.14,rate:.0022,wind:.2,rgb:'150,120,210'}],['motes',{x0:800,x1:1700,y0:300,y1:850,n:22,size:5,rgb:'220,210,255'}]],
+  soundhouse:[['buzz',{x:80,y:200,rx:140,ry:60,rgb:'255,90,90',drop:.14}],['motes',{x0:0,x1:2496,y0:80,y1:700,n:14,size:4,rgb:'255,240,200',vx:.4,vy:-.05,a:.35}],['wave',{x0:0,x1:2496,y0:0,y1:120,amp:2,sp:.03}]],
+  gathering:[['wave',{x0:700,x1:1800,y0:360,y1:985,amp:5,sp:.045}],['beams',{at:[[725,330,'90,255,120'],[815,330,'80,160,255'],[930,330,'90,255,120'],[1040,330,'255,80,255'],[1150,330,'255,140,40'],[1335,330,'80,160,255'],[1440,330,'255,80,255'],[1560,330,'255,80,255'],[1670,330,'90,255,120'],[1775,330,'90,255,120']],len:800,w:200,a:.07,swing:.35}],['motes',{x0:700,x1:1800,y0:300,y1:1100,n:20,size:5}]],
+  spiritboard:[['flame',{at:[[25,640,.6],[95,620,.6],[160,650,.6],[240,680,.6],[115,830,.6],[2240,670,.6],[2330,640,.6],[2400,610,.6],[2480,640,.6],[2370,820,.6]],size:26}],['smoke',{x:1264,y:960,n:12,spread:2200,rise:200,size:130,a:.12,rate:.0018,wind:.3,rgb:'150,230,190'}],['smoke',{x:1264,y:620,n:6,spread:500,rise:500,size:120,a:.10,rate:.002,rgb:'255,150,80'}],['motes',{x0:600,x1:1900,y0:100,y1:900,n:30,size:5,rgb:'255,170,80',vx:.1,vy:.5}]],
+  graveyard:[['lightning',{x0:200,x1:2300,y0:0,y1:600,every:340,off:120,thunder:1}],['smoke',{x:2310,y:1010,n:10,spread:30,rise:160,size:70,a:.22,rate:.006,wind:.9,rgb:'170,190,200'}],['motes',{x0:0,x1:2528,y0:600,y1:1200,n:14,size:7,rgb:'190,255,200',a:.4}]],
+  seminartent:[['wave',{x0:0,x1:1536,y0:0,y1:380,amp:3,sp:.03}],['smoke',{x:768,y:640,n:10,spread:900,rise:250,size:120,a:.12,rate:.002,wind:.2,rgb:'200,120,110'}],['motes',{x0:200,x1:1350,y0:150,y1:700,n:22,size:4,rgb:'255,220,170'}]],
+  marsh:[['ripple',{x0:560,x1:1400,y0:440,y1:585,amp:2.5,sp:.04,glints:22,rgb:'170,230,220'}],['smoke',{x:960,y:520,n:10,spread:1600,rise:90,size:150,a:.12,rate:.0014,wind:.35,rgb:'130,180,180'}],['motes',{x0:200,x1:1800,y0:150,y1:650,n:18,size:6,rgb:'190,255,150',a:.6}]],
+  carnival:[['smoke',{x:1660,y:1080,n:14,spread:200,rise:120,size:170,a:.18,rate:.0025,wind:-.8,rgb:'150,200,170'}],['lightning',{x0:300,x1:2300,y0:0,y1:500,every:420,off:60,rgb:'210,190,255',thunder:1}],['wave',{x0:0,x1:2528,y0:450,y1:560,amp:2,sp:.05}],['motes',{x0:0,x1:2528,y0:400,y1:1200,n:12,size:5,rgb:'255,240,200',vx:.6,vy:-.1,a:.3}]],
+  funhouse:[['smoke',{x:528,y:1050,n:14,spread:220,rise:110,size:170,a:.18,rate:.0025,wind:.8,rgb:'160,220,170'}],['smoke',{x:1700,y:1150,n:8,spread:1400,rise:80,size:180,a:.10,rate:.0015,wind:-.3,rgb:'170,140,220'}]],
+  delray:[['smoke',{x:2120,y:480,n:9,rise:420,size:70,a:.28,rate:.0028,wind:-.9,rgb:'70,55,50'}],['smoke',{x:2186,y:430,n:9,rise:420,size:70,a:.28,rate:.0026,wind:-.9,rgb:'70,55,50'}],['smoke',{x:2280,y:370,n:9,rise:420,size:80,a:.28,rate:.0024,wind:-.9,rgb:'70,55,50'}],['smoke',{x:2380,y:410,n:9,rise:420,size:80,a:.28,rate:.0027,wind:-.9,rgb:'70,55,50'}],['ripple',{x0:1500,x1:2528,y0:820,y1:880,amp:1.5,sp:.04,glints:16,rgb:'255,200,140'}],['motes',{x0:1500,x1:1700,y0:560,y1:700,n:8,size:4,rgb:'255,220,160',vx:.4,vy:.3}],['buzz',{x:994,y:705,rx:340,ry:70,rgb:'255,120,110',drop:.08,dark:.25}]],
+  campground:[['flame',{at:[[974,985,1.2],[1372,830,.7],[1558,752,.5],[1864,1015,1.2]],size:40}],['smoke',{x:974,y:950,n:8,rise:380,size:60,a:.18,rate:.004,wind:.5,rgb:'120,110,110'}],['smoke',{x:1864,y:980,n:8,rise:380,size:60,a:.18,rate:.0037,wind:.5,rgb:'120,110,110'}],['smoke',{x:1840,y:560,n:10,spread:500,rise:300,size:160,a:.12,rate:.0022,wind:-.3,rgb:'220,90,160'}],['fireworks',{x0:1100,x1:2400,y0:60,y1:320,every:100,cols:['255,80,80','100,255,140','120,150,255','255,220,90','255,120,255']}],['motes',{x0:800,x1:2100,y0:500,y1:1000,n:16,size:5,rgb:'255,170,80',vy:.6,vx:.2}]],
+  sodaplant:[['spray',{x:2210,y:700,ang:-.85,spread:.45,speed:700,grav:420,n:90,size:6,rate:.022,cols:['255,90,60','255,170,40','180,90,255','90,230,110','80,180,255']}],['smoke',{x:1520,y:420,n:8,spread:400,rise:260,size:110,a:.10,rate:.002,wind:.2,rgb:'200,210,230'}],['ripple',{x0:700,x1:2100,y0:1140,y1:1190,amp:1.5,sp:.06,glints:18,rgb:'255,200,220'}],['motes',{x0:0,x1:2200,y0:780,y1:900,n:26,size:3,rgb:'255,255,255',vx:0,vy:.6,a:.4}]],
+  mansion:[['lightning',{x0:920,x1:1040,y0:230,y1:680,every:240,chance:.9,rgb:'200,190,255'}],['lightning',{x0:1480,x1:1610,y0:230,y1:680,every:280,off:90,chance:.9,rgb:'200,190,255'}],['flame',{at:[[130,760,.5],[600,840,.5],[1106,870,.5],[1428,870,.5],[2006,850,.5],[2440,750,.5],[880,545,.4],[1656,555,.4],[1116,500,.4],[1416,500,.4]],size:24}],['wave',{x0:620,x1:880,y0:0,y1:520,amp:3,sp:.035}],['wave',{x0:1660,x1:1960,y0:0,y1:900,amp:3,sp:.03}]],
+  hellpit:[['flow',{x0:1620,x1:1760,y0:540,y1:1040,sp:3,alpha:.6}],['ripple',{x0:760,x1:2000,y0:1010,y1:1200,amp:3,sp:.03,glints:30,rgb:'255,200,90',ga:.5}],['smoke',{x:1300,y:900,n:12,spread:1400,rise:600,size:200,a:.16,rate:.0018,wind:.2,rgb:'120,30,20'}],['smoke',{x:1690,y:1040,n:8,spread:120,rise:300,size:90,a:.16,rate:.004,rgb:'255,140,60'}]],
+};
 const FX={
   carnival(g,rc,t,when){const P=(x,y)=>[rc.x+x*rc.k,rc.y+y*rc.k],k=rc.k;
     if(when==='back'){g.save();g.globalCompositeOperation='lighter';
