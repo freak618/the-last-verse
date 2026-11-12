@@ -1680,9 +1680,9 @@ const FX={
   },
   funhouse(g,rc,t,when){const P=(x,y)=>[rc.x+x*rc.k,rc.y+y*rc.k],k=rc.k;
     if(when==='back'){g.save();g.globalCompositeOperation='lighter';
-      [[360,160],[600,300],[840,360],[1080,380],[1320,340],[1580,300],[1800,280],[2080,220]].forEach(([x0,y0],i)=>{const[x,y]=P(x0,y0),on=Math.sin(t*.07+i*2.3)>-.6?1:.25;glow(g,x,y,70*k,i%3?'255,180,90':'170,255,140',(.3+CROWD.flash*.2)*on)});
-      {const[x,y]=P(2000,960);glow(g,x,y,300*k,'150,255,130',.12+.07*Math.sin(t*.04)+CROWD.flash*.2)}
-      {const[x,y]=P(160,700);glow(g,x,y,360*k,'200,120,255',.08+.05*Math.sin(t*.02))}
+      [[2168,160],[1928,300],[1688,360],[1448,380],[1208,340],[948,300],[728,280],[448,220]].forEach(([x0,y0],i)=>{const[x,y]=P(x0,y0),on=Math.sin(t*.07+i*2.3)>-.6?1:.25;glow(g,x,y,70*k,i%3?'255,180,90':'170,255,140',(.3+CROWD.flash*.2)*on)});
+      {const[x,y]=P(528,960);glow(g,x,y,300*k,'150,255,130',.12+.07*Math.sin(t*.04)+CROWD.flash*.2)}
+      {const[x,y]=P(2368,700);glow(g,x,y,360*k,'200,120,255',.08+.05*Math.sin(t*.02))}
       g.restore()}
     else{g.save();g.globalCompositeOperation='screen';fogBand(g,rc,.58,.76,t,'170,140,220',.14+CROWD.flash*.12);g.restore()}
   },
