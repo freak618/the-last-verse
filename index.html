@@ -1192,23 +1192,23 @@ const pulse=(i,sp=1)=>.5+.5*Math.sin(CROWD.beat*(1+CROWD.hype)*sp+i*1.3);
 
 const STAGES=[
  { id:'riverfront',name:'The Riverfront',img:'riverfront',full:{scale:0.459,feet:1060/1280,p:.15,floor:1000,bands:[[0,700,.07],[700,805,.16],[805,1000,.26]]},indoor:false,wet:false,ambient:[80,90,130],grade:'#3a5aa0',rim:'rgba(170,190,255,.5)',farTone:'none',shadowL:[{x:820,y:-300,a:.42}],crowd:{groups:[{x0:60,x1:2260,y:955,s:.5,n:16}],front:8},
-   setup(){return{props:[mkProp('crate',240),mkProp('can',1380)],pend:[],puddles:[]}},
+   setup(){return{props:[],pend:[],puddles:[]}},
    build(g){},fg(g){},lights(){},
  },
  { id:'pops',name:"Pop's Parking Lot",img:'pops',full:{legacyFloor:1,scale:0.6,feet:900/1344,p:.15,floor:770,bands:[[0,262,.05],[262,770,.14]]},indoor:false,dry:true,wet:false,ambient:[120,90,90],grade:'#c0503a',rim:'rgba(255,120,110,.5)',farTone:'none',shadowL:[{x:1080,y:60,a:.44}],crowd:{groups:[{x0:40,x1:1770,y:840,s:.5,n:16}],front:8},
-   setup(){return{props:[mkProp('tires',230),mkProp('bags',1390)],pend:[],puddles:[]}},
+   setup(){return{props:[],pend:[],puddles:[]}},
    build(g){},fg(g){},lights(){},
  },
  { id:'conservatory',name:'The Conservatory',img:'conservatory',full:{scale:0.4263,feet:1250/1664,p:.15,floor:1000,bands:[[0,150,.06],[150,1000,.16]]},indoor:true,wet:false,ambient:[90,80,140],grade:'#6a3aa0',rim:'rgba(170,140,255,.5)',farTone:'none',shadowL:[{x:560,y:100,a:.3},{x:1040,y:100,a:.3}],crowd:{groups:[{x0:20,x1:640,y:1080,s:.55,n:7},{x0:1860,x1:2480,y:1080,s:.55,n:7}],front:8},
-   setup(){return{props:[mkProp('crate',250),mkProp('can',1370)],pend:[],puddles:[]}},
+   setup(){return{props:[],pend:[],puddles:[]}},
    build(g){},fg(g){},lights(){},
  },
  { id:'popsinside',name:"Pop's Main Stage",img:'popsinside',full:{scale:0.4263,feet:1380/1664,p:.15,floor:1150,bands:[[0,340,.06],[340,1150,.15]]},indoor:true,wet:false,ambient:[80,90,140],grade:'#3a5aa0',rim:'rgba(160,190,255,.5)',farTone:'none',crowd:{groups:[{x0:20,x1:720,y:1210,s:.55,n:7},{x0:1800,x1:2480,y:1210,s:.55,n:7}],front:8},shadowL:[{x:620,y:120,a:.34},{x:980,y:120,a:.34}],
-   setup(){return{props:[mkProp('crate',250),mkProp('can',1370)],pend:[],puddles:[]}},
+   setup(){return{props:[],pend:[],puddles:[]}},
    build(g){},fg(g){},lights(){},
  },
  { id:'soundhouse',name:'The Soundhouse',img:'soundhouse',full:{scale:0.435,feet:1100/1282,p:.15,floor:715},indoor:false,dry:true,wet:false,ambient:[90,90,100],grade:'#5a6070',rim:'rgba(200,190,170,.28)',farTone:'none',shadowL:[{x:760,y:-220,a:.42}],crowd:{groups:[{x0:40,x1:2460,y:714,s:.37,n:14}],front:8},
-   setup(){return{props:[mkProp('tires',230),mkProp('can',1380)],pend:[],puddles:[]}},
+   setup(){return{props:[],pend:[],puddles:[]}},
    build(g){},fg(g){},lights(){},
  },
  { id:'gathering',name:'The Gathering',img:'gathering',full:{scale:0.4263,feet:1345/1664,p:.15,floor:1290,bands:[[0,1290,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[110,100,120],grade:'#6a5a80',rim:'rgba(255,200,150,.32)',farTone:'none',shadowL:[{x:420,y:-300,a:.32},{x:1180,y:-300,a:.32}],crowd:{groups:[],front:0},
@@ -1260,7 +1260,7 @@ const STAGES=[
    build(g){},fg(g){},lights(){},
  },
  { id:'overpass',name:'The Offramp',img:'overpass',indoor:false,wet:true,ambient:[70,78,110],grade:'#3a5aa0',rim:'rgba(150,180,255,.55)',farTone:'brightness(.6) saturate(.9)',
-   setup(){return{props:[mkProp('tires',220),mkProp('barrel',640),mkProp('tires',1040),mkProp('can',1320)],pend:[],puddles:[[380,520],[820,980],[1380,1500]],car:{x:-400,t:200}}},
+   setup(){return{props:[],pend:[],puddles:[[380,520],[820,980],[1380,1500]],car:{x:-400,t:200}}},
    build(g){
      floorPlane(g,'#30343c','#0e1014','rgba(0,0,0,.25)',90,{seed:12,stains:55});
      // chain-link fence
