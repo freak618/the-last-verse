@@ -1236,10 +1236,6 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'caveinrock',name:"Cave-in-Rock",img:'caveinrock',full:{scale:0.4209,feet:1340/1696,p:.15,floor:1187,bands:[[0,1187,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[120,90,110],grade:'#8a4a6a',rim:'rgba(255,160,120,.36)',farTone:'none',shadowL:[{x:1264,y:-260,a:.3}],crowd:{groups:[],front:0},
-   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
-   build(g){},fg(g){},lights(){},
- },
  { id:'campground',name:"The Campground",img:'campground',full:{scale:0.4209,feet:1289/1696,p:.15,floor:1119,bands:[[0,1119,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[80,90,110],grade:'#4a4a78',rim:'rgba(255,150,120,.34)',farTone:'none',shadowL:[{x:1264,y:-260,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
@@ -1285,7 +1281,7 @@ function fgCanvas(stg){return getCache(stg,'_fg',()=>{const c=document.createEle
 const STIMG={};
 for(const k in ASSET.stages){const im=new Image();im.onload=()=>{im.ok=true};im.src=ASSET.stages[k];STIMG[k]=im}
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',caveinrock:'jg_cave',campground:'jg_campground',sodaplant:'jg_sodaplant',mansion:'jg_mansion',hellpit:'jg_hellpit'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',sodaplant:'jg_sodaplant',mansion:'jg_mansion',hellpit:'jg_hellpit'};
 for(const k in STAGE_FILES)if(!STIMG[k]){const im=new Image();im.onload=()=>{im.ok=true};im.src='stages/'+STAGE_FILES[k]+'.webp';STIMG[k]=im}
 function farCanvas(stg){
   const im=STIMG[stg.img];if(!im||!im.ok)return null;
@@ -1615,7 +1611,6 @@ const STAGE_KO={
   carnival(x){CROWD.flash=1;confetti(90);sparksAt(x,GROUND-40,24,'190,120,255')},
   funhouse(x){CROWD.flash=1;confetti(110);sparksAt(x,GROUND-40,20,'150,255,170')},
   delray(x){CROWD.flash=1;sparksAt(x,GROUND-30,28,'255,170,80');dustAt(x,10,1.5)},
-  caveinrock(x){CROWD.flash=1;sparksAt(x,GROUND-20,30,'255,150,70');dustAt(x,12,1.6)},
   campground(x){CROWD.flash=1;for(let i=0;i<3;i++)sparksAt(x-320+i*320,40+fxR()*60,16,['255,80,80','120,255,140','120,160,255'][i])},
   sodaplant(x){CROWD.flash=1;for(const c of['255,80,60','255,160,40','170,90,255','90,230,110'])sparksAt(x,GROUND-40,10,c)},
   mansion(x){if(S.fx!==false)light=1;CROWD.flash=1;setTimeout(()=>SFX.thunder&&SFX.thunder(),200)},
@@ -1696,14 +1691,7 @@ const FX={
       g.restore()}
     else{g.save();g.globalCompositeOperation='screen';fogBand(g,rc,.62,.74,t,'220,160,110',.10+CROWD.flash*.1);g.restore()}
   },
-  caveinrock(g,rc,t,when){const P=(x,y)=>[rc.x+x*rc.k,rc.y+y*rc.k],k=rc.k;
-    if(when==='back'){g.save();g.globalCompositeOperation='lighter';
-      for(const[x0,y0,i]of[[610,970,0],[1780,966,1]]){const[x,y]=P(x0,y0),f=.32+.12*Math.sin(t*.23+i)+.08*Math.sin(t*.51+i*2)+CROWD.flash*.2;glow(g,x,y,150*k,'255,150,60',f);glow(g,x,y,50*k,'255,220,140',f)}
-      [[172,820],[304,830],[1870,874],[2040,874],[2252,860],[2436,856]].forEach(([x0,y0],i)=>{const[x,y]=P(x0,y0);glow(g,x,y,55*k,'255,190,100',.28+.08*Math.sin(t*.06+i))});
-      {const[x,y]=P(1800,1100);g.save();g.translate(x,y);g.scale(3,.18);glow(g,0,0,320*k,'255,150,110',.10+.05*Math.sin(t*.02));g.restore()}
-      g.restore()}
-    else{g.save();g.globalCompositeOperation='screen';fogBand(g,rc,.62,.74,t,'200,150,170',.10+CROWD.flash*.1);g.restore()}
-  },
+
   campground(g,rc,t,when){const P=(x,y)=>[rc.x+x*rc.k,rc.y+y*rc.k],k=rc.k;
     if(when==='back'){g.save();g.globalCompositeOperation='lighter';
       for(const[x0,y0,i]of[[974,970,0],[1372,820,1],[1558,744,2],[1864,1000,3]]){const[x,y]=P(x0,y0),f=.30+.12*Math.sin(t*.23+i*1.3)+.07*Math.sin(t*.5+i)+CROWD.flash*.15;glow(g,x,y,130*k,'255,150,60',f)}
