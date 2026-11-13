@@ -1,9 +1,9 @@
 """Cut AI sprite sheets (4-column grids) into a trimmed atlas the game loads.
 
-KEY picks the colour the backdrop was put on: whichever of green or magenta the
-character's own art does not contain. Mordemir's flame is green, so he keys
-magenta; Devilette's energy is purple, which a magenta key would eat, so she
-keys green. Set it with the LV_KEY environment variable.
+Takes RGBA sheets and uses their alpha as given -- prep.py already lifted the
+art off its backdrop, so nothing here has to guess which hue was the backdrop
+and which was an effect. An RGB sheet still falls back to a colour key, set
+with LV_KEY, for anything built before the pipeline carried alpha.
 """
 import os, sys, json, numpy as np, cv2
 from skimage.segmentation import watershed
@@ -17,6 +17,15 @@ LAYOUT = {  # sheet -> rows (animation names the game's importer understands)
 
 KEY = os.environ.get('LV_KEY', 'green')
 assert KEY in ('green', 'magenta'), KEY
+
+def load(path):
+    """RGB plus alpha. Real alpha wins; a flat sheet falls back to the colour key."""
+    im = Image.open(path)
+    if im.mode == 'RGBA':
+        a = np.asarray(im)
+        if a[..., 3].min() < 250:                     # a genuine alpha channel
+            return a[..., :3].copy(), a[..., 3].copy()
+    return key_green(np.asarray(im.convert('RGB')))
 
 def key_green(rgb):
     """Alpha from the key colour. Named for history; KEY decides which colour."""
@@ -52,9 +61,8 @@ def clean(alpha, min_area):
 def cut(sheets, out_png, out_json, name, scale_note=1):
     frames, anims, items = {}, {}, []
     for sid, path in sheets.items():
-        im = np.asarray(Image.open(path).convert('RGB'))
-        H, W = im.shape[:2]; rows = LAYOUT[sid]; cw, ch = W / 4, H / len(rows)
-        rgb, al = key_green(im)
+        rgb, al = load(path)
+        H, W = rgb.shape[:2]; rows = LAYOUT[sid]; cw, ch = W / 4, H / len(rows)
         # every connected piece of art goes to the cell holding most of it, so limbs that cross a cell edge stay attached
         m = (al > 150).astype(np.uint8)   # solid art only; soft glows are added back per piece below
         n, cc, st, cen = cv2.connectedComponentsWithStats(m, 8)

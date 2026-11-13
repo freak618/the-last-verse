@@ -5,7 +5,8 @@ Not part of the shipped game — the itch workflow skips this folder.
 
 ## Sheets
 
-Three source sheets per fighter, each a 4-column grid:
+Three source sheets per fighter, each a 4-column grid, named `A_src` / `B_src` /
+`C_src`:
 
 | sheet | rows |
 |---|---|
@@ -15,16 +16,52 @@ Three source sheets per fighter, each a 4-column grid:
 
 ## Order
 
-1. **`greenscreen_key.py`** — only for a sheet that arrives on a flat backdrop.
-   Keys on *distance to the backdrop colour* rather than on green dominance,
-   and keeps only border-connected background, so a green flame or a green orb
-   is never mistaken for the backdrop. Writes the sheet out on magenta.
-2. **`regrid2.py`** — re-lays each sheet onto a clean 4-column grid of 256px
-   cells. Reads `rawA.png` / `rawB.png` / `rawC.png` from the working directory.
-3. **ESR upscale** each `X.jpg` to `X_hd.png`, then resize to 2048 wide.
-4. **`cut.py`** — cuts every frame and packs `sheet.png` + `sheet.json`.
-5. `integrate.py <id> sheet.png sheet.json` embeds it and switches the fighter
+1. **`degrid.py`** — only for a sheet that ships with its cell borders painted
+   on. Finds whole dark rows and columns and fills them from the nearest clean
+   line either side.
+2. **`prep.py`** — lifts each sheet off its backdrop into a real alpha channel.
+   Writes `rawA.png` / `rawB.png` / `rawC.png` as RGBA.
+3. **`regrid2.py`** — re-lays each sheet onto a clean 4-column grid of 256px
+   cells, carrying alpha. Writes `X.png` (RGBA), plus `X.jpg` and
+   `X_alpha.png` for the upscaler.
+4. **`upscale.py`** — upscales to 2048 wide and recombines colour with alpha.
+5. **`cut.py`** → `cut2z.py` — cuts every frame and packs `sheet.png` +
+   `sheet.json`.
+6. `integrate.py <id> sheet.png sheet.json` embeds it and switches the fighter
    from photo cutout to animated sprite.
+
+## Alpha travels; nothing downstream re-keys
+
+The pipeline used to cut on a key colour at every stage, which forces the key to
+be a hue the character's art does not contain. There is no such hue. Mordemir's
+flame is green. Devilette's energy was purple, then cyan and pink, and her
+sparks are gold. Keying green cost 24% of her cyan aura; keying magenta cost 9%
+of her pink projectile.
+
+So the backdrop comes off **once**, in `prep.py`, and the alpha goes with the art
+from then on. `cut2z.py` uses a real alpha channel when it finds one and only
+falls back to its old `LV_KEY` colour key for sheets built before this.
+
+### Getting the alpha right
+
+A backdrop screen contaminates everything drawn over it, so a soft glow really
+is part backdrop and belongs at part alpha.
+
+- **Measure how far a pixel leans toward the backdrop's hue.** That puts a
+  glow at partial alpha, which is correct, and the same pass removes the lean
+  from the colour (despill) so the glow keeps its own hue.
+- **Do not measure distance to the backdrop colour.** It calls a green-blended
+  glow fully opaque and leaves it green — Devilette's cyan aura came back as a
+  green blob.
+
+The backdrop colour is the single most common colour in the image. Never sample
+it from the border: a sheet's own grid lines sit exactly there, and a skewed
+backdrop colour made 93% of one sheet read as figure.
+
+`--keep-enclosed` is for art that contains the backdrop's own hue, where a gap
+between limbs cannot be told from an effect. It keeps every region the figure
+encloses, at the cost of leaving backdrop in those gaps. Mordemir needs it; most
+characters do not.
 
 ## Why each sheet gets its own scale
 
@@ -40,11 +77,16 @@ so a kick, a flame aura or a knockdown cannot drag a sheet's measure around.
 
 ## Checking a cut
 
-Two numbers catch almost everything:
+Three checks catch nearly everything:
 
 - **Alpha coverage** — compare each frame's opaque-pixel count against its row
   median; under 45% means the key ate part of the figure (`knockdown` is
   legitimately smaller, so exclude it).
 - **Height spread** — group frame heights by animation. Movement, attack and
   hurt rows should *interleave*. If the attack rows sit entirely above the
-  movement rows, the per-sheet scale is wrong.
+  movement rows, the per-sheet scale is wrong. If one animation's frames are
+  all an identical height well under the others, they are being clipped — a
+  staggered source sheet spilling into the band below does this.
+- **Look at the effects on a dark background.** Coverage and height cannot see
+  a hue that came out wrong, and a green fringe or a recoloured glow is obvious
+  by eye and invisible to both numbers.

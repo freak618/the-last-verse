@@ -1,62 +1,76 @@
-"""Flatten each source sheet's backdrop, then put it on this character's key colour.
+"""Lift each source sheet off its backdrop into a real alpha channel.
 
-Two separate things decide the key colour:
+Why alpha travels instead of a key colour: keying downstream forces the key to
+be a hue the art does not contain, and no single hue is safe for everyone --
+Mordemir's flame is green, Devilette's energy went purple, then cyan and pink.
+The backdrop comes off once, here, with the best information available, and the
+alpha goes with the art from then on.
 
-  * The BACKDROP the art arrived on, which this script removes by distance to
-    the backdrop colour -- robust whatever hue it is, and immune to the trap
-    where a dominance key eats an effect of the same hue as the backdrop.
-  * The KEY COLOUR the rest of the pipeline cuts on, which has to be a colour
-    the character's art does not contain. Mordemir's flame is green, so he
-    keys magenta. Devilette's energy is purple, which sits right next to
-    magenta, so she keys green.
+How the alpha is found: a backdrop screen contaminates everything drawn over it,
+so a soft glow really is part backdrop and belongs at part alpha. Measuring how
+far a pixel leans toward the backdrop's hue gets that right; measuring distance
+to the backdrop colour does not -- it calls a green-blended glow fully opaque
+and leaves it green. Leaning is then removed from the colour as well (despill),
+so edges and glows keep their own hue rather than a tint of the screen.
+
+The backdrop colour is the single most common colour in the image, never
+sampled from the border -- a sheet's own grid lines sit exactly there.
+
+--keep-enclosed is for art that contains the backdrop's own hue, where a gap
+between limbs cannot be told from an effect. It keeps every region the figure
+encloses, at the cost of leaving backdrop in those gaps.
+
+Writes raw<sheet>.png as RGBA.
 """
 import sys
 import numpy as np
 from PIL import Image
 from scipy import ndimage
 
-KEYS = {'green': (0, 255, 0), 'magenta': (255, 0, 255)}
+LO, HI = 28, 95          # leaning below LO is fully opaque, above HI fully clear
+DESPILL = 0.15           # fraction of the backdrop-hue excess left behind
 
 
-def prep(src, out, key='green', thresh=60, keep_enclosed=False):
-    a = np.array(Image.open(src).convert('RGB')).astype(np.int16)
-    # The backdrop is the single most common colour. Sampling the border instead
-    # is thrown off by anything painted along the edge -- a sheet's own grid
-    # lines, for one -- and a skewed backdrop colour makes the whole image read
-    # as figure.
-    cols, counts = np.unique(a.reshape(-1, 3), axis=0, return_counts=True)
-    bg = cols[counts.argmax()].astype(float)
-    d = np.sqrt(((a - bg) ** 2).sum(2))
+def prep(src, out, keep_enclosed=False, bleed=14):
+    f = np.array(Image.open(src).convert('RGB')).astype(np.float32)
+    cols, counts = np.unique(f.astype(np.int16).reshape(-1, 3), axis=0, return_counts=True)
+    bg = cols[counts.argmax()]
+    dom = int(np.argmax(bg))                      # which channel the screen is
+    others = [c for c in range(3) if c != dom]
 
-    lab, _ = ndimage.label(d < thresh)
+    rest = np.maximum(f[..., others[0]], f[..., others[1]])
+    lean = f[..., dom] - rest
+    alpha = 1 - np.clip((lean - LO) / (HI - LO), 0, 1)
+
+    # Despill: pull the screen's channel back down toward the other two.
+    f[..., dom] = np.where(lean > 0, rest + lean * DESPILL, f[..., dom])
+
+    clear = alpha < 0.5
+    lab, _ = ndimage.label(clear)
     edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
-    bgm = np.isin(lab, list(edge))          # only backdrop reachable from the border
-
-    alpha = np.clip((d - thresh * .55) / (thresh * .45), 0, 1)
-    alpha[bgm & (d < thresh * .55)] = 0
+    enclosed = clear & ~np.isin(lab, list(edge))
     if keep_enclosed:
-        # Only for art that contains the backdrop's own hue -- Mordemir's green
-        # flame on a green screen. Keeping every enclosed region saves the
-        # effect, at the cost of leaving backdrop in gaps between limbs.
-        alpha[~bgm] = 1.0
-    enclosed = int((~bgm & (d < thresh)).sum())
+        alpha[enclosed] = 1.0
 
-    # de-spill: along the soft rim, pull the backdrop hue back toward the art
-    f = a.astype(float)
-    rim = (alpha > 0) & (alpha < 1)
-    dom = int(np.argmax(bg))
-    others = np.maximum.reduce([f[..., c] for c in range(3) if c != dom])
-    f[..., dom] = np.where(rim & (f[..., dom] > others),
-                           others + (f[..., dom] - others) * 0.15, f[..., dom])
+    # Bleed opaque colour outward. Nothing sees these pixels, but the upscaler
+    # does, and a hard edge against flat colour makes it invent a fringe.
+    solid = alpha > 0.5
+    if bleed and solid.any():
+        idx = ndimage.distance_transform_edt(~solid, return_distances=False,
+                                             return_indices=True)
+        grow = ndimage.binary_dilation(solid, np.ones((3, 3)), iterations=bleed)
+        f = np.where((~solid & grow)[..., None], f[tuple(idx)], f)
 
-    k = np.array(KEYS[key], float)
-    comp = f * alpha[..., None] + k * (1 - alpha[..., None])
-    Image.fromarray(comp.clip(0, 255).astype(np.uint8)).save(out)
-    print(f'{src}: backdrop {bg.astype(int)} -> {key}   figure {100*(alpha>.5).mean():.1f}% '
-          f'| {enclosed} enclosed px {"kept" if keep_enclosed else "removed"}')
+    rgba = np.dstack([f, alpha * 255]).clip(0, 255).astype(np.uint8)
+    Image.fromarray(rgba, 'RGBA').save(out)
+    soft = ((alpha > .03) & (alpha < .97)).mean()
+    print(f'{src.split("/")[-1]}: screen {bg.astype(int).tolist()} on channel "{"RGB"[dom]}"  '
+          f'art {100*solid.mean():.1f}%  soft {100*soft:.1f}%  '
+          f'{int(enclosed.sum())} enclosed px {"kept" if keep_enclosed else "cleared"}')
 
 
 if __name__ == '__main__':
-    key = sys.argv[1] if len(sys.argv) > 1 else 'green'
-    for sheet, src in (('A', 'img2.webp'), ('B', 'img4.webp'), ('C', 'img1.webp')):
-        prep(f'/tmp/claude-0/b_devilette/{src}', f'/tmp/claude-0/b_devilette/raw{sheet}.png', key)
+    d = sys.argv[1] if len(sys.argv) > 1 else '.'
+    keep = '--keep-enclosed' in sys.argv
+    for k in 'ABC':
+        prep(f'{d}/{k}_src.webp', f'{d}/raw{k}.png', keep_enclosed=keep)

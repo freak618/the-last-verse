@@ -1,21 +1,15 @@
 # Re-lay uneven AI sheets onto a clean 4-column grid for cut2.
-# LV_KEY picks the backdrop colour: whichever of green or magenta the
-# character's art does not contain (see tools/README.md).
+# Reads the RGBA sheets prep.py writes and carries their alpha through, so no
+# colour has to be "safe" for the character's effects (see tools/README.md).
 import os, numpy as np, cv2, sys
 from PIL import Image
 ROWS={'A':4,'B':4,'C':3}
 DROP={}   # row index -> frame indices to drop if a row has extras
-KEY=os.environ.get('LV_KEY','green')
-assert KEY in ('green','magenta'), KEY
-BG=(0,255,0) if KEY=='green' else (255,0,255)
-def key(rgb):
-    f=rgb.astype(np.float32);r,g,b=f[...,0],f[...,1],f[...,2]
-    lean=(g-np.maximum(r,b)) if KEY=='green' else (np.minimum(r,b)-g)
-    return lean<40
 ALL={}
 for k,nr in ROWS.items():
-    im=np.asarray(Image.open(f'raw{k}.png').convert('RGB'));H,W=im.shape[:2]
-    fg=key(im).astype(np.uint8)
+    src=np.asarray(Image.open(f'raw{k}.png').convert('RGBA'));H,W=src.shape[:2]
+    im=src[...,:3].copy();AL=src[...,3]
+    fg=(AL>128).astype(np.uint8)
     rs=fg.sum(1)
     for i in range(1,nr):
         b=int(i*H/nr);lo,hi=b-int(H*.08),b+int(H*.08);y=lo+int(np.argmin(rs[lo:hi]));fg[max(0,y-1):y+2]=0
@@ -45,9 +39,9 @@ for k,nr in ROWS.items():
             parts=[p for p,o in owner.items() if o==q]
             m=np.isin(cc,parts)
             ys_,xs_=np.nonzero(m);x0,x1,y0,y1=xs_.min(),xs_.max()+1,ys_.min(),ys_.max()+1
-            crop=im[y0:y1,x0:x1].copy();mm=m[y0:y1,x0:x1]
-            crop[~mm]=BG
-            frames.append((r,crop))
+            crop=im[y0:y1,x0:x1].copy();ca=AL[y0:y1,x0:x1].copy();mm=m[y0:y1,x0:x1]
+            ca[~mm]=0                       # anything not this frame's art is clear
+            frames.append((r,np.dstack([crop,ca])))
     ALL[k]=frames
     continue
 
@@ -68,8 +62,15 @@ SH={k:T/BODY[k] for k in ALL}
 for k in sorted(SH): print(f'  {k}: body {BODY[k]:6.1f}px  scale {SH[k]:.4f}  -> body {BODY[k]*SH[k]:.1f}px')
 for k,frames in ALL.items():
     SC=SH[k]
-    nr=ROWS[k];out=Image.new("RGB",(1024,256*nr),BG);cnt=[0]*nr
+    nr=ROWS[k];out=Image.new("RGBA",(1024,256*nr),(0,0,0,0));cnt=[0]*nr
     for r,c in frames:
-        i=cnt[r];cnt[r]+=1;im=Image.fromarray(c);w,h=round(im.width*SC),round(im.height*SC);im=im.resize((w,h),Image.LANCZOS)
+        i=cnt[r];cnt[r]+=1;im=Image.fromarray(c,'RGBA')
+        w,h=round(im.width*SC),round(im.height*SC);im=im.resize((w,h),Image.LANCZOS)
         out.paste(im,(i*256+(256-w)//2,r*256+256-h-10))
-    out.save(f'{k}.jpg',quality=95);print(k,out.size)
+    out.save(f'{k}.png')
+    # The upscaler only takes RGB, so hand it the colour with transparent areas
+    # filled by prep's bleed, and keep the alpha beside it to recombine after.
+    arr=np.asarray(out)
+    Image.fromarray(arr[...,:3]).save(f'{k}.jpg',quality=95)
+    Image.fromarray(arr[...,3]).save(f'{k}_alpha.png')
+    print(k,out.size)
