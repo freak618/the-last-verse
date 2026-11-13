@@ -149,5 +149,17 @@ def main():
                             '   ·   lean: %d fighters, %d stages, %d paintings dropped'
                             % (len(DEV_ROSTER), len(DEV_STAGES), skipped) if lean else ''))
 
+    # A build that only counts files cannot tell that one it references is
+    # absent, or that a portrait points at empty atlas pixels. Both have
+    # shipped. The lean build drops fighters and stages on purpose, so it is
+    # checked for blank portraits but not for every referenced path.
+    import subprocess
+    print()
+    v = subprocess.run(['python3', '-I', f'{REPO}/tools/verify.py', out]
+                       + (['--lean'] if lean else []), capture_output=True, text=True)
+    print(v.stdout.rstrip() or v.stderr.rstrip())
+    if v.returncode:
+        raise SystemExit('build is incomplete -- see above')
+
 
 main()
