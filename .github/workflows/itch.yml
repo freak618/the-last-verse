@@ -28,6 +28,7 @@ jobs:
           cp index.html build/
           for d in */; do
             [ "$d" = "build/" ] && continue
+            [ "$d" = "tools/" ] && continue   # sprite pipeline, not part of the game
             cp -r "$d" build/
           done
           echo "shipping:" && ls build/
