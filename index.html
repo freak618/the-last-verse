@@ -857,8 +857,7 @@ function grantUnlock(k){if(UNL[k])return false;UNL[k]=true;try{localStorage.setI
 const playable=()=>CHARS.filter(c=>!c.villain&&isUnlocked(c));
 const defaultCrew=c=>null;
 const crewOf=f=>null;
-const isTowerT=t=>t==='tower'||t==='villains';
-const VILLAIN_ORDER=['sarge','shade','giggles','hellhorn'];
+const isTowerT=t=>t==='tower';
 const MOVES={
   punch:{startup:4,active:4,recover:9,dmg:6,reach:84,kb:4,stun:14},
   kick:{startup:8,active:5,recover:14,dmg:9,reach:104,kb:7,stun:18},
@@ -3172,11 +3171,10 @@ function showSelectOld(){
 }
 function ladder(){return isTowerT(G.type)?G.tower:G.story}
 function showLadderCardOld(){
-  const isTower=isTowerT(G.type),vt=G.type==='villains',L=ladder(),opp=L.order[L.i],boss=L.i===L.order.length-1;
+  const isTower=isTowerT(G.type),L=ladder(),opp=L.order[L.i],boss=L.i===L.order.length-1;
   G.mode='story';
-  chEl.textContent=vt?`Rust City · Villain Tower ${L.i+1}/${L.order.length}`:isTower?`Rust City · Tower ${L.i+1}/${L.order.length}`:`Rust City · Story ${L.i+1}/${L.order.length}`;
+  chEl.textContent=isTower?`Rust City · Tower ${L.i+1}/${L.order.length}`:`Rust City · Story ${L.i+1}/${L.order.length}`;
   const intro=!isTower&&L.i===0?`<p class="ov-small">The Black Vinyl burned at midnight. It's raining. It's always raining. Every fighter in Rust City stands between you and whoever lit the match.</p>`
-    :vt&&L.i===0?`<p class="ov-small">The four who never fight fair. Best of three on every floor. Lose once and you start over.</p>`
     :isTower&&L.i===0?`<p class="ov-small">One round per floor. Lose once and you start over.</p>`:'';
   const label=isTower?(boss?'Top floor':'Floor '+(L.i+1)+' of '+L.order.length):(boss?'Final fight':'Fight '+(L.i+1)+' of '+L.order.length);
   const quote=boss&&opp.bossLine&&G.type!=='tower'?opp.bossLine:opp.line;
@@ -3194,9 +3192,7 @@ function endMatchOld(w){
     const L=ladder();
     if(w===0){L.i++;
       if(L.i>=L.order.length){SFX.bell();
-        if(G.type==='villains')showOv(`<h2 class="ov-logo" style="font-size:8cqw">Villains down</h2><p class="ov-p">${G.c1.name} beat Sarge Red, Shade, Giggles and Hellhorn without losing once.</p>
-          <div class="row"><button class="btn red" data-act="mode" data-m="villains">Climb again</button><button class="btn" data-act="title">Title screen</button></div>`,true);
-        else if(G.type==='tower'){const fresh=grantUnlock('tower'),dn=CHARS.find(c=>c.unlock==='tower');showOv(`<h2 class="ov-logo" style="font-size:8cqw">Top of the Tower</h2><p class="ov-p">${G.c1.name} cleared all ${L.order.length} floors without losing once.</p>
+        if(G.type==='tower'){const fresh=grantUnlock('tower'),dn=CHARS.find(c=>c.unlock==='tower');showOv(`<h2 class="ov-logo" style="font-size:8cqw">Top of the Tower</h2><p class="ov-p">${G.c1.name} cleared all ${L.order.length} floors without losing once.</p>
           ${fresh&&dn?`<div class="unlock"><div id="unlockArt"></div><p class="ov-p"><span class="chip">New fighter unlocked</span><br><b>${esc(dn.name)}</b> joins the roster.</p></div>`:''}
           <div class="row"><button class="btn red" data-act="mode" data-m="tower">Climb again</button><button class="btn" data-act="title">Title screen</button></div>`,true);
           const ua=document.getElementById('unlockArt');if(ua&&dn){SFX.bell();ua.appendChild(portrait(dn))}}
@@ -3312,7 +3308,6 @@ function renderHow(){
 
 function towerSetup(){
   const me=G.pick[0];
-  if(G.type==='villains'){G.tower={order:VILLAIN_ORDER.map(byId),i:0};return}
   const order=shuffle(playable().filter(x=>x!==me)).slice(0,G.towerLen||10);
   G.tower={order,i:0};
 }
@@ -3455,10 +3450,10 @@ Object.assign(ACT,{
   stagepick(d){const k=+d.k;launchPicked(k<0?rndStage():k)},
   stageback(){showSelect()},
   ladderfight(){
-    const tower=isTowerT(G.type),vt=G.type==='villains',L=ladder(),opp=L.order[L.i],boss=L.i===L.order.length-1;
+    const tower=isTowerT(G.type),L=ladder(),opp=L.order[L.i],boss=L.i===L.order.length-1;
     const oc=boss?{...opp,power:opp.power*1.12}:opp;
-    const lvl=vt?Math.min(.95,.62+.1*L.i):tower?Math.min(.95,.45+.07*L.i):Math.min(.92,.35+.14*L.i);
-    startMatch(G.pick[0],oc,{ai2:new AI(lvl),stage:ladderStage(),need:tower&&!vt?1:2});beginFight();
+    const lvl=tower?Math.min(.95,.45+.07*L.i):Math.min(.92,.35+.14*L.i);
+    startMatch(G.pick[0],oc,{ai2:new AI(lvl),stage:ladderStage(),need:tower?1:2});beginFight();
   },
   towerreset(){towerSetup();showLadderCard()},
   next(){showLadderCard()},
@@ -4692,7 +4687,6 @@ const FE_CATS=()=>[
     {id:'opt-game',name:'Gameplay',glyph:'⏱',desc:'Round time, rounds to win, CPU difficulty, blood.'},
     {id:'dev',name:'Developer Mode',glyph:'🔒',desc:'Locked. Stage and fighter tuning for the developer. Needs the pass key.'}]},
   ...(FE.secret?[{id:'secret',name:'?',modes:[
-    {id:'villains',name:'Villain Tower',glyph:'☠',desc:'The four who never fight fair. Best of three on every floor.'},
     {id:'mirror',name:'Mirror Match',glyph:'◑',desc:'Fight yourself. The CPU copies your pick.'}]}]:[]),
 ];
 function feMain(){
@@ -4755,8 +4749,8 @@ function showSelect(){
   const rIdx=Math.min(roster.length,Math.floor((rows-1)/2)*cols+Math.floor(cols/2));
   const tiles=roster.slice();tiles.splice(rIdx,0,'random');
   const two=t==='pvp',ctl=[0,two?1:0];
-  const label={pvp:['Player One','Player Two'],cpu:['Player One','CPU'],story:['Player One','???'],tower:['Player One','???'],villains:['Player One','???'],training:['Player One','Sparring partner'],online:['You','Opponent'],watch:['CPU One','CPU Two']}[t]||['Player One','Player Two'];
-  const title={story:'Story',tower:'Towers',villains:'Villain Tower',pvp:'Local Versus',cpu:G.mirror?'Mirror Match':'Vs CPU',training:'Training',online:'Online',watch:'Spectate'}[t]||'';
+  const label={pvp:['Player One','Player Two'],cpu:['Player One','CPU'],story:['Player One','???'],tower:['Player One','???'],training:['Player One','Sparring partner'],online:['You','Opponent'],watch:['CPU One','CPU Two']}[t]||['Player One','Player Two'];
+  const title={story:'Story',tower:'Towers',pvp:'Local Versus',cpu:G.mirror?'Mirror Match':'Vs CPU',training:'Training',online:'Online',watch:'Spectate'}[t]||'';
   feShow(`<div class="fe fe-sel"><video class="fe-bgvid" src="media/selectbg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="fe-bgtint"></div>
       <div class="fe-side l" id="side0"><div class="fe-art" id="art0"></div><div class="fe-plate"><span class="who">${label[0]}</span><b id="nm0">—</b><i id="tt0"></i><div class="fe-crew" id="cr0"></div></div></div>
       <div class="fe-gridwrap"><div class="fe-sh"><div class="fe-sellogo" aria-hidden="true">The Last Verse</div><span class="chip">${esc(title)}</span><h2>${t==='watch'?'Choose both fighters':'Choose your fighter'}</h2></div>
@@ -4882,12 +4876,12 @@ function feTowerPick(){
 /* ---------- the ladder: a column of opponents you climb ---------- */
 function showLadderCard(){feLadder({})}
 function feLadder({climb=false}){
-  const isTower=isTowerT(G.type),vt=G.type==='villains',L=ladder(),opp=L.order[L.i],boss=L.i===L.order.length-1;
+  const isTower=isTowerT(G.type),L=ladder(),opp=L.order[L.i],boss=L.i===L.order.length-1;
   G.mode='story';
-  chEl.textContent=vt?`Rust City · Villain Tower ${L.i+1}/${L.order.length}`:isTower?`Rust City · Tower ${L.i+1}/${L.order.length}`:`Rust City · Story ${L.i+1}/${L.order.length}`;
+  chEl.textContent=isTower?`Rust City · Tower ${L.i+1}/${L.order.length}`:`Rust City · Story ${L.i+1}/${L.order.length}`;
   const label=isTower?(boss?'Top floor':'Floor '+(L.i+1)+' of '+L.order.length):(boss?'Final fight':'Fight '+(L.i+1)+' of '+L.order.length);
   const quote=boss&&opp.bossLine&&G.type!=='tower'?opp.bossLine:opp.line;
-  const intro=!isTower&&L.i===0?'The Black Vinyl burned at midnight. Every fighter in Rust City stands between you and whoever lit the match.':vt&&L.i===0?'The four who never fight fair. Best of three on every floor.':isTower&&L.i===0?'One round per floor. Lose once and you start over.':'';
+  const intro=!isTower&&L.i===0?'The Black Vinyl burned at midnight. Every fighter in Rust City stands between you and whoever lit the match.':isTower&&L.i===0?'One round per floor. Lose once and you start over.':'';
   feShow(`<div class="fe fe-lad">${feEmbers(14)}
       <div class="fe-ltower"><div class="fe-lcol" id="lcol">${L.order.map((o,i)=>`<div class="fe-rung${i<L.i?' done':''}${i===L.i?' now':''}${i===L.order.length-1?' top':''}" data-r="${i}"><span class="fl">${i+1}</span><div class="pt" data-o="${i}"></div></div>`).reverse().join('')}</div></div>
       <div class="fe-linfo"><span class="chip">${label} · ${esc(STAGES[ladderStage()].name)}</span><h2 class="fe-h">${esc(opp.name)}</h2><p class="fe-lt">${esc(opp.title||'')}</p>
@@ -4959,8 +4953,8 @@ function endMatch(w){
           if(n>=10)earn('tower');if(n>=20)earn('legend')}
         if(G.type==='story'){REC.story=(REC.story||0)+1;saveRec();earn('story')}
         const unlock=unlocks[0]||'';
-        const head=G.type==='villains'?'Villains down':G.type==='tower'?(G.btower?'Top of your tower':'Top of the tower'):'The rain stops';
-        const body=G.type==='villains'?`${G.c1.name} beat Sarge Red, Shade, Giggles and Hellhorn without losing once.`:G.type==='tower'?`${G.c1.name} cleared all ${L.order.length} floors without losing once.`:`${G.c1.name} found who burned the Black Vinyl. For one night, Rust City gets its music back.`;
+        const head=G.type==='tower'?(G.btower?'Top of your tower':'Top of the tower'):'The rain stops';
+        const body=G.type==='tower'?`${G.c1.name} cleared all ${L.order.length} floors without losing once.`:`${G.c1.name} found who burned the Black Vinyl. For one night, Rust City gets its music back.`;
         feShow(`<div class="fe fe-end">${feEmbers(40)}<div class="fe-endart" id="endArt"></div><div class="fe-endtx"><span class="chip">Ending</span><h2 class="fe-h">${head}</h2><p class="fe-lq">${esc(body)}</p>
           ${unlock?`<div class="unlock"><div id="unlockArt"></div><p class="ov-p"><span class="chip">New fighter unlocked</span><br><b>${esc(unlocks.map(c=>c.name).join(' and '))}</b> ${unlocks.length>1?'join':'joins'} the roster.</p></div>`:''}
           <div class="row"><button class="btn red" data-act="mode" data-m="${G.type}">Again</button><button class="btn" data-back data-act="title">Main menu</button></div></div></div>`);
