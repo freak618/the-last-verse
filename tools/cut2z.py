@@ -1,5 +1,11 @@
-"""Cut AI sprite sheets (green screen, 4-column grids) into a trimmed atlas the game loads."""
-import sys, json, numpy as np, cv2
+"""Cut AI sprite sheets (4-column grids) into a trimmed atlas the game loads.
+
+KEY picks the colour the backdrop was put on: whichever of green or magenta the
+character's own art does not contain. Mordemir's flame is green, so he keys
+magenta; Devilette's energy is purple, which a magenta key would eat, so she
+keys green. Set it with the LV_KEY environment variable.
+"""
+import os, sys, json, numpy as np, cv2
 from skimage.segmentation import watershed
 from PIL import Image
 
@@ -9,18 +15,26 @@ LAYOUT = {  # sheet -> rows (animation names the game's importer understands)
     'C': ['hit', 'knockdown', 'victory'],
 }
 
+KEY = os.environ.get('LV_KEY', 'green')
+assert KEY in ('green', 'magenta'), KEY
+
 def key_green(rgb):
+    """Alpha from the key colour. Named for history; KEY decides which colour."""
     f = rgb.astype(np.float32)
     r, g, b = f[..., 0], f[..., 1], f[..., 2]
-    spill = np.minimum(r, b) - g
-    a = 1 - np.clip((spill - 28) / (95 - 28), 0, 1)          # strong green -> transparent
-    # despill: pull leftover green on edges back to neutral
-    mx = np.minimum(r, b)
-    # only despill near the cut edge, so green inside the art (shirt print) keeps its colour
+    # how far this pixel leans toward the key colour
+    spill = (g - np.maximum(r, b)) if KEY == 'green' else (np.minimum(r, b) - g)
+    a = 1 - np.clip((spill - 28) / (95 - 28), 0, 1)
+    # despill, but only near the cut edge, so art of that hue keeps its colour
     edge = cv2.dilate(((a < 0.98)).astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool)
-    r2 = np.where(edge & (r > g), g + (r - g) * 0.15, r)
-    b2 = np.where(edge & (b > g), g + (b - g) * 0.15, b)
-    out = np.stack([r2, g, b2], -1)
+    if KEY == 'green':
+        mx = np.maximum(r, b)
+        g2 = np.where(edge & (g > mx), mx + (g - mx) * 0.15, g)
+        out = np.stack([r, g2, b], -1)
+    else:
+        r2 = np.where(edge & (r > g), g + (r - g) * 0.15, r)
+        b2 = np.where(edge & (b > g), g + (b - g) * 0.15, b)
+        out = np.stack([r2, g, b2], -1)
     return out.clip(0, 255).astype(np.uint8), (a * 255).astype(np.uint8)
 
 def clean(alpha, min_area):
