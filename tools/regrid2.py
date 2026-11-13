@@ -11,8 +11,10 @@ for k,nr in ROWS.items():
     im=src[...,:3].copy();AL=src[...,3]
     fg=(AL>128).astype(np.uint8)
     rs=fg.sum(1)
+    CUTS=[]
     for i in range(1,nr):
         b=int(i*H/nr);lo,hi=b-int(H*.08),b+int(H*.08);y=lo+int(np.argmin(rs[lo:hi]));fg[max(0,y-1):y+2]=0
+        CUTS.append(y)
     n,cc,st,cen=cv2.connectedComponentsWithStats(fg,8)
     big=[q for q in range(1,n) if st[q,4]>H*W*0.004]
     small=[q for q in range(1,n) if H*W*0.00004<st[q,4]<=H*W*0.004]
@@ -25,7 +27,23 @@ for k,nr in ROWS.items():
         ax0,ay0,aw,ah=st[a,:4];bx0,by0,bw,bh=st[b,:4]
         dx=max(0,max(ax0,bx0)-min(ax0+aw,bx0+bw));dy=max(0,max(ay0,by0)-min(ay0+ah,by0+bh));return dx+dy
     owner={q:q for q in big}
+    def touches(q,y,tol=5):
+        y0,h=st[q,1],st[q,3];return y0-tol<=y<=y0+h+tol
+    def xov(a,b):
+        ax0,aw=st[a,0],st[a,2];bx0,bw=st[b,0],st[b,2]
+        return max(0,min(ax0+aw,bx0+bw)-max(ax0,bx0))
     for q in small:
+        # A piece lying against a row-split line was severed by it -- Vanitylette's
+        # raised uppercut fist reaches up into the row above. It belongs to the
+        # figure on the other side of that line that it lines up with in x, not to
+        # whichever figure happens to be nearest by bbox gap.
+        claimed=None
+        for y in CUTS:
+            if not touches(q,y): continue
+            cands=[z for z in big if touches(z,y) and xov(q,z)>st[q,2]*0.3]
+            if cands: claimed=max(cands,key=lambda z:xov(q,z)); break
+        if claimed is not None:
+            owner[q]=claimed; continue
         b=min(big,key=lambda z:gap(q,z))
         if gap(q,b)<W*0.06:owner[q]=b
     frames=[]

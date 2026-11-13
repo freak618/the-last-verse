@@ -75,6 +75,18 @@ walked.
 typical standing figure is the same height, measured with an interquartile mean
 so a kick, a flame aura or a knockdown cannot drag a sheet's measure around.
 
+## Rows are split on a quiet line, and limbs cross it
+
+`regrid2.py` separates the source rows along the quietest horizontal line it can
+find in each band. A figure that reaches past that line gets severed by it --
+Vanitylette's uppercut raises a fist into the row above.
+
+A severed piece attaches to the figure on the other side of the split line that
+it lines up with horizontally, not to whichever figure is nearest by bounding
+box. Nearest-by-box put her fist on her projectile frame one row up, which left
+a disembodied flaming fist floating under her *and* an uppercut with no fist on
+it -- two broken frames from one bad attachment.
+
 ## Checking a cut
 
 Three checks catch nearly everything:
@@ -87,6 +99,7 @@ Three checks catch nearly everything:
   movement rows, the per-sheet scale is wrong. If one animation's frames are
   all an identical height well under the others, they are being clipped — a
   staggered source sheet spilling into the band below does this.
-- **Look at the effects on a dark background.** Coverage and height cannot see
-  a hue that came out wrong, and a green fringe or a recoloured glow is obvious
-  by eye and invisible to both numbers.
+- **Render every frame and look at it.** Coverage and height are blind to a
+  hue that came out wrong and to art landing in the wrong frame. A green fringe,
+  a recoloured glow, a stray fist under a fighter and a missing one above her
+  are all obvious by eye and all passed both numeric checks clean.
