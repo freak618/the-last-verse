@@ -913,8 +913,23 @@ function buildCustom(rec,img){
   const scale=refHeight()/charH*(rec.size||1);
   return{img,ok:true,tex:'cust_'+rec.id,found,meta:{frames,chars:{[rec.id]:{anims,scale,charH,rate:+A.meta.rate||0}}}};
 }
+/* A sheet uploaded for one of the coming-soon fighters fills their slot
+   rather than adding a stranger: they keep their name, look, special and
+   stats and simply become playable. SOON_SLOT remembers the placeholder so
+   deleting the upload puts them back as coming soon. */
+const SOON_SLOT={};
+const soonKey=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function soonMatch(name){const k=soonKey(name);if(!k)return null;
+  return CHARS.find(c=>isSoon(c)&&(soonKey(c.name)===k||soonKey(c.id)===k))||null}
 function customChar(rec){
   const st={fast:[1.12,.92],heavy:[.9,1.15]}[rec.style]||[1,1.02];
+  const slot=rec.fills&&SOON_SLOT[rec.fills];
+  if(slot){ /* they are who they already are; the sheet is the part that was missing */
+    const c={...slot,custom:true,sprite:rec.id};delete c.cut;
+    if(rec.special&&rec.special!=='Signature')c.special=rec.special;
+    if(rec.proj&&rec.proj!=='bass')c.proj=rec.proj;
+    if(rec.style==='fast'||rec.style==='heavy'){c.speed=st[0];c.power=st[1]}
+    return c}
   return{id:rec.id,custom:true,sprite:rec.id,name:rec.name,title:'Your fighter',accent:'#ffd21a',shoulder:-112,speed:st[0],power:st[1],
     proj:rec.proj||'bass',special:rec.special||'Signature',ultra:'ALL IN',finisher:'LAST WORD',line:"New face. Same rain. Let's go."};
 }
@@ -922,8 +937,11 @@ function loadImg(src){return new Promise((res,rej)=>{const im=new Image();im.onl
 function sheetImage(rec){return loadImg(rec.png).then(im=>{if(!rec.faceLeft)return im;
   const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.translate(c.width,0);g.scale(-1,1);g.drawImage(im,0,0);return loadImg(c.toDataURL('image/png'))})}
 function registerCustom(rec,img){
-  CUSTOM[rec.id]=buildCustom(rec,img);const c=customChar(rec),i=CHARS.findIndex(x=>x.id===rec.id);
+  CUSTOM[rec.id]=buildCustom(rec,img);const i=CHARS.findIndex(x=>x.id===rec.id);
+  if(i>=0&&isSoon(CHARS[i])){SOON_SLOT[rec.id]=SOON_SLOT[rec.id]||CHARS[i];rec.fills=rec.fills||rec.id}
+  const c=customChar(rec);
   if(i>=0)CHARS[i]=c;else CHARS.push(c);
+  if(typeof BUST!=='undefined')delete BUST[rec.id];
   if(typeof PORT!=='undefined')for(const k in PORT)if(k.startsWith(rec.id))delete PORT[k];
   return c;
 }
@@ -938,7 +956,9 @@ function loadSavedFighters(){
 function loadOne(rec){[rec].forEach(rec=>sheetImage(rec).then(im=>{if(customRecs.some(r=>r.id===rec.id))return;registerCustom(rec,im);customRecs.push(rec);if(G.mode==='select'&&!G.importOpen&&G.type!=='online')showSelect()}).catch(()=>{}));
 }
 function removeCustom(id){
-  delete CUSTOM[id];const i=CHARS.findIndex(c=>c.id===id);if(i>=0)CHARS.splice(i,1);
+  delete CUSTOM[id];const i=CHARS.findIndex(c=>c.id===id);
+  if(i>=0){if(SOON_SLOT[id])CHARS[i]=SOON_SLOT[id];else CHARS.splice(i,1)}
+  if(typeof BUST!=='undefined')delete BUST[id];
   customRecs=customRecs.filter(r=>r.id!==id);G.pick=G.pick.filter(c=>c.id!==id);saveFighters();
 }
 /* single-pose fighters are animated like puppets: the upper body pivots at the hips, the whole body leans, squashes and bounces */
@@ -3337,6 +3357,9 @@ function showImport(msg){
     ${list?`<div class="tbl"><table><thead><tr><th>On the roster</th><th>Special</th><th></th></tr></thead><tbody>${list}</tbody></table></div>`:''}`);
   const inp=document.getElementById('cfFiles');inp.onchange=()=>{const fl=[...inp.files];inp.value='';cfRead(fl)};
   ['cfSize','cfFace'].forEach(id=>document.getElementById(id).onchange=cfPreview);
+  const nmEl=document.getElementById('cfName');
+  if(nmEl)nmEl.oninput=()=>{const h=soonMatch(nmEl.value),b=document.getElementById('cfSave');
+    if(b)b.textContent=h?'Unlock '+h.name:'Add to roster'};
 }
 const cfFiles={png:null,atlas:null,name:''};
 function readAs(file,how){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Couldn’t read '+file.name));how==='text'?r.readAsText(file):r.readAsDataURL(file)})}
@@ -3367,14 +3390,16 @@ async function cfPreview(){
 }
 async function cfSave(){
   if(!cfPend)return;const v=id=>document.getElementById(id).value;
-  const rec={id:'cf'+Date.now().toString(36),name:(v('cfName').trim()||'Fighter').slice(0,18),special:(v('cfSpecial').trim()||'Signature').slice(0,22),
+  const hit=soonMatch(v('cfName'));
+  const rec={id:hit?hit.id:'cf'+Date.now().toString(36),fills:hit?hit.id:null,
+    name:hit?hit.name:(v('cfName').trim()||'Fighter').slice(0,18),special:(v('cfSpecial').trim()||'Signature').slice(0,22),
     proj:v('cfProj'),style:v('cfStyle'),size:+v('cfSize'),faceLeft:v('cfFace')==='l',png:cfFiles.png,atlas:cfFiles.atlas};
   try{const im=await sheetImage(rec);registerCustom(rec,im)}catch(e){document.getElementById('cfStatus').textContent=e.message;return}
   customRecs.push(rec);delete CUSTOM.__preview;cfFiles.png=cfFiles.atlas=null;cfFiles.name='';
   const kept=saveFighters();
   const note=kept?'':` This sheet is too big for the browser to remember, so ${rec.name} stays only until you close the page.`;
   if(G.type&&G.mode==='select'){G.importOpen=false;showSelect();const card=ov.querySelector(`.card[data-i="${CHARS.length-1}"]`);if(card)card.focus();if(note)document.getElementById('info').textContent=note}
-  else showImport(`${rec.name} joined the roster. Pick them on any fighter select screen.${note}`);
+  else showImport(`${rec.name} ${hit?'is unlocked and on the roster':'joined the roster'}. Pick them on any fighter select screen.${note}`);
 }
 const ACT={
   jb(d){const c=d.c;if(c==='play')jbToggle();else if(c==='next')jbNext();else if(c==='prev')jbPrev();else if(c==='shuffle'){S.jbRandom=!S.jbRandom;saveS();jbPaint()}else if(c==='repeat'){JB.repeat={all:'one',one:'off',off:'all'}[JB.repeat];jbPaint()}},
