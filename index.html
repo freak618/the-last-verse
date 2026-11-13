@@ -2707,6 +2707,12 @@ class AI{
   constructor(lvl){this.l=lvl;this.timer=0;this.plan={move:null,block:false};this.react=Math.round(26-16*lvl)}
   get(me,opp){
     const inp={...NONE},dx=opp.x-me.x,dist=Math.abs(dx),tw=dx>0?'right':'left',aw=dx>0?'left':'right';
+    /* bring the other half of the bill in: when the one on stage is worn down
+       and the one waiting is fresher, or to cash in the hurt-partner burst */
+    if(tagOn()){const i=me===G.f1?0:me===G.f2?1:-1;
+      if(i>=0&&G.tagCD[i]===0&&!me.atk&&me.stun===0&&me.ground&&dist>120){
+        const bench=G.teamHP[i][1-G.act[i]];
+        if(bench>0&&((me.hp<45&&bench>me.hp+15)||(bench<=TAG_HURT&&me.hp>70))&&Math.random()<.02+.03*this.l){inp.assist=true;return inp}}}
     const apply=()=>{if(this.plan.move)inp[this.plan.move==='tw'?tw:aw]=true;if(this.plan.block)inp.down=true};
     if(canFinish(me,opp)&&Math.random()<.04+.1*this.l){inp.finish=true;return inp}
     if(me.atk&&me.atk.hit&&me.atk.type==='punch'&&Math.random()<this.l*.5){inp.kick=true;return inp}
@@ -2740,7 +2746,7 @@ const rndStage=()=>Math.random()*STAGES.length|0;
 function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
   {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600}
   Object.assign(G,{c1,c2,ai1,ai2,stage,demo,need,round:1,wins:[0,0],mods:(!demo&&G.type==='pvp'&&FE.pendingMods)||{}});FE.pendingMods=null;
-  if(G.type==='features')G.team=[(G.teams&&G.teams[0]||[c1]).slice(0,2),(G.teams&&G.teams[1]||[c2]).slice(0,2)];else G.team=null;
+  if(isFeat(G.type))G.team=[(G.teams&&G.teams[0]||[c1]).slice(0,2),(G.teams&&G.teams[1]||[c2]).slice(0,2)];else G.team=null;
   startRound();
 }
 /* ---------- Features: tag team, on Tekken Tag's rules ----------
@@ -2750,7 +2756,8 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
    for a few seconds. On time, the side with the most health across both
    fighters takes it. */
 const TAG_REGEN=.05,TAG_REGEN_CAP=30,TAG_CD=150,TAG_HURT=30,TAG_BOOST=360,TAG_BOOST_MUL=1.3,TAG_COVER=26;
-const tagOn=()=>G.type==='features'&&!!G.team;
+const isFeat=t=>t==='features'||t==='featcpu';
+const tagOn=()=>isFeat(G.type)&&!!G.team;
 const tagChar=i=>tagOn()?G.team[i][G.act[i]]:(i?G.c2:G.c1);
 const tagLive=i=>i?G.f2:G.f1;
 /* a side's health is both halves of it, which is what decides a time-out */
@@ -2786,7 +2793,7 @@ function tagTick(){
   }
 }
 function startRound(){
-  if(G.type==='features'&&G.team){G.act=[0,0];G.teamHP=[[100,100],[100,100]];G.tagCD=[0,0];G.boost=[0,0];G.benchCap=[100,100]}
+  if(isFeat(G.type)&&G.team){G.act=[0,0];G.teamHP=[[100,100],[100,100]];G.tagCD=[0,0];G.boost=[0,0];G.benchCap=[100,100]}
   G.f1=new Fighter(tagChar(0),WW/2-180,1);G.f2=new Fighter(tagChar(1),WW/2+180,-1);
   const cr=G.demo?[null,null]:(G.crew||[null,null]);G.f1.crewId=cr[0]||null;G.f2.crewId=cr[1]||null;
   Object.assign(G,{projs:[],parts:[],decals:[],assists:[],ripples:[],flashes:[],timer:(G.type!=='online'&&!G.demo&&S.roundTime?S.roundTime:60)*60,noTimer:G.type!=='online'&&!G.demo&&S.roundTime===0,roundEnd:null,fin:null,superFlash:null,hitstop:0,shake:0,lock:G.type==='training'&&!G.demo?40:100});
@@ -3481,6 +3488,7 @@ function afterPicks(){
   {
     const c=G.pick[0];
     if((G.type==='pvp'||G.type==='features'||G.type==='training'||G.type==='watch')&&G.pick.length<2){showSelect();return}
+    if(G.type==='featcpu'&&G.pick.length<2){const pool=playable().filter(x=>x!==c);G.pick.push(rnd(pool))}
     if(G.type==='story'){
       const pool=shuffle(playable().filter(x=>x!==c));
       G.story={order:pool,i:0};showLadderCard();return;
@@ -4761,6 +4769,7 @@ const FE_CATS=()=>[
   {id:'versus',name:'Versus',modes:[
     {id:'pvp',name:'Local Versus',glyph:'⚔',desc:'Two players, one keyboard or two controllers. Enter a Verse Code on the VS screen.'},
     {id:'features',name:'Features',glyph:'✌',desc:'Tag team. Two fighters a side, swap whenever you like. Whoever is waiting gets their wind back — but if either one drops, the round is gone.'},
+    {id:'featcpu',name:'Features vs CPU',glyph:'✦',desc:'Tag team against the CPU. Pick two; it picks two of its own and tags when it suits it.'},
     {id:'cpu',name:'Vs CPU',glyph:'☠',desc:'Pick your fighter. The CPU picks its own.'},
     (window.claude?{id:'online',name:'Online',glyph:'◉',soon:'On itch.io',desc:'Online play at freak618.itch.io/the-last-verse'}:{id:'online',name:'Online',glyph:'◉',desc:'Host a match or join a friend with a four-letter code.'}),
     {id:'watch',name:'Spectate',glyph:'◎',desc:'Pick both fighters and the stage, then sit back. The CPU plays both sides.'}]},
@@ -4837,12 +4846,12 @@ function showSelect(){
   const n=roster.length+1,cols=clamp(Math.ceil(n/4),10,16),rows=Math.ceil(n/cols);
   const rIdx=Math.min(roster.length,Math.floor((rows-1)/2)*cols+Math.floor(cols/2));
   const tiles=roster.slice();tiles.splice(rIdx,0,'random');
-  const two=t==='pvp'||t==='features',ctl=[0,two?1:0];
-  const label={features:['Player One','Player Two'],pvp:['Player One','Player Two'],cpu:['Player One','CPU'],story:['Player One','???'],tower:['Player One','???'],training:['Player One','Sparring partner'],online:['You','Opponent'],watch:['CPU One','CPU Two']}[t]||['Player One','Player Two'];
-  const title={story:'Story',features:'Features',tower:'Towers',pvp:'Local Versus',cpu:G.mirror?'Mirror Match':'Vs CPU',training:'Training',online:'Online',watch:'Spectate'}[t]||'';
+  const two=t==='pvp'||t==='features',ctl=[0,two?1:0];   /* featcpu: the CPU takes the other side */
+  const label={features:['Player One','Player Two'],featcpu:['Player One','CPU'],pvp:['Player One','Player Two'],cpu:['Player One','CPU'],story:['Player One','???'],tower:['Player One','???'],training:['Player One','Sparring partner'],online:['You','Opponent'],watch:['CPU One','CPU Two']}[t]||['Player One','Player Two'];
+  const title={story:'Story',features:'Features',featcpu:'Features vs CPU',tower:'Towers',pvp:'Local Versus',cpu:G.mirror?'Mirror Match':'Vs CPU',training:'Training',online:'Online',watch:'Spectate'}[t]||'';
   feShow(`<div class="fe fe-sel"><video class="fe-bgvid" src="media/selectbg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="fe-bgtint"></div>
       <div class="fe-side l" id="side0"><div class="fe-art" id="art0"></div><div class="fe-plate"><span class="who">${label[0]}</span><b id="nm0">—</b><i id="tt0"></i><div class="fe-crew" id="cr0"></div></div></div>
-      <div class="fe-gridwrap"><div class="fe-sh"><div class="fe-sellogo" aria-hidden="true">The Last Verse</div><span class="chip">${esc(title)}</span><h2>${t==='watch'?'Choose both fighters':t==='features'?'Choose two fighters':'Choose your fighter'}</h2></div>
+      <div class="fe-gridwrap"><div class="fe-sh"><div class="fe-sellogo" aria-hidden="true">The Last Verse</div><span class="chip">${esc(title)}</span><h2>${t==='watch'?'Choose both fighters':isFeat(t)?'Choose two fighters':'Choose your fighter'}</h2></div>
         <div class="fe-grid" id="feGrid" style="--cols:${cols}"></div><p class="fe-ginfo" id="gInfo"></p>
         ${soonList.length?`<div class="fe-soonbox"><span class="fe-soonh">Coming soon</span><div class="fe-soongrid" id="feSoon"></div></div>`:''}</div>
       <div class="fe-side r" id="side1"><div class="fe-art" id="art1"></div><div class="fe-plate"><span class="who">${label[1]}</span><b id="nm1">—</b><i id="tt1"></i><div class="fe-crew" id="cr1"></div></div></div>
@@ -4885,7 +4894,7 @@ function showSelect(){
     sides.forEach(setSide);
     const s=sides.find(s=>s.active&&!s.locked)||sides[0],c=charAt(s.cur);
     info.innerHTML=c==='random'?'<b>Random</b> · let the block decide':c&&!isUnlocked(c)?`<b>Locked</b> · ${esc(UNLOCK_HOW[c.unlock]||'')}`:c?`<b>${esc(c.name)}</b> · Special: ${esc(c.special)} · Ultra: ${esc(cap(c.ultra))} · Finisher: ${esc(cap(c.finisher))}`:'';
-    if(t==='features'&&s.picks&&s.picks.length===1)info.innerHTML=`<b>${esc(s.picks[0].name)}</b> is on the track · now pick the feature`;
+    if(isFeat(t)&&s.picks&&s.picks.length===1)info.innerHTML=`<b>${esc(s.picks[0].name)}</b> is on the track · now pick the feature`;
   }
   function move(s,d){
     const r=Math.floor(s.cur/cols),c=s.cur%cols,L=k=>Math.min(cols,tiles.length-k*cols);
@@ -4897,7 +4906,7 @@ function showSelect(){
   function lockFighter(s,c){
     s.locked=c;s.live.c=c;s.live.pose='win';s.live.poseT=70;s.live.flash=6;SFX.lock();feShake();say(c.name);
     const tl=tileEls[tiles.indexOf(c)];if(tl){tl.classList.remove('slam');void tl.offsetWidth;tl.classList.add('slam')}
-    if(t==='features'){                                  /* a feature needs two names on it */
+    if(isFeat(t)){                                       /* a feature needs two names on it */
       (s.picks=s.picks||[]).push(c);
       if(s.picks.length<2){s.locked=null;setSide(s);paint();return}
       s.locked=s.picks[0]}
@@ -4910,10 +4919,10 @@ function showSelect(){
       const c=charAt(s.cur);
       if(c==='random'){roulette(s);return}
       if(!c||!isUnlocked(c)){SFX.navno();return}
-      if(t==='features'&&s.picks&&s.picks.includes(c)){SFX.navno();return}  /* nobody features themselves */
+      if(isFeat(t)&&s.picks&&s.picks.includes(c)){SFX.navno();return}  /* nobody features themselves */
       lockFighter(s,c);return}
     if(a==='back'){
-      if(t==='features'&&!s.done&&s.picks&&s.picks.length){s.picks.pop();s.locked=null;SFX.navback();setSide(s);paint();return}
+      if(isFeat(t)&&!s.done&&s.picks&&s.picks.length){s.picks.pop();s.locked=null;SFX.navback();setSide(s);paint();return}
       if(s.done){s.done=false;s.locked=null;s.picks=null;s.crewList=null;SFX.navback();paint();return}
       if(s.locked){s.locked=null;s.crewList=null;SFX.navback();paint();return}
       if((t==='training'||t==='watch')&&s.si===1){sides[1].active=false;sides[0].done=false;sides[0].crewList&&setSide(sides[0]);SFX.navback();paint();return}
@@ -4926,6 +4935,16 @@ function showSelect(){
   }
   function check(){
     if((t==='training'||t==='watch')&&sides[0].done&&!sides[1].active){sides[1].active=true;sides[1].ctrl=0;sides[1].cur=sides[0].cur;paint();return}
+    if(t==='featcpu'&&sides[0].done&&!sides[1].done){
+      const s1=sides[1],mine=sides[0].picks||[];s1.picks=[];s1.active=true;let n=0;
+      const roll=()=>{
+        const pool=playable().filter(x=>!s1.picks.includes(x));
+        const c=rnd(pool);s1.cur=Math.max(0,tiles.indexOf(c));paint();SFX.navtick();
+        if(++n%10)return feLater(roll,55+n*4);
+        s1.picks.push(c);s1.live.c=c;SFX.lock();say(c.name);
+        if(s1.picks.length<2)return feLater(roll,260);
+        s1.active=false;s1.locked=s1.picks[0];s1.done=true;s1.crewList=null;paint();check()};
+      roll();return}
     if(t==='cpu'&&sides[0].done&&!sides[1].locked){
       const pool=playable().filter(x=>x!==sides[0].locked);const s1=sides[1];s1.active=true;let n=0;
       const spin=()=>{const c=G.mirror?sides[0].locked:rnd(pool);s1.cur=tiles.indexOf(c);paint();SFX.navtick();if(++n<12)feLater(spin,60+n*8);else{s1.active=false;s1.locked=c;s1.live.c=c;SFX.lock();say(c.name);s1.done=true;s1.crewList=null;paint();feLater(finish,900)}};spin();return}
@@ -4937,7 +4956,7 @@ function showSelect(){
     FE.lastPick=s0.locked;G.pick=[s0.locked];G.crew=[s0.crewList?s0.crewList[s0.crewI].id:null,null];
     if(online){netPick(s0.locked,G.crew[0]);return}
     if(s1.locked){G.pick.push(s1.locked);G.crew[1]=s1.crewList?s1.crewList[s1.crewI].id:null}
-    G.teams=t==='features'?[(s0.picks||[s0.locked]),(s1.picks||[s1.locked])]:null;
+    G.teams=isFeat(t)?[(s0.picks||[s0.locked]),(s1.picks||[s1.locked])]:null;
     feGate(()=>afterPicks());
   }
   FE.cur={id:'select',
@@ -5193,7 +5212,7 @@ function launchPicked(stage){
   chEl.textContent={pvp:'Rust City · 2 Players',cpu:'Rust City · Vs CPU',training:'Rust City · Training',watch:'Rust City · Spectating'}[G.type]||chEl.textContent;
   const go=()=>{
     if(G.type==='training'){G.dummy='stand';G.lastCombo=null;startMatch(G.pick[0],G.pick[1],{stage});beginFight();return}
-    startMatch(G.pick[0],G.pick[1],{ai1:G.type==='watch'?new AI(CPU_LVL[S.cpu]||.6):null,ai2:G.type==='cpu'||G.type==='watch'?new AI(CPU_LVL[S.cpu]||.6):null,stage,need:S.need||2});beginFight()};
+    startMatch(G.pick[0],G.pick[1],{ai1:G.type==='watch'?new AI(CPU_LVL[S.cpu]||.6):null,ai2:G.type==='cpu'||G.type==='featcpu'||G.type==='watch'?new AI(CPU_LVL[S.cpu]||.6):null,stage,need:S.need||2});beginFight()};
   feVS({c1:G.pick[0],c2:G.pick[1],stage,go,codes:G.type==='pvp'});
 }
 
