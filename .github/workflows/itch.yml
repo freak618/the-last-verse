@@ -21,8 +21,16 @@ jobs:
       - name: Gather the game files
         if: env.BUTLER_API_KEY != ''
         run: |
+          # Every asset folder ships, not a hand-written list: stages/ was added
+          # later and went missing from itch for weeks because the list was not
+          # updated with it. Anything new the game loads now goes automatically.
           mkdir build
-          cp -r index.html sheets music media sfx build/
+          cp index.html build/
+          for d in */; do
+            [ "$d" = "build/" ] && continue
+            cp -r "$d" build/
+          done
+          echo "shipping:" && ls build/
       - name: Install butler
         if: env.BUTLER_API_KEY != ''
         run: |
