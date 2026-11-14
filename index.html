@@ -1362,6 +1362,34 @@ const STAGES=[
  },
  nmStage("img00","Fog Street",[81, 81, 83],[251, 249, 240],"fog",false,0),
  nmStage("img18","Old Cemetery",[59, 63, 65],[208, 231, 223],"fog",false,18),
+ { id:'alley',name:'Neon Alley',img:'alley',full:{scale:0.4263,feet:1398/1664,p:.15,floor:1198,bands:[[0,1198,.16]],pNear:1.06},indoor:false,dry:false,wet:true,ambient:[110,70,140],grade:'#7a3a9a',rim:'rgba(210,140,255,.45)',farTone:'none',shadowL:[{x:1180,y:-280,a:.34}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'hauntedhouse',name:'The Haunted House',img:'hauntedhouse',full:{scale:0.4263,feet:1464/1664,p:.15,floor:1300,bands:[[0,1300,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[62,76,120],grade:'#3a4a80',rim:'rgba(165,195,255,.45)',farTone:'none',shadowL:[{x:1248,y:-620,a:.30}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'neontunnel',name:'The Neon Tunnel',img:'neontunnel',full:{scale:0.4263,feet:1364/1664,p:.15,floor:1050,bands:[[0,1050,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[120,70,130],grade:'#8a3a7a',rim:'rgba(255,130,205,.45)',farTone:'none',shadowL:[{x:1248,y:-300,a:.32}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'backyard',name:'Backyard Wrestling',img:'backyard',full:{scale:0.4263,feet:1162/1453,p:.15,floor:980,bands:[[0,980,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[72,78,108],grade:'#44507a',rim:'rgba(190,210,255,.40)',farTone:'none',shadowL:[{x:1960,y:-360,a:.36}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'midway',name:'The Midway',img:'midway',full:{scale:0.4263,feet:1464/1664,p:.15,floor:1310,bands:[[0,1310,.16]],pNear:1.06},indoor:false,dry:false,wet:true,ambient:[112,72,72],grade:'#8a3030',rim:'rgba(255,150,120,.42)',farTone:'none',shadowL:[{x:1300,y:-420,a:.30}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'warehouse',name:'The Warehouse',img:'warehouse',full:{scale:0.4263,feet:1398/1664,p:.15,floor:1130,bands:[[0,1130,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[82,88,112],grade:'#45506e',rim:'rgba(195,210,255,.45)',farTone:'none',shadowL:[{x:1248,y:-340,a:.34}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'juggalette',name:'Miss Juggalette Contest',img:'juggalette',full:{scale:0.4263,feet:1208/1405,p:.15,floor:1010,bands:[[0,1010,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[150,102,142],grade:'#b04a86',rim:'rgba(255,175,222,.40)',farTone:'none',shadowL:[{x:1248,y:-330,a:.30}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
 ];
 function getCache(stg,key,make){if(!stg[key])stg[key]=make();return stg[key]}
 function midCanvas(stg){return getCache(stg,'_mid',()=>{const c=document.createElement('canvas');c.width=WW*R;c.height=H*R;const g=c.getContext('2d');g.scale(R,R);stg.build(g);return c})}
@@ -1369,7 +1397,7 @@ function fgCanvas(stg){return getCache(stg,'_fg',()=>{const c=document.createEle
 const STIMG={};
 for(const k in ASSET.stages){const im=new Image();im.onload=()=>{im.ok=true};im.src=ASSET.stages[k];STIMG[k]=im}
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',sodaplant:'jg_sodaplant',mansion:'jg_mansion',hellpit:'jg_hellpit'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',sodaplant:'jg_sodaplant',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',backyard:'backyard',midway:'midway',warehouse:'warehouse',juggalette:'juggalette'};
 for(const k in STAGE_FILES)if(!STIMG[k]){const im=new Image();im.onload=()=>{im.ok=true};im.src='stages/'+STAGE_FILES[k]+'.webp';STIMG[k]=im}
 function farCanvas(stg){
   const im=STIMG[stg.img];if(!im||!im.ok)return null;
