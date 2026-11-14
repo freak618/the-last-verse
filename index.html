@@ -373,7 +373,11 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 .fe-cn.hit{animation:feSlam .3s}
 .fe-h.big{font-size:9cqw;color:#ff3a2a}
 /* options */
-.fe-opts{justify-content:flex-start;padding-top:2cqw;gap:1cqw}
+/* Tag made the controls list ten rows; tighten it so the last row clears the buttons */
+.fe-opts .tbl td{padding-top:.08em;padding-bottom:.08em}
+.fe-opts .tbl th{padding-top:.1em;padding-bottom:.1em}
+.fe-opts .tbl .key{padding-top:.18em;padding-bottom:.18em}
+.fe-opts{justify-content:flex-start;padding-top:1.2cqw;gap:.7cqw}
 .fe-tabs{display:flex;gap:.4cqw;flex-wrap:wrap;justify-content:center}
 .fe-tab{font-family:var(--head);font-weight:700;font-size:2.3cqw;line-height:1;text-transform:uppercase;letter-spacing:.08em;padding:.45cqw 1.8cqw .2cqw;background:rgba(32,24,20,.85);border:.15cqw solid #4a3a2a;color:#a89880;cursor:pointer}
 .fe-tab.on{color:#fff3d6;border-color:var(--bronze);background:#6a0c10}
@@ -738,13 +742,13 @@ const ov=document.getElementById('ov'),chEl=document.getElementById('ch');
 const pauseBtn=document.getElementById('pauseBtn'),muteBtn=document.getElementById('muteBtn'),setBtn=document.getElementById('setBtn');
 
 /* ---------- settings (saved in this browser) ---------- */
-const ACTS=['left','right','up','down','punch','kick','special','ultra','finish'];
-const ACT_LABEL={left:'Left',right:'Right',up:'Jump',down:'Block',punch:'Punch',kick:'Kick',special:'Special',ultra:'Ultra',finish:'Finisher'};
+const ACTS=['left','right','up','down','punch','kick','special','ultra','finish','assist'];  /* assist == the tag button; last so the netplay bitmask keeps its order */
+const ACT_LABEL={left:'Left',right:'Right',up:'Jump',down:'Block',punch:'Punch',kick:'Kick',special:'Special',ultra:'Ultra',finish:'Finisher',assist:'Tag'};
 const DEF_BINDS={
   p1:{left:'KeyA',right:'KeyD',up:'KeyW',down:'KeyS',punch:'KeyJ',kick:'KeyK',special:'KeyL',ultra:'KeyO',assist:'KeyU',finish:'KeyI'},
   p2:{left:'ArrowLeft',right:'ArrowRight',up:'ArrowUp',down:'ArrowDown',punch:'Comma',kick:'Period',special:'Slash',ultra:'Semicolon',assist:'Quote',finish:'BracketRight'}};
 const NUMPAD={punch:'Numpad1',kick:'Numpad2',special:'Numpad3',ultra:'Numpad4',assist:'Numpad5',finish:'Numpad0'};
-const PAD_ACTS=['punch','kick','special','ultra','finish'],PAD_NC=PAD_ACTS;
+const PAD_ACTS=['punch','kick','special','ultra','finish','assist'],PAD_NC=PAD_ACTS;
 const DEF_PAD={punch:2,kick:0,special:1,ultra:3,assist:5,finish:4};
 const BTN_NAME=['A','B','X','Y','LB','RB','LT','RT','Back','Start','L-Stick','R-Stick','D-Up','D-Down','D-Left','D-Right','Home'];
 const btnLabel=i=>BTN_NAME[i]?`${BTN_NAME[i]} (${i})`:`Button ${i}`;
@@ -5314,7 +5318,7 @@ function showSettings(tab){
   FE.optTab=tab||FE.optTab||'controls';const T=FE.optTab;G.importOpen=false;
   let body='';
   if(T==='controls')body=`<div class="tbl"><table><thead><tr><th>Action</th><th>Player One</th><th>Player Two</th></tr></thead><tbody>
-      ${ACTS.filter(a=>a!=='assist').map(a=>`<tr><td>${ACT_LABEL[a]}</td><td><button class="key" data-act="bind" data-p="p1" data-a="${a}">${keyLabel(S.binds.p1[a])}</button></td><td><button class="key" data-act="bind" data-p="p2" data-a="${a}">${keyLabel(S.binds.p2[a])}</button></td></tr>`).join('')}
+      ${ACTS.map(a=>`<tr><td>${ACT_LABEL[a]}</td><td><button class="key" data-act="bind" data-p="p1" data-a="${a}">${keyLabel(S.binds.p1[a])}</button></td><td><button class="key" data-act="bind" data-p="p2" data-a="${a}">${keyLabel(S.binds.p2[a])}</button></td></tr>`).join('')}
       </tbody></table></div><p class="ov-small">Pick a key, then press the new one. Esc cancels. In menus, Punch selects and Kick goes back. In a fight, hold Block (Down) and press Punch to grab a bottle, brick, pipe or chair off the floor, then press Punch to throw it.</p>
       <p class="ov-small" id="padStatus" style="color:var(--bone)">${padStatusText()}</p>
       <div class="tbl"><table><thead><tr><th>Action</th><th>Pad button</th><th>Action</th><th>Pad button</th></tr></thead><tbody>
