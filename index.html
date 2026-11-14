@@ -560,6 +560,21 @@ body:not(.phone) .frame:not(:fullscreen){width:min(100%,calc((100vh - 20px - 58p
 .fe-mature{position:absolute;inset:0;z-index:60;background:#000;pointer-events:none;opacity:1;transition:opacity .9s ease}
 .fe-mature img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
 .fe-mature.gone{opacity:0}
+.fe-shelves{display:flex;flex-direction:column;justify-content:center;gap:.45cqw;width:100%;min-height:0;padding:.2cqw 0 2.6cqw}
+.fe-shelf{position:relative;flex:0 0 auto;height:5.9cqw;min-height:0;overflow:visible;perspective:1100px;perspective-origin:50% 50%;transition:height .25s ease}
+.fe-shelf.on{height:10.4cqw}
+.fe-shelf .fe-rack{position:absolute;inset:0;transform-style:preserve-3d}
+.fe-shelf .fe-tile{position:absolute;left:50%;top:50%;width:8.6cqw;height:auto;margin:0;padding:0;border:0;background:none;
+  transform:translate(-50%,-50%);transform-origin:50% 50%;transition:transform .22s cubic-bezier(.25,.6,.25,1),opacity .22s ease;will-change:transform}
+.fe-shelf .fe-tile canvas{width:100%;height:auto;display:block;border-radius:.5cqw;box-shadow:0 1.1cqw 2cqw rgba(0,0,0,.62)}
+.fe-shelf .fe-tile.p1 canvas{box-shadow:0 0 0 .22cqw var(--p1,#ffb347),0 1.2cqw 2.4cqw rgba(0,0,0,.7)}
+.fe-shelf .fe-tile.p2 canvas{box-shadow:0 0 0 .22cqw var(--p2,#5ad2ff),0 1.2cqw 2.4cqw rgba(0,0,0,.7)}
+.fe-shelf .fe-tile.rand{display:grid;place-items:center;width:7cqw;aspect-ratio:236/252;background:linear-gradient(180deg,#2a2533,#14111b);
+  border-radius:.5cqw;box-shadow:0 1cqw 2cqw rgba(0,0,0,.6)}
+.fe-shelf .fe-tile.rand .qm{font:700 3.4cqw/1 var(--head);color:#f0e6cf}
+.fe-shlab{position:absolute;left:1.1cqw;top:.3cqw;z-index:80;font:700 .92cqw/1 var(--head);letter-spacing:.34em;
+  color:rgba(238,228,206,.40);text-transform:uppercase;pointer-events:none}
+.fe-shelf.on .fe-shlab{color:rgba(255,196,110,.9)}
 .fe-intro{position:absolute;inset:0;z-index:40;background:#000;pointer-events:none;overflow:hidden}
 .fe-intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .fe-intro.gate video{filter:brightness(.45)}.fe-intro.gate .fe-skip{animation:feSkipPulse 1.6s infinite;opacity:.9;bottom:auto;top:50%;transform:translateY(-50%);font-size:max(14px,2.6cqw)}
@@ -733,7 +748,7 @@ const PAD_ACTS=['punch','kick','special','ultra','finish'],PAD_NC=PAD_ACTS;
 const DEF_PAD={punch:2,kick:0,special:1,ultra:3,assist:5,finish:4};
 const BTN_NAME=['A','B','X','Y','LB','RB','LT','RT','Back','Start','L-Stick','R-Stick','D-Up','D-Down','D-Left','D-Right','Home'];
 const btnLabel=i=>BTN_NAME[i]?`${BTN_NAME[i]} (${i})`:`Button ${i}`;
-let S={tOn:true,tMenus:true,tFloat:true,tAlpha:4,tSize:'medium',blood:true,finishers:true,fx:true,hq:false,sharp:true,crowd:true,shadows:true,binds:JSON.parse(JSON.stringify(DEF_BINDS)),pad:{...DEF_PAD}};
+let S={selCase:true,tOn:true,tMenus:true,tFloat:true,tAlpha:4,tSize:'medium',blood:true,finishers:true,fx:true,hq:false,sharp:true,crowd:true,shadows:true,binds:JSON.parse(JSON.stringify(DEF_BINDS)),pad:{...DEF_PAD}};
 try{const raw=localStorage.getItem('lastverse.settings');if(raw){const s=JSON.parse(raw);S={...S,...s,pad:{...DEF_PAD,...(s.pad||{})},binds:{p1:{...DEF_BINDS.p1,...((s.binds||{}).p1||{})},p2:{...DEF_BINDS.p2,...((s.binds||{}).p2||{})}}}}}catch(e){}
 S.hq=false;
 function saveS(){try{localStorage.setItem('lastverse.settings',JSON.stringify(S))}catch(e){}}
@@ -3205,6 +3220,57 @@ function bust(c){
   const v=g.createLinearGradient(0,H2*.6,0,H2);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=v;g.fillRect(0,0,W2,H2);
   if(ok)BUST[c.id]=cv;return cv;
 }
+/* A fighter as a CD jewel case: the whole figure on the cover over a wash of
+   their own aura colour, their name printed down the spine, plastic over it. */
+const CASE={};
+function cdcase(c){
+  const key=c.id;if(CASE[key])return CASE[key];
+  const W=236,H=252,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const g=cv.getContext('2d'),R=W*.022,A=c.aura||'#b3121f';
+  const rgb=[1,3,5].map(i=>parseInt(A.slice(i,i+2),16)),tint=a=>`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+  g.fillStyle='#0c0a11';g.beginPath();g.roundRect(0,0,W,H,R);g.fill();
+  const px=W*.035,py=H*.032,pw=W-px*2,ph=H-py*2,spineW=pw*.085,cx0=px+spineW,cw=pw-spineW;
+  const bg=g.createRadialGradient(cx0+cw*.5,py+ph*.42,cw*.06,cx0+cw*.5,py+ph*.55,cw*.8);
+  bg.addColorStop(0,tint(.55));bg.addColorStop(.55,tint(.17));bg.addColorStop(1,'rgba(8,6,12,.96)');
+  g.fillStyle=bg;g.fillRect(cx0,py,cw,ph);
+  g.save();g.beginPath();g.rect(cx0,py,cw,ph);g.clip();
+  const M=c.cut&&CUT.ok&&CUT.meta.chars[c.cut];
+  if(M){const fr=CUT.meta.frames[M.full],pad=ph*.10;
+    const sc=Math.min((ph-pad)/fr[3],cw*.92/fr[2]),dw=fr[2]*sc,dh=fr[3]*sc;
+    g.shadowColor='rgba(0,0,0,.65)';g.shadowBlur=W*.05;g.shadowOffsetY=H*.012;
+    g.drawImage(CUT.img,fr[0],fr[1],fr[2],fr[3],cx0+cw*.5-dw*.5,py+ph-dh-ph*.13,dw,dh);
+    g.shadowColor='transparent'}
+  const band=g.createLinearGradient(0,py+ph*.70,0,py+ph);
+  band.addColorStop(0,'rgba(6,5,10,0)');band.addColorStop(.45,'rgba(6,5,10,.80)');band.addColorStop(1,'rgba(6,5,10,.96)');
+  g.fillStyle=band;g.fillRect(cx0,py+ph*.70,cw,ph*.30);
+  g.fillStyle=A;g.fillRect(cx0+cw*.07,py+ph*.845,cw*.18,Math.max(2,H*.009));
+  g.fillStyle='#f6f1e6';g.textAlign='left';g.textBaseline='alphabetic';
+  let size=H*.085;const maxw=cw*.86;
+  g.font=`700 ${size}px "Barlow Condensed",system-ui,sans-serif`;
+  while(g.measureText(c.name.toUpperCase()).width>maxw&&size>7){size-=1;g.font=`700 ${size}px "Barlow Condensed",system-ui,sans-serif`}
+  g.fillText(c.name.toUpperCase(),cx0+cw*.07,py+ph*.955);
+  g.restore();
+  const sp=g.createLinearGradient(px,0,px+spineW,0);
+  sp.addColorStop(0,'rgba(10,8,14,.98)');sp.addColorStop(1,tint(.34));
+  g.fillStyle=sp;g.fillRect(px,py,spineW,ph);
+  g.save();g.translate(px+spineW*.72,py+ph*.93);g.rotate(-Math.PI/2);
+  g.fillStyle='rgba(246,241,230,.80)';g.textAlign='left';
+  g.font=`600 ${spineW*.52}px "Barlow Condensed",system-ui,sans-serif`;
+  g.fillText(c.name.toUpperCase(),0,0);g.restore();
+  g.save();g.beginPath();g.roundRect(0,0,W,H,R);g.clip();
+  const sh=g.createLinearGradient(0,H,W*.9,0);
+  sh.addColorStop(0,'rgba(255,255,255,0)');sh.addColorStop(.46,'rgba(255,255,255,0)');
+  sh.addColorStop(.52,'rgba(255,255,255,.11)');sh.addColorStop(.58,'rgba(255,255,255,0)');
+  g.fillStyle=sh;g.fillRect(0,0,W,H);
+  g.fillStyle='rgba(255,255,255,.07)';g.fillRect(W-W*.035,0,W*.035,H);g.restore();
+  g.strokeStyle='rgba(255,255,255,.26)';g.lineWidth=1;g.beginPath();g.roundRect(.5,.5,W-1,H-1,R);g.stroke();
+  g.strokeStyle='rgba(0,0,0,.65)';g.beginPath();g.roundRect(1.5,1.5,W-3,H-3,R*.9);g.stroke();
+  if(CUT.ok)CASE[key]=cv;return cv;
+}
+function shelfOf(c){const ch=(c.name||'?').trim()[0].toUpperCase();
+  return ch<='E'?0:ch<='K'?1:ch<='R'?2:3}
+const SHELF_LABEL=['A – E','F – K','L – R','S – Z'];
+
 function bigArt(c,mirror){
   const key=c.id+(mirror?'m':'');if(BIG[key])return BIG[key];
   const cv=document.createElement('canvas');cv.width=480;cv.height=560;const g=cv.getContext('2d');
@@ -4869,37 +4935,57 @@ function showSelect(){
   G.mode='select';G.importOpen=false;G.pick=[];G.crew=[null,null];
   const soonList=CHARS.filter(isSoon);
   const roster=CHARS.filter(c=>!c.villain&&!isSoon(c)&&!(online&&c.custom)).sort((a,b)=>(a.unlock?1:0)-(b.unlock?1:0)||(a.cameo?1:0)-(b.cameo?1:0)||(a.sheet?0:1)-(b.sheet?0:1));  /* sprite fighters lead the grid; unlockables close it */
-  const n=roster.length+1,cols=clamp(Math.ceil(n/4),10,16),rows=Math.ceil(n/cols);
-  const rIdx=Math.min(roster.length,Math.floor((rows-1)/2)*cols+Math.floor(cols/2));
-  const tiles=roster.slice();tiles.splice(rIdx,0,'random');
+  const CASES=S.selCase!==false;
+  let cols,rows,tiles,SHELVES=null,POS=null;
+  if(CASES){
+    /* four alphabetical shelves; random rides at the head of the first */
+    SHELVES=[0,1,2,3].map(i=>({label:SHELF_LABEL[i],items:[],at:0}));
+    roster.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>SHELVES[shelfOf(c)].items.push(c));
+    SHELVES[0].items.unshift('random');
+    SHELVES=SHELVES.filter(sh=>sh.items.length);
+    tiles=[];POS=[];
+    SHELVES.forEach((sh,si)=>{sh.start=tiles.length;sh.items.forEach((c,k)=>{POS.push({sh:si,k});tiles.push(c)})});
+    cols=0;rows=SHELVES.length;
+  }else{
+    const n=roster.length+1;cols=clamp(Math.ceil(n/4),10,16);rows=Math.ceil(n/cols);
+    const rIdx=Math.min(roster.length,Math.floor((rows-1)/2)*cols+Math.floor(cols/2));
+    tiles=roster.slice();tiles.splice(rIdx,0,'random');
+  }
   const two=t==='pvp'||t==='features',ctl=[0,two?1:0];   /* featcpu: the CPU takes the other side */
   const label={features:['Player One','Player Two'],featcpu:['Player One','CPU'],pvp:['Player One','Player Two'],cpu:['Player One','CPU'],story:['Player One','???'],tower:['Player One','???'],training:['Player One','Sparring partner'],online:['You','Opponent'],watch:['CPU One','CPU Two']}[t]||['Player One','Player Two'];
   const title={story:'Story',features:'Features',featcpu:'Features vs CPU',tower:'Towers',pvp:'Local Versus',cpu:G.mirror?'Mirror Match':'Vs CPU',training:'Training',online:'Online',watch:'Spectate'}[t]||'';
   feShow(`<div class="fe fe-sel"><video class="fe-bgvid" src="media/selectbg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="fe-bgtint"></div>
       <div class="fe-side l" id="side0"><div class="fe-art" id="art0"></div><div class="fe-plate"><span class="who">${label[0]}</span><b id="nm0">—</b><i id="tt0"></i><div class="fe-crew" id="cr0"></div></div></div>
       <div class="fe-gridwrap"><div class="fe-sh"><div class="fe-sellogo" aria-hidden="true">The Last Verse</div><span class="chip">${esc(title)}</span><h2>${t==='watch'?'Choose both fighters':isFeat(t)?'Choose two fighters':'Choose your fighter'}</h2></div>
-        <div class="fe-grid" id="feGrid" style="--cols:${cols}"></div><p class="fe-ginfo" id="gInfo"></p>
+        ${CASES?`<div class="fe-shelves" id="feGrid"></div>`:`<div class="fe-grid" id="feGrid" style="--cols:${cols}"></div>`}<p class="fe-ginfo" id="gInfo"></p>
         ${soonList.length?`<div class="fe-soonbox"><span class="fe-soonh">Coming soon</span><div class="fe-soongrid" id="feSoon"></div></div>`:''}</div>
       <div class="fe-side r" id="side1"><div class="fe-art" id="art1"></div><div class="fe-plate"><span class="who">${label[1]}</span><b id="nm1">—</b><i id="tt1"></i><div class="fe-crew" id="cr1"></div></div></div>
       ${feBar(two?[['nav','Move'],['ok','Lock in'],['back','Undo'],['Arrows · , .','Player Two']]:[['nav','Move'],['ok','Lock in'],['back','Undo / Back']])}</div>`);
   const grid=document.getElementById('feGrid');
-  tiles.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='vcard fe-tile';b.dataset.ti=i;
+  const shelfEls=[];
+  if(CASES)SHELVES.forEach((sh,si)=>{const row=document.createElement('div');row.className='fe-shelf';row.dataset.sh=si;
+    row.innerHTML='<span class="fe-shlab">'+esc(sh.label)+'</span><div class="fe-rack"></div>';
+    grid.appendChild(row);shelfEls.push(row.querySelector('.fe-rack'))});
+  const mk=(c,i)=>{const b=document.createElement('button');b.type='button';b.className='vcard fe-tile';b.dataset.ti=i;
     if(c==='random'){b.classList.add('rand');b.innerHTML='<span class="qm">?</span>';b.setAttribute('aria-label','Random fighter')}
-    else{const art=bust(c),cv=document.createElement('canvas');cv.width=art.width;cv.height=art.height;cv.getContext('2d').drawImage(art,0,0);b.appendChild(cv);
+    else{const art=CASES?cdcase(c):bust(c),cv=document.createElement('canvas');cv.width=art.width;cv.height=art.height;cv.getContext('2d').drawImage(art,0,0);b.appendChild(cv);
       b.dataset.i=CHARS.indexOf(c);b.setAttribute('aria-label',c.name);
       if(!isUnlocked(c)){b.classList.add('locked');b.insertAdjacentHTML('beforeend','<span class="fe-lock" aria-hidden="true">🔒</span>')}
       if(c.cameo)b.classList.add('cameo')}
     b.onclick=e=>{e.stopPropagation();const s=sides.find(s=>s.active&&!s.locked)||sides[0];s.cur=i;paint();act(s,'ok')};
-    grid.appendChild(b)});
+    return b};
+  tiles.forEach((c,i)=>{const b=mk(c,i);(CASES?shelfEls[POS[i].sh]:grid).appendChild(b)});
   const soonEl=document.getElementById('feSoon');
   if(soonEl)soonList.forEach(c=>{const d=document.createElement('div');d.className='vcard fe-tile soon';d.title=c.name+' · coming soon';
     const art=bust(c),cv=document.createElement('canvas');cv.width=art.width;cv.height=art.height;cv.getContext('2d').drawImage(art,0,0);d.appendChild(cv);
     d.insertAdjacentHTML('beforeend','<span class="fe-lock" aria-hidden="true">🔒</span><span class="fe-soonnm">'+esc(c.name)+'</span>');
     d.onmouseenter=()=>{const s=sides.find(s=>s.active&&!s.locked)||sides[0];s.hover=c;setSide(s);info.innerHTML=`<b>${esc(c.name)}</b> · Coming soon · Special: ${esc(c.special)} · Ultra: ${esc(cap(c.ultra))}`};
     d.onmouseleave=()=>{sides.forEach(s=>s.hover=null);paint()};soonEl.appendChild(d)});
-  const tileEls=[...grid.children];
+  /* with shelves the grid's children are the racks, so collect the cases themselves;
+     document order matches `tiles` because they were appended shelf by shelf */
+  const tileEls=CASES?[...grid.querySelectorAll('.fe-tile')]:[...grid.children];
   const startIdx=c=>{const k=tiles.indexOf(c);return k<0?0:k};
-  const sides=[0,1].map(si=>({si,cur:si===0?startIdx(FE.lastPick||roster[0]):Math.min(tiles.length-1,cols-1),locked:null,crew:null,crewList:null,crewI:0,done:false,
+  const sides=[0,1].map(si=>({si,cur:si===0?startIdx(FE.lastPick||roster[0]):Math.min(tiles.length-1,Math.max(1,cols-1)),locked:null,crew:null,crewList:null,crewI:0,done:false,
     active:si===0||two,ctrl:ctl[si],live:Object.assign(liveCanvas(null,si===1),{photo:true})}));
   sides.forEach(s=>document.getElementById('art'+s.si).appendChild(s.live.cv));
   if(t==='training'||t==='watch'||t==='cpu'||t==='story'||isTowerT(t)||online){sides[1].active=false}
@@ -4917,16 +5003,45 @@ function showSelect(){
   function paint(){
     tileEls.forEach((b,i)=>{b.classList.toggle('p1',sides[0].active&&!sides[0].locked&&sides[0].cur===i);b.classList.toggle('p2',sides[1].active&&!sides[1].locked&&sides[1].cur===i);
       b.classList.toggle('lk1',sides[0].locked&&tiles[i]===sides[0].locked);b.classList.toggle('lk2',sides[1].locked&&tiles[i]===sides[1].locked)});
+    if(CASES)flow();
     sides.forEach(setSide);
     const s=sides.find(s=>s.active&&!s.locked)||sides[0],c=charAt(s.cur);
     info.innerHTML=c==='random'?'<b>Random</b> · let the block decide':c&&!isUnlocked(c)?`<b>Locked</b> · ${esc(UNLOCK_HOW[c.unlock]||'')}`:c?`<b>${esc(c.name)}</b> · Special: ${esc(c.special)} · Ultra: ${esc(cap(c.ultra))} · Finisher: ${esc(cap(c.finisher))}`:'';
     if(isFeat(t)&&s.picks&&s.picks.length===1)info.innerHTML=`<b>${esc(s.picks[0].name)}</b> is on the track · now pick the feature`;
   }
   function move(s,d){
-    const r=Math.floor(s.cur/cols),c=s.cur%cols,L=k=>Math.min(cols,tiles.length-k*cols);
-    if(d==='left'||d==='right'){const len=L(r);s.cur=r*cols+((c+(d==='right'?1:-1)+len)%len)}
-    else{const nr=clamp(r+(d==='down'?1:-1),0,rows-1);s.cur=nr*cols+Math.min(c,L(nr)-1)}
+    if(CASES){
+      const p=POS[s.cur],sh=SHELVES[p.sh];
+      if(d==='left'||d==='right'){const len=sh.items.length;s.cur=sh.start+((p.k+(d==='right'?1:-1)+len)%len)}
+      else{const ns=clamp(p.sh+(d==='down'?1:-1),0,SHELVES.length-1),t=SHELVES[ns];
+        s.cur=t.start+Math.min(p.k,t.items.length-1)}
+    }else{
+      const r=Math.floor(s.cur/cols),c=s.cur%cols,L=k=>Math.min(cols,tiles.length-k*cols);
+      if(d==='left'||d==='right'){const len=L(r);s.cur=r*cols+((c+(d==='right'?1:-1)+len)%len)}
+      else{const nr=clamp(r+(d==='down'?1:-1),0,rows-1);s.cur=nr*cols+Math.min(c,L(nr)-1)}
+    }
     SFX.navtick();paint();
+  }
+
+  /* cover flow: the case under the cursor faces front, its neighbours turn away */
+  function flow(){
+    const live=sides.filter(s=>s.active&&!s.locked);
+    live.forEach(s=>{const p=POS[s.cur];SHELVES[p.sh].at=p.k});
+    const focus=live.length?POS[(live.find(s=>s.si===0)||live[0]).cur].sh:0;
+    SHELVES.forEach((sh,si)=>{
+      const on=si===focus,step=on?102:58,depth=on?150:90;
+      shelfEls[si].parentElement.classList.toggle('on',on);
+      sh.items.forEach((c,k)=>{
+        const el=tileEls[sh.start+k],d=k-sh.at,ad=Math.abs(d);
+        if(ad>6){el.style.visibility='hidden';return}
+        el.style.visibility='';
+        const rot=d===0?0:(d<0?34:-34)-Math.sign(d)*Math.min(ad-1,3)*3;
+        const sc=(on?1:.64)*(d===0?(on?1.16:1):Math.max(.52,1-ad*.11));
+        el.style.transform=`translate(-50%,-50%) translateX(${d*step}px) translateZ(${-ad*depth}px) rotateY(${rot}deg) scale(${sc})`;
+        el.style.opacity=String(Math.max(.12,1-ad*(on?.17:.26)));
+        el.style.zIndex=String(60-ad);
+      });
+    });
   }
   function crewStep(s,d){s.crewI=(s.crewI+d+s.crewList.length)%s.crewList.length;SFX.navtick();setSide(s)}
   function lockFighter(s,c){
@@ -5165,6 +5280,7 @@ const OPTS={
   annVol:{l:'Announcer',get:()=>Math.round(S.annVol*10),set:v=>{S.annVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:9,test:1},
   sharp:{l:'Sharp graphics',bool:1,def:true,after:()=>applyRes()},
   shadows:{l:'Floor shadows',bool:1,def:true},
+  selCase:{l:'Fighter select: CD cases',bool:1,def:true},
   fx:{l:'Flashes and shake',bool:1,def:true},
   blood:{l:'Blood',bool:1,def:true},
   finishers:{l:'Finisher cinematics',bool:1,def:true},
