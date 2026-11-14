@@ -1330,11 +1330,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'sodaplant',name:"The Pop Factory",img:'sodaplant',full:{scale:0.4209,feet:1340/1696,p:.15,floor:1187,bands:[[0,1187,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[90,100,120],grade:'#4a5a78',rim:'rgba(180,210,255,.34)',farTone:'none',shadowL:[{x:1264,y:-260,a:.3}],crowd:{groups:[],front:0},
-   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
-   build(g){},fg(g){},lights(){},
- },
- { id:'mansion',name:"Milenko's Mansion",img:'mansion',full:{scale:0.4209,feet:1357/1696,p:.15,floor:1209,bands:[[0,1209,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[90,90,130],grade:'#4a4a8a',rim:'rgba(170,200,255,.4)',farTone:'none',shadowL:[{x:1264,y:-260,a:.3}],crowd:{groups:[],front:0},
+ { id:'mansion',name:'Manor House',img:'mansion',full:{scale:0.4209,feet:1357/1696,p:.15,floor:1209,bands:[[0,1209,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[90,90,130],grade:'#4a4a8a',rim:'rgba(170,200,255,.4)',farTone:'none',shadowL:[{x:1264,y:-260,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -1366,19 +1362,15 @@ const STAGES=[
  },
  nmStage("img00","Fog Street",[81, 81, 83],[251, 249, 240],"fog",false,0),
  nmStage("img18","Old Cemetery",[59, 63, 65],[208, 231, 223],"fog",false,18),
- { id:'alley',name:'Neon Alley',img:'alley',full:{scale:0.4263,feet:1398/1664,p:.15,floor:1198,bands:[[0,1198,.16]],pNear:1.06},indoor:false,dry:false,wet:true,ambient:[110,70,140],grade:'#7a3a9a',rim:'rgba(210,140,255,.45)',farTone:'none',shadowL:[{x:1180,y:-280,a:.34}],crowd:{groups:[],front:0},
+ { id:'alley',name:'The Alley',img:'alley',full:{scale:0.4263,feet:1398/1664,p:.15,floor:1198,bands:[[0,1198,.16]],pNear:1.06},indoor:false,dry:false,wet:true,ambient:[110,70,140],grade:'#7a3a9a',rim:'rgba(210,140,255,.45)',farTone:'none',shadowL:[{x:1180,y:-280,a:.34}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'hauntedhouse',name:'The Haunted House',img:'hauntedhouse',full:{scale:0.4263,feet:1464/1664,p:.15,floor:1300,bands:[[0,1300,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[62,76,120],grade:'#3a4a80',rim:'rgba(165,195,255,.45)',farTone:'none',shadowL:[{x:1248,y:-620,a:.30}],crowd:{groups:[],front:0},
+ { id:'hauntedhouse',name:'House of the Dead',img:'hauntedhouse',full:{scale:0.4263,feet:1464/1664,p:.15,floor:1300,bands:[[0,1300,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[62,76,120],grade:'#3a4a80',rim:'rgba(165,195,255,.45)',farTone:'none',shadowL:[{x:1248,y:-620,a:.30}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'neontunnel',name:'The Neon Tunnel',img:'neontunnel',full:{scale:0.4263,feet:1364/1664,p:.15,floor:1050,bands:[[0,1050,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[120,70,130],grade:'#8a3a7a',rim:'rgba(255,130,205,.45)',farTone:'none',shadowL:[{x:1248,y:-300,a:.32}],crowd:{groups:[],front:0},
-   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
-   build(g){},fg(g){},lights(){},
- },
- { id:'backyard',name:'Backyard Wrestling',img:'backyard',full:{scale:0.4263,feet:1162/1453,p:.15,floor:980,bands:[[0,980,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[72,78,108],grade:'#44507a',rim:'rgba(190,210,255,.40)',farTone:'none',shadowL:[{x:1960,y:-360,a:.36}],crowd:{groups:[],front:0},
+ { id:'neontunnel',name:'Halls of Illusions',img:'neontunnel',full:{scale:0.4263,feet:1364/1664,p:.15,floor:1050,bands:[[0,1050,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[120,70,130],grade:'#8a3a7a',rim:'rgba(255,130,205,.45)',farTone:'none',shadowL:[{x:1248,y:-300,a:.32}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -1401,7 +1393,7 @@ function fgCanvas(stg){return getCache(stg,'_fg',()=>{const c=document.createEle
 const STIMG={};
 for(const k in ASSET.stages){const im=new Image();im.onload=()=>{im.ok=true};im.src=ASSET.stages[k];STIMG[k]=im}
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',sodaplant:'jg_sodaplant',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',backyard:'backyard',midway:'midway',warehouse:'warehouse',juggalette:'juggalette'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette'};
 for(const k in STAGE_FILES)if(!STIMG[k]){const im=new Image();im.onload=()=>{im.ok=true};im.src='stages/'+STAGE_FILES[k]+'.webp';STIMG[k]=im}
 function farCanvas(stg){
   const im=STIMG[stg.img];if(!im||!im.ok)return null;
@@ -2801,6 +2793,11 @@ function cycleDummy(){G.dummy=DUMMY_MODES[(DUMMY_MODES.indexOf(G.dummy)+1)%DUMMY
 const rndStage=()=>Math.random()*STAGES.length|0;
 
 function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
+  /* A stage index from outside this build -- an online peer on a different
+     version, a saved tower, a stage since removed -- used to reach
+     startRound and die on STAGES[G.stage].setup(). Land on a real stage
+     instead: the wrong backdrop beats a dead match. */
+  stage=(Number.isInteger(stage)&&stage>=0&&stage<STAGES.length)?stage:0;
   {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600}
   Object.assign(G,{c1,c2,ai1,ai2,stage,demo,need,round:1,wins:[0,0],mods:(!demo&&G.type==='pvp'&&FE.pendingMods)||{}});FE.pendingMods=null;
   if(isFeat(G.type))G.team=[(G.teams&&G.teams[0]||[c1]).slice(0,2),(G.teams&&G.teams[1]||[c2]).slice(0,2)];else G.team=null;
