@@ -30,6 +30,19 @@ Three source sheets per fighter, each a 4-column grid, named `A_src` / `B_src` /
 6. `integrate.py <id> sheet.png sheet.json` embeds it and switches the fighter
    from photo cutout to animated sprite.
 
+The select-screen cutout is separate from the sprite sheet: **`addcut2.py`**
+adds one for a fighter who has none, **`recut.py`** replaces one for a fighter
+who already has one. Both take art that already carries alpha, so cover art on a
+backdrop goes through `prep.py` first.
+
+Each cutout is three slices stacked in the atlas — `full` (0..276), `upper`
+(0..146) and `lower` (138..276). The select tile crops its head out of `full`;
+`drawCut` composites the fighter from `upper` + `lower`. **The whole band has to
+fit inside the atlas**, because PIL clips a paste past the edge without saying
+so, and the two slices that fall off the bottom are exactly the two the game
+draws. A fighter in that state shows a correct tile and an empty stage.
+`verify.py` checks all three slices for this reason, not just `full`.
+
 ## Alpha travels; nothing downstream re-keys
 
 The pipeline used to cut on a key colour at every stage, which forces the key to
@@ -62,6 +75,22 @@ backdrop colour made 93% of one sheet read as figure.
 between limbs cannot be told from an effect. It keeps every region the figure
 encloses, at the cost of leaving backdrop in those gaps. Mordemir needs it; most
 characters do not.
+
+### A backdrop with no hue
+
+Not every sheet arrives on a screen. Blynd's attack sheet came on pure black and
+both cover arts came on pure white, and leaning has nothing to measure on either
+— grey leans nowhere. `prep.py` detects this (the modal colour's channels within
+`NEUTRAL_SPREAD` of each other) and switches to filling the backdrop inward from
+the border, keeping whatever the figure's outline encloses. It works because
+this art is drawn with an outline; it would not work on a photograph.
+
+That matters most where figure and backdrop are the same colour. A black hoodie
+on black is invisible to every threshold — only the outline separates them — and
+the same goes for white sneaker soles and a silver chain on white. Outside the
+silhouette, alpha follows distance from the backdrop, so a glow that spills past
+the outline fades instead of ending at it. Nothing is despilled: a neutral screen
+contaminates by lightening or darkening, and neither is reversible.
 
 ## Why each sheet gets its own scale
 

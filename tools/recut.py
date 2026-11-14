@@ -56,7 +56,11 @@ fx = np.where(feet.max(0) > .3)[0]
 ax = round(float(((fx.min() + fx.max()) / 2 + (a * cols).sum() / a.sum()) / 2), 1)
 top = a[:int(HH * .2)]
 hx = float((top * cols).sum() / max(top.sum(), 1))
-hxl = round(max(0, min(w - HEAD, hx - HEAD / 2)), 1)
+# The tile crops this square out of the full slice. It must not be wider than
+# the cutout: the atlas packs fighters side by side, so a box that overhangs
+# reads the next fighter's pixels into this one's tile.
+hs = float(min(HEAD, w))
+hxl = round(max(0, min(w - hs, hx - hs / 2)), 1)
 
 if x + w > cuts.width:
     yF = cuts.height + 4
@@ -83,7 +87,7 @@ for yy, sl in ((yF, (0, HH)), (yU, (0, 146)), (yL, (HIP, HH))):
     F.append([x, yy, w, sl[1] - sl[0]])
 cm['chars'][cid] = {'full': base, 'upper': base + 1, 'lower': base + 2, 'hip': HIP,
                     'ax': ax, 'h': HH, 'w': w, 'scale': old.get('scale', 0.7692307692307692),
-                    'head': [hxl, 0, HEAD, HEAD]}
+                    'head': [hxl, 0, hs, hs]}
 print(f'{cid}: frames {old["full"]}..{old["full"]+2} -> {base}..{base+2}  '
       f'w {old["w"]} -> {w}  ax {old["ax"]} -> {ax}  room left {cuts.width - x - w}')
 
