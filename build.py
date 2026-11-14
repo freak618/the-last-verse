@@ -135,12 +135,22 @@ def main():
         dst = os.path.join(out, sub)
         os.makedirs(dst, exist_ok=True)
         n = b = 0
+        fresh = set()
         for f in sorted(os.listdir(src_dir)):
             if names is not None and os.path.splitext(f)[0] not in names:
                 continue
             shutil.copy2(os.path.join(src_dir, f), os.path.join(dst, f))
+            fresh.add(f)
             n += 1
             b += os.path.getsize(os.path.join(dst, f))
+        # Drop whatever this build did not write. Copying without pruning leaves
+        # a stale output directory that every check still passes -- the page is
+        # correct and nothing it references is missing -- so the dead files ride
+        # silently into the zips. Two removed stage paintings shipped that way.
+        for f in os.listdir(dst):
+            if f not in fresh:
+                os.remove(os.path.join(dst, f))
+                print('  pruned %s/%s (no longer part of the build)' % (sub, f))
         return n, b
 
     rows = []
