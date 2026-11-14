@@ -63,13 +63,22 @@ if not cuts or not os.path.exists(f'{d}/{cuts}'):
 atlas = (Image.open(f'{d}/{cuts}').convert('RGBA')
          if cm['chars'] else Image.new('RGBA', (1, 1)))
 al = np.asarray(atlas)[..., 3]
+# Check every slice, not just `full`. drawCut composes the fighter from `upper`
+# and `lower`; `full` is only what the select tile crops its head from. Checking
+# `full` alone passed three fighters whose upper and lower had been pasted off
+# the bottom edge of the atlas and silently dropped -- their tiles looked right
+# and the game drew nothing.
 for cid, c in cm['chars'].items():
-    x, y, w, h = cm['frames'][c['full']]
-    if y + h > atlas.height or x + w > atlas.width:
-        blank.append((cid, 'outside the atlas'))
-    elif (al[y:y + h, x:x + w] > 20).mean() < 0.05:
-        blank.append((cid, 'empty'))
-print(f'cutout portraits : {len(cm["chars"])} characters, {len(blank)} blank')
+    for part in ('full', 'upper', 'lower'):
+        if part not in c:
+            continue
+        x, y, w, h = cm['frames'][c[part]]
+        if y + h > atlas.height or x + w > atlas.width:
+            blank.append((cid, part + ' is outside the atlas'))
+        elif (al[y:y + h, x:x + w] > 20).mean() < 0.05:
+            blank.append((cid, part + ' is empty'))
+print(f'cutout portraits : {len(cm["chars"])} characters x 3 slices, '
+      f'{len(blank)} bad')
 if blank:
     fail.append(f'portrait(s) with no art in the atlas: {blank}')
 

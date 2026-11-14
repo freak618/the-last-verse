@@ -34,6 +34,7 @@ assert ('"cutsMeta":' + json.dumps(cm, separators=(',', ':'))) in line
 assert cid in cm['chars'], f'{cid} has no cutout yet -- use addcut2.py'
 
 cuts = Image.open(io.BytesIO(base64.b64decode(A['cuts'].split(',', 1)[1]))).convert('RGBA')
+atlas_h0 = cuts.height
 F = cm['frames']
 yF = max(f[1] for f in F if f[3] == HH)
 yU, yL = yF + HH + 2, yF + HH + 2 + 146 + 2
@@ -61,10 +62,19 @@ if x + w > cuts.width:
     yF = cuts.height + 4
     yU, yL = yF + HH + 2, yF + HH + 2 + 146 + 2
     x = 0
-    grown = Image.new('RGBA', (cuts.width, yL + 138 + 2), (0, 0, 0, 0))
+    print('started a new sheet band at y', yF)
+
+# The three slices stack below each other, so the band needs room for all of
+# them -- not just the full-height one. Without this the upper and lower slices
+# paste past the bottom edge, PIL drops them silently, and the fighter's tile
+# looks right (it uses `full`) while the game draws nothing: drawCut composes
+# the body from `upper` and `lower`.
+need = yL + 138 + 2
+if need > cuts.height:
+    grown = Image.new('RGBA', (cuts.width, need), (0, 0, 0, 0))
     grown.paste(cuts, (0, 0))
     cuts = grown
-    print('started a new sheet band at y', yF)
+    print('grew the atlas %d -> %d so the band fits' % (atlas_h0, need))
 
 old = cm['chars'][cid]
 base = len(F)
