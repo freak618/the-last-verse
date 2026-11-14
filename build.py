@@ -19,10 +19,14 @@ stages, enough to build and test a new character or a new level against,
 and nothing else. It trims the arrays at runtime rather than editing them,
 so it keeps working untouched as the source grows.
 """
-import base64, os, re, shutil, sys
+import base64
+import glob
+import hashlib
+import hashlib, os, re, shutil, sys
 
 SRC = '/home/claude/lastverse.html'
 REPO = '/home/claude/the-last-verse'
+CHURN = {'cuts', 'atlas'}   # art that is rewritten as the roster changes
 
 # The workbench roster: the most recently built fighters, so the sprite
 # pipeline has fresh reference points, plus a few different body types.
@@ -87,8 +91,20 @@ def main():
         if keep_assets is not None and key not in keep_assets:
             skipped += 1
             return '"%s":""' % key          # never referenced once the stage is gone
+        raw = base64.b64decode(data)
+        # cuts.webp and atlas.webp change whenever art changes but keep their
+        # name, so a browser that cached an older copy keeps drawing it and new
+        # portraits look like they never shipped -- an empty square where the
+        # page expects art. Putting the content hash in the FILENAME makes every
+        # change a new URL, which no cache can get wrong. A query string would
+        # be tidier, but not every host resolves a path that carries one.
+        if key in CHURN:
+            path = 'assets/%s-%s.%s' % (key, hashlib.sha256(raw).hexdigest()[:8], ext)
+            for stale in glob.glob(os.path.join(out, 'assets', '%s-*.%s' % (key, ext))):
+                if os.path.basename(stale) != os.path.basename(path):
+                    os.remove(stale)
         with open(os.path.join(out, path), 'wb') as f:
-            f.write(base64.b64decode(data))
+            f.write(raw)
         wrote.append(path)
         return '"%s":"%s"' % (key, path)
 

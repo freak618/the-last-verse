@@ -37,7 +37,8 @@ for ln in html.split('\n'):
     t = ln.strip()
     if t.startswith('//') or t.startswith('*') or t.startswith('/*'):
         continue
-    refs |= set(re.findall(r'["\'(]((?:assets|sheets|stages|music|sfx|media)/[\w./-]+)', ln))
+    refs |= set(h.split('?')[0] for h in
+                re.findall(r'["\'(]((?:assets|sheets|stages|music|sfx|media)/[\w./?=-]+)', ln))
 missing = sorted(p for p in refs if not os.path.exists(f'{d}/{p}'))
 if lean:
     print(f'referenced files : {len(refs)} referenced, '
@@ -52,11 +53,14 @@ i = html.index('const ASSET=')
 A = json.loads(html[i:html.index('\n', i)][len('const ASSET='):].rstrip(';'))
 cm = A['cutsMeta']
 blank = []
-if not os.path.exists(f'{d}/assets/cuts.webp'):
-    print('cutout portraits : atlas file itself is missing')
-    fail.append('assets/cuts.webp is missing, so every portrait is blank')
+# Follow the page's own reference rather than a fixed name: the cuts atlas
+# carries its content hash so that changing it changes its URL.
+cuts = A.get('cuts', '')
+if not cuts or not os.path.exists(f'{d}/{cuts}'):
+    print(f'cutout portraits : atlas file itself is missing ({cuts or "no reference"})')
+    fail.append(f'{cuts or "assets/cuts.webp"} is missing, so every portrait is blank')
     cm = {'chars': {}}
-atlas = (Image.open(f'{d}/assets/cuts.webp').convert('RGBA')
+atlas = (Image.open(f'{d}/{cuts}').convert('RGBA')
          if cm['chars'] else Image.new('RGBA', (1, 1)))
 al = np.asarray(atlas)[..., 3]
 for cid, c in cm['chars'].items():
