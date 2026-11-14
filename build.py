@@ -74,7 +74,7 @@ def main():
                           "%s:'%s'" % (k, v) for k, v in kept_sf.items())), html, count=1)
         stage_files = kept_sf
         # inline paintings are kept only for the stages that survive
-        keep_assets = {'atlas', 'atlasN', 'cuts', 'cutsN'} | (set(DEV_STAGES) - set(kept_sf))
+        keep_assets = {'atlas', 'atlasN', 'cuts', 'cutsN', 'mature'} | (set(DEV_STAGES) - set(kept_sf))
         end = array_end(html, 'STAGES')
         html = html[:end] + (TRIM % (DEV_ROSTER, DEV_STAGES)) + html[end:]
 
