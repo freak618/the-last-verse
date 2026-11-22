@@ -3484,6 +3484,7 @@ function scrEntries(id,withLocal=scrDev()){const stg=STAGES.find(s=>s.id===id),o
   if(withLocal)for(const e of scrState(id).lib)out.push(e);return out}
 /* which video is on the screen right now: your override, else the schedule, else the stage's default */
 function scrActive(id,pub=!scrDev()){const s=pub?{manual:null,sched:[]}:scrState(id),all=scrEntries(id,!pub),find=k=>all.find(e=>e.id===k);
+  if(SCR.ghPick&&find(SCR.ghPick))return{e:find(SCR.ghPick),why:'jukebox'};
   const lead={id:'leader',kind:'leader',name:'Film leader (built in)'},und=all.filter(e=>e.bundled&&!e.from),dflt=()=>und.length?und[(SCR.rot||0)%und.length]:lead;   // several undated videos take turns, one per match
   if(s.manual==='default')return{e:dflt(),why:'default'};
   if(s.manual==='leader')return{e:lead,why:'manual'};
@@ -3615,25 +3616,34 @@ function ytPlace(id,e,g,x,y,w,h){const cv=g.canvas;if(!cv||cv.id!=='game')return
 /* A screen video can carry its own song file ("audio" in screens.json, with "audioAt": the second of the video where the song starts).
    Then the YouTube picture stays muted and the game plays the song itself, at exactly the jukebox's loudness, kept in step with the
    video from the time YouTube reports. Its sound runs through an analyser so the Grindhouse speakers pump to the real music. */
-const SA={el:null,src:'',alt:0,an:null,data:null,yt:{t:0,at:0,state:-1},bass:0,mid:0,live:false};
+/* Grindhouse jukebox: when the screen's video has its song in the jukebox ("audio" in screens.json, "audioAt" = the second of the video
+   where the song starts), the jukebox itself plays that song, kept in step with the muted YouTube picture. While it's on, only songs
+   that have a video can play there: skipping a song changes the video, and when a song ends the next song and its video come on.
+   The jukebox's sound runs through an analyser so the speakers on the stage pump to the real music. */
+const SA={yt:{t:0,at:0,state:-1},an:null,data:null,bass:0,mid:0,live:false,since:0,seen1:0,src:''};
 addEventListener('message',e=>{if(!YT.el||e.source!==YT.el.contentWindow)return;let d;try{d=typeof e.data==='string'?JSON.parse(e.data):e.data}catch(x){return}
   const i=d&&d.info;if(!i)return;if(typeof i.currentTime==='number'){SA.yt.t=i.currentTime;SA.yt.at=performance.now()}if(typeof i.playerState==='number')SA.yt.state=i.playerState});
-function saTick(on,e,vol){
-  if(!(on&&e&&e.audio)){if(SA.el&&!SA.el.paused)SA.el.pause();SA.live=false;return false}
-  if(!SA.el){const a=SA.el=new Audio();a.preload='auto';a.addEventListener('error',()=>{if(SA.src&&!SA.alt){SA.alt=1;a.src=SA.src.replace(/\.mp3$/,'.webm')}})}
-  if(SA.src!==e.audio){SA.src=e.audio;SA.alt=JB.alt?1:0;SA.el.src=SA.alt?e.audio.replace(/\.mp3$/,'.webm'):e.audio;SA.since=performance.now();SA.seen1=0}
-  if(!SA.an&&AC&&AC.state==='running'){try{const n=AC.createMediaElementSource(SA.el);SA.an=AC.createAnalyser();SA.an.fftSize=1024;SA.an.smoothingTimeConstant=.55;SA.data=new Uint8Array(SA.an.frequencyBinCount);n.connect(SA.an);SA.an.connect(AC.destination)}catch(x){SA.an=null}}
-  SA.el.volume=vol;
-  const yt=SA.yt,now=performance.now(),playing=yt.state===1&&!G.paused&&now-yt.at<3000,t=yt.t+(playing?(now-yt.at)/1000:0)-(e.audioAt||0),d=SA.el.duration||0;
+const ghTrackOf=e=>e&&e.audio?TRACKS.findIndex(t=>t.src===e.audio):-1;
+function ghVideos(){const stg=STAGES[G.stage];return stg?scrEntries(stg.id,false).filter(e=>e.kind==='youtube'&&ghTrackOf(e)>=0):[]}
+function ghAllowed(){return ghVideos().map(ghTrackOf)}
+function ghVideoFor(i){return ghVideos().find(e=>ghTrackOf(e)===i)||null}
+function ghTap(){if(SA.an||!AC||AC.state!=='running'||!JB.el)return;try{const n=AC.createMediaElementSource(JB.el);SA.an=AC.createAnalyser();SA.an.fftSize=1024;SA.an.smoothingTimeConstant=.55;SA.data=new Uint8Array(SA.an.frequencyBinCount);n.connect(SA.an);SA.an.connect(AC.destination)}catch(x){SA.an=null}}
+function saTick(gh,e){
+  if(!gh){SA.live=false;SA.since=0;return false}
+  const i=ghTrackOf(e),a=jbAudio(),now=performance.now();
+  if(JB.i!==i||!a.src){JB.i=i;JB.shown=-1;JB.altTried=0;a.src=jbSrc(TRACKS[i]);jbPaint()}
+  if(SA.src!==e.audio||!SA.since){SA.src=e.audio;SA.since=now;SA.seen1=0}
+  ghTap();
+  if(JB.userPaused){if(!a.paused)a.pause();SA.live=false;return true}
+  const yt=SA.yt,playing=yt.state===1&&!G.paused&&now-yt.at<3000,t=yt.t+(playing?(now-yt.at)/1000:0)-(e.audioAt||0),d=a.duration||0;
   if(playing)SA.seen1=now;
   // YouTube not playing at all (blocked, embedding off, slow to start): the song plays on its own so the fight never goes silent
-  if(!SA.seen1&&now-(SA.since||now)>5000){if(G.paused){if(!SA.el.paused)SA.el.pause()}else{SA.el.loop=true;if(SA.el.paused)SA.el.play().catch(()=>{})}SA.live=!SA.el.paused;return true}
-  SA.el.loop=false;
-  if(!playing||t<0||(d&&t>d-.05)){if(!SA.el.paused)SA.el.pause();SA.live=false;return true}
-  if(Math.abs(SA.el.currentTime-t)>.35)try{SA.el.currentTime=t}catch(x){}
-  if(SA.el.paused)SA.el.play().catch(()=>{});SA.live=!SA.el.paused;return true}
+  if(!SA.seen1&&now-SA.since>5000){if(G.paused){if(!a.paused)a.pause()}else if(a.paused)a.play().catch(()=>{});SA.live=!a.paused;return true}
+  if(!playing||t<0||(d&&t>d-.05)){if(!a.paused)a.pause();SA.live=false;return true}
+  if(Math.abs(a.currentTime-t)>.35)try{a.currentTime=t}catch(x){}
+  if(a.paused)a.play().catch(()=>{});SA.live=!a.paused;return true}
 /* how hard the music is hitting right now (0..1), for the speakers: the real song when the game is playing it, otherwise a beat */
-function saLevel(t){if(SA.live&&SA.an&&SA.data){SA.an.getByteFrequencyData(SA.data);let b=0,m=0;for(let i=1;i<6;i++)b+=SA.data[i];for(let i=8;i<40;i++)m+=SA.data[i];
+function saLevel(t){if(!SA.an)ghTap();if(SA.an&&SA.data&&JB.el&&!JB.el.paused&&!SCR.audioOn){SA.an.getByteFrequencyData(SA.data);let b=0,m=0;for(let i=1;i<6;i++)b+=SA.data[i];for(let i=8;i<40;i++)m+=SA.data[i];
     b=Math.max(0,(b/5-110)/140);m=Math.max(0,(m/32-70)/150);SA.bass=Math.max(b,SA.bass*.82);SA.mid=Math.max(m,SA.mid*.8);return SA.bass}
   const ph=(t/60*92/60)%1,beat=Math.pow(1-ph,4)*(SCR.audioOn?.55:.12);SA.bass=Math.max(beat,SA.bass*.85);SA.mid=SA.bass*.6;return SA.bass}
 /* YouTube turns loud songs down (loudness normalization, about 6 dB for a typical loud track) and its player stops at 100%, so a video
@@ -3644,14 +3654,15 @@ const YT_GAIN=2;
 function scrTick(){const now=performance.now(),stg=STAGES[G.stage],c=stg&&scrCfg(stg),fight=G.mode==='fight'&&!G.demo;
   const act=c&&scrActive(stg.id),o=stg&&SCR.vids[stg.id],ytLive=YT.el&&now-YT.seen<400,vidLive=o&&now-o.seen<600&&!o.err&&o.src;
   const on=!!(fight&&c&&c.audio&&(act.e.kind==='youtube'?ytLive:act.e.kind==='leader'?false:vidLive));
-  const vol=clamp((muted?0:S.vol)*(S.musicVol??.7),0,1);
-  if(on!==SCR.audioOn){SCR.audioOn=on;applyMusicVol();if(!on&&JB.el&&JB.el.paused&&!JB.userPaused&&G.mode==='fight'&&JB.i>=0)JB.el.play().catch(()=>{})}
-  const sa=saTick(on&&act.e.kind==='youtube',act&&act.e,vol);
-  for(const k in SCR.vids){const q=SCR.vids[k],mine=on&&stg&&k===stg.id&&act.e.kind!=='youtube';
+  const vol=clamp((muted?0:S.vol)*(S.musicVol??.7),0,1),gh=on&&act.e.kind==='youtube'&&ghTrackOf(act.e)>=0,vs=on&&!gh;
+  if(gh!==!!SCR.ghOn){SCR.ghOn=gh;if(!gh&&JB.el&&JB.el.paused&&!JB.userPaused&&JB.i>=0)JB.el.play().catch(()=>{})}
+  if(vs!==SCR.audioOn){SCR.audioOn=vs;applyMusicVol();if(!vs&&JB.el&&JB.el.paused&&!JB.userPaused&&G.mode==='fight'&&JB.i>=0&&!gh)JB.el.play().catch(()=>{})}
+  saTick(gh,act&&act.e);
+  for(const k in SCR.vids){const q=SCR.vids[k],mine=vs&&stg&&k===stg.id&&act.e.kind!=='youtube';
     if(mine){q.v.volume=vol;if(q.v.muted){q.v.muted=false}if(G.paused&&!q.v.paused)q.v.pause();else if(!G.paused&&q.v.paused&&q.src){const pp=q.v.play();if(pp&&pp.catch)pp.catch(()=>{q.v.muted=true;q.v.play().catch(()=>{})})}}
     else if(!q.v.muted)q.v.muted=true}
   if(YT.el){if(!ytLive){if(YT.el.style.display!=='none'){YT.el.style.display='none';ytCmd('pauseVideo')}if(now-YT.seen>8000&&YT.vid){YT.el.src='about:blank';YT.vid=null}}
-    else if(YT.ready){if(G.paused)ytCmd('pauseVideo');else ytCmd('playVideo');if(on&&vol>0&&!sa){ytCmd('unMute');ytCmd('setVolume',[Math.round(clamp(vol*YT_GAIN,0,1)*100)])}else ytCmd('mute')}}}
+    else if(YT.ready){if(G.paused)ytCmd('pauseVideo');else ytCmd('playVideo');if(vs&&vol>0){ytCmd('unMute');ytCmd('setVolume',[Math.round(clamp(vol*YT_GAIN,0,1)*100)])}else ytCmd('mute')}}}
 setInterval(scrTick,250);
 /* thumbnails for the library */
 function scrThumb(src){return new Promise(ok=>{const v=document.createElement('video');v.muted=true;v.preload='auto';v.playsInline=true;let done=false;
@@ -4135,7 +4146,7 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
      instead: the wrong backdrop beats a dead match. */
   stage=(Number.isInteger(stage)&&stage>=0&&stage<STAGES.length)?stage:0;
   ensureChars(c1,c2);
-  if(!demo&&typeof SCR!=='undefined')SCR.rot=(SCR.rot||0)+1;
+  if(!demo&&typeof SCR!=='undefined'){SCR.rot=(SCR.rot||0)+1;SCR.ghPick=null}
   {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600;WL=st&&st.wall?st.wall[0]:40;WR=st&&st.wall?st.wall[1]:WW-40}
   Object.assign(G,{c1,c2,ai1,ai2,stage,demo,need,round:1,wins:[0,0],mods:(!demo&&G.type==='pvp'&&FE.pendingMods)||{}});FE.pendingMods=null;
   if(isFeat(G.type))G.team=[(G.teams&&G.teams[0]||[c1]).slice(0,2),(G.teams&&G.teams[1]||[c2]).slice(0,2)];else G.team=null;
@@ -6591,7 +6602,7 @@ TEST_API.net4=()=>({live:N4.live,role:N4.role,me:N4.me,slot:N4.mySlot,code:N4.co
   hashes:N4.hashes?[...N4.hashes.entries()].slice(-4):[],act:G.act,team:G.team&&G.team.map(t=>t.map(c=>c.id)),live2:G.f1&&[G.f1.c.id,G.f2.c.id],wins:G.wins&&G.wins.slice(),mode:G.mode,view:N4.view,cpu:N4.cpu,stall:N4.stall});
 
 TEST_API.netdbg=()=>NET.dbg;
-TEST_API.screens={sa:()=>({src:SA.src,alt:SA.alt,paused:SA.el?SA.el.paused:null,t:SA.el?+SA.el.currentTime.toFixed(2):null,dur:SA.el?SA.el.duration:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,an:!!SA.an,ac:AC&&AC.state,bass:+SA.bass.toFixed(2),live:SA.live,vol:SA.el?SA.el.volume:null}),dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
+TEST_API.screens={sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
 TEST_API.unlocks=()=>({...UNL});TEST_API.towerWin=()=>{G.type='tower';G.c1=G.c1||CHARS[0];G.tower={order:[CHARS[1]],i:0};endMatch(0)};
 TEST_API.netbench=()=>{const t=performance.now();for(let i=0;i<200;i++)netSnap();return{msPerSnap:(performance.now()-t)/200,parts:G.parts.length,decals:G.decals.length}};
 TEST_API.net=()=>({live:NET.live,role:NET.role,link:NET.link,F:NET.F,confirmed:NET.confirmed,rollbacks:NET.rollbacks,maxDepth:NET.maxDepth,desync:NET.desync,
@@ -7194,11 +7205,12 @@ function jbAudio(){if(!JB.el){const a=JB.el=new Audio();a.preload='auto';
   a.addEventListener('ended',()=>jbNext(true));a.addEventListener('timeupdate',jbTick);a.addEventListener('loadedmetadata',jbTick);
   a.addEventListener('playing',()=>{JB.fails=0});a.addEventListener('play',()=>{if(JB.shown!==JB.i){JB.shown=JB.i;jbToast()}jbPaint()});a.addEventListener('pause',jbPaint);a.addEventListener('error',()=>{const cur=TRACKS[JB.i];if(cur&&!JB.altTried){JB.altTried=1;JB.alt=!JB.alt;a.src=jbSrc(cur);if(!JB.userPaused)a.play().catch(()=>{});return}JB.fails=(JB.fails||0)+1;if(TRACKS.length>1&&JB.fails<4)setTimeout(()=>jbNext(true),400)})}  /* stop after a few missing songs (music-free builds) */return JB.el}
 function jbPlay(i){if(!TRACKS.length)return;const a=jbAudio();if(i==null)i=JB.i<0?0:JB.i;
+  if(typeof SCR!=='undefined'&&SCR.ghOn){const al=ghAllowed();if(al.length){if(!al.includes(i))i=al.find(x=>x>i)??al[0];const v=ghVideoFor(i);if(v){SCR.ghPick=v.id;SA.since=0}}}
   if(i!==JB.i||!a.src){JB.i=i;JB.shown=-1;JB.altTried=0;a.src=jbSrc(TRACKS[i])}JB.userPaused=false;applyMusicVol();a.play().catch(()=>{});jbPaint()}
 function jbToggle(){if(!TRACKS.length)return;const a=jbAudio();if(JB.i<0){jbNext();return}if(a.paused)jbPlay();else{a.pause();JB.userPaused=true}}
 function jbNext(auto){if(!TRACKS.length)return;const a=jbAudio();
   if(auto&&JB.repeat==='one'){a.currentTime=0;a.play().catch(()=>{});return}
-  const on=jbOnList();if(!on.length){if(!a.paused)a.pause();jbPaint();return}
+  const on=(typeof SCR!=='undefined'&&SCR.ghOn&&ghAllowed().length)?ghAllowed():jbOnList();if(!on.length){if(!a.paused)a.pause();jbPaint();return}
   let n;if(S.jbRandom&&on.length>1){JB.bag=(JB.bag||[]).filter(i=>on.includes(i)&&i!==JB.i);if(!JB.bag.length){JB.bag=on.filter(i=>i!==JB.i);for(let k=JB.bag.length-1;k>0;k--){const j=REAL_RANDOM()*(k+1)|0;[JB.bag[k],JB.bag[j]]=[JB.bag[j],JB.bag[k]]}}n=JB.bag.shift()}
   else{n=on.find(i=>i>JB.i);if(n==null){if(auto&&JB.repeat==='off'){jbPaint();return}n=on[0]}}
   if(n===JB.i){a.currentTime=0;JB.shown=-1;JB.userPaused=false;a.play().catch(()=>{});return}jbPlay(n)}
@@ -7210,7 +7222,7 @@ function jbIntroStart(){if(JB.introStarted)return;JB.introStarted=true;
     const a=JB.el;if(a&&a.paused&&!JB.userPaused)a.play().catch(()=>{})};
   setTimeout(()=>{const a=JB.el;if(a&&a.paused&&!JB.userPaused){window.addEventListener('pointerdown',retry,true);window.addEventListener('keydown',retry,true)}},600)}
 function jbAuto(){if(G.demo||JB.userPaused||!jbOnList().length||(JB.fails||0)>=4)return;const a=JB.el;if(a&&!a.paused)return;if(a&&JB.i>=0&&jbOn(JB.i)&&!a.ended&&a.currentTime>0){jbPlay();return}jbNext()}
-function jbPrev(){if(!TRACKS.length)return;if(JB.el&&JB.el.currentTime>3){JB.el.currentTime=0;return}const on=jbOnList();if(!on.length)return;const k=on.indexOf(JB.i);jbPlay(on[(k<0?0:k-1+on.length)%on.length])}
+function jbPrev(){if(!TRACKS.length)return;if(JB.el&&JB.el.currentTime>3&&!(typeof SCR!=='undefined'&&SCR.ghOn)){JB.el.currentTime=0;return}const on=(typeof SCR!=='undefined'&&SCR.ghOn&&ghAllowed().length)?ghAllowed():jbOnList();if(!on.length)return;const k=on.indexOf(JB.i);jbPlay(on[(k<0?0:k-1+on.length)%on.length])}
 const jbFmt=t=>{t=isFinite(t)?Math.floor(t):0;return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
 function jbTick(){const a=JB.el,p=document.getElementById('jbP');if(!a||!p)return;const d=a.duration||0;
   p.style.width=(d?a.currentTime/d*100:0)+'%';document.getElementById('jbC').textContent=jbFmt(a.currentTime);document.getElementById('jbD').textContent=jbFmt(d)}
