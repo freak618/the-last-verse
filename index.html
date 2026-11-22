@@ -1260,7 +1260,7 @@ function drawFighterLit(f,st,alpha=1){
     ctx.translate(f.x,GROUND+2);ctx.transform(1,0,-skew*len*2.2,-len,0,0);ctx.translate(-f.x,-f.y);
     ctx.drawImage(buf,bx,by,BW,BH);ctx.restore();
   }
-  if(stg.wet){ctx.save();ctx.beginPath();ctx.rect(-200,GROUND-4,WW+400,H);ctx.clip();ctx.globalAlpha=.2*alpha;ctx.translate(0,2*(GROUND-4));ctx.scale(1,-1);ctx.drawImage(buf,bx,by,BW,BH);ctx.restore()}
+  if(stg.wet){ctx.save();ctx.beginPath();ctx.rect(-200,GROUND-4,WW+400,H);ctx.clip();ctx.globalAlpha=(stg.reflA||.2)*alpha;ctx.translate(0,2*(GROUND-4));ctx.scale(1,-1);ctx.drawImage(buf,bx,by,BW,BH);ctx.restore()}
   ctx.save();ctx.globalAlpha=alpha;ctx.drawImage(buf,bx,by,BW,BH);ctx.restore();
 }
 
@@ -1581,9 +1581,14 @@ const STAGES=[
  /* The Kill Room: one painting (widened on both sides with more of its own plastic sheeting, floor and ceiling) drawn as a single rigid
     piece at the fighters' depth, one game unit per pixel. The fighters stand on row 480, half way across the floor in front of the table.
     The world is 12px narrower than the painting at each end so even a hard camera shake never shows past its edge. */
- { id:'killroom',name:'The Kill Room',img:'killroom',ww:1351,zoom:1.14,full:{scale:1,feet:480/572,p:1,rigid:true},indoor:true,dry:true,wet:false,ambient:[125,125,160],grade:'#3a3a5a',rim:'rgba(170,195,255,.38)',farTone:'none',shadowL:[{x:503,y:-220,a:.3},{x:845,y:-220,a:.3}],crowd:{groups:[],front:0},
-   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
-   build(g){},fg(g){},lights(e,t){const f=KILL_TUBE(t);addLight(503,20,380,[205,220,255],.42*f[0]);addLight(845,20,380,[205,220,255],.42*f[1])},
+ { id:'killroom',name:'The Kill Room',img:'killroom',ww:1351,zoom:1.14,full:{scale:1,feet:480/572,p:1,rigid:true},indoor:true,dry:true,wet:true,reflA:.32,splash:'rgba(120,8,10,.9)',ambient:[125,125,160],grade:'#2e2e4e',rim:'rgba(170,195,255,.40)',farTone:'none',shadowL:[{x:503,y:-220,a:.32},{x:845,y:-220,a:.32}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[[250,770],[860,1160]],throws:[]}},
+   build(g){},fg(g){},
+   lights(e,t){const f=KILL_TUBE(t),L=(f[0]+f[1])/2,B=KILL_BULB(t,0),bk=KILL_BLACK(t)>0;
+     addLight(505,30,400,[205,220,255],.5*f[0]);addLight(846,30,400,[205,220,255],.5*f[1]);addLight(B.x-12,B.y-12,300,[255,190,120],.55*B.lv);
+     addLight(191,113,380,[150,175,255],(bk?.15:.48)*(.9+.1*Math.sin(t*.3)));addLight(1165,116,380,[150,175,255],(bk?.15:.48));
+     if(bk)addLight(1095,84,520,[255,30,20],.6*KILL_RED(t));
+     const m=.38+.62*L;this.ambient=bk?[70,22,26]:[Math.round(142*m),Math.round(137*m),Math.round(168*m)]},
  },
 ];
 function getCache(stg,key,make){if(!stg[key])stg[key]=make();return stg[key]}
@@ -1851,7 +1856,7 @@ function paintClub(){
 const STIMG={};
 for(const k in ASSET.stages){const im=new Image();im.onload=()=>{im.ok=true};im.src=ASSET.stages[k];STIMG[k]=im}
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 STIMG.slaughter=(()=>{try{return paintSlaughterhouse()}catch(e){return{ok:false}}})();
 STIMG.sewer=(()=>{try{return paintSewer()}catch(e){return{ok:false}}})();
 STIMG.cage=(()=>{try{return paintCage()}catch(e){return{ok:false}}})();
@@ -2374,7 +2379,24 @@ const GEAR_SPR=(()=>{const m=new Map();return()=>rgb=>{let c=m.get(rgb);if(!c){c
 const FIRE_SPR=(()=>{const m=new Map();return rgb=>{let c=m.get(rgb);if(!c){c=document.createElement('canvas');c.width=c.height=48;const g=c.getContext('2d'),gr=g.createRadialGradient(24,24,0,24,24,24);
   gr.addColorStop(0,`rgba(${rgb},1)`);gr.addColorStop(.45,`rgba(${rgb},.45)`);gr.addColorStop(1,`rgba(${rgb},0)`);g.fillStyle=gr;g.fillRect(0,0,48,48);m.set(rgb,c)}return c}})();
 /* the Kill Room's two fluorescent tubes: mostly steady, now and then one of them stutters (shared by the glow and the lighting pass) */
-function KILL_TUBE(t){return[0,1].map(i=>{const c=Math.floor((t+i*397)/420),f=(t+i*397)%420;if(aH(c*3.1+i)>.55||f>26)return 1;return(f%7<3)?.25:.85+.15*aH(f+c)})}
+function KILL_BLACK(t){const per=780,c=Math.floor(t/per),f=t%per;if(aH(c*5.7+.3)>.55)return 0;const st=200+aH(c)*300,len=70+aH(c+.5)*90;return f>st&&f<st+len?(f-st)/len:0}
+function KILL_TUBE(t){const b=KILL_BLACK(t);return[0,1].map(i=>{
+  if(b>0){const u=b;if(u>.8){const g=Math.floor(t/3);return aH(g*1.7+i)<.55?1:.05}return aH(Math.floor(t/4)*2.3+i)<.06?.9:0}   // dark, a stray flash, then strobing back on
+  const buzz=.94+.06*Math.sin(t*1.9+i*2)*Math.sin(t*.37+i);
+  const c=Math.floor((t+i*397)/300),f=(t+i*397)%300;if(aH(c*3.1+i)<.5&&f<30)return(f%6<3)?.12:.75;
+  return buzz*(aH(Math.floor(t/2)*1.3+i*9)<.012?.4:1)})}
+/* Kill Room helpers: the swinging bulb, the red emergency pulse, a reusable scratch canvas, the blood map and the room's shading */
+const KILL_BULB_X=690;
+function KILL_BULB(t,kick){const a=Math.sin(t*.021)*.10+Math.sin(t*.0077+1)*.05+Math.sin(t*.11)*(kick||0)*.25,len=196,x=KILL_BULB_X+Math.sin(a)*len,y=-14+Math.cos(a)*len;
+  const c=Math.floor(t/5),lv=KILL_BLACK(t)>0?(aH(c*1.3)<.15?.8:.08):(aH(c*2.7)<.04?.35:.92+.08*Math.sin(t*.7));return{x,y,lv}}
+function KILL_RED(t){return .55+.45*Math.sin(t*.12)}
+const KILL_CONE=(()=>{let c=null;return()=>{if(c)return c;const a=document.createElement('canvas');a.width=720;a.height=520;const q=a.getContext('2d'),gr=q.createLinearGradient(0,20,0,500);
+  gr.addColorStop(0,'rgba(200,215,255,.26)');gr.addColorStop(.5,'rgba(200,215,255,.09)');gr.addColorStop(1,'rgba(200,215,255,0)');q.fillStyle=gr;q.beginPath();q.moveTo(275,20);q.lineTo(445,20);q.lineTo(660,500);q.lineTo(60,500);q.closePath();q.fill();
+  c=document.createElement('canvas');c.width=720;c.height=520;const r=c.getContext('2d');r.filter='blur(22px)';r.drawImage(a,0,0);return c}})();
+const KILL_RC=(()=>{let c=null;return(w,h)=>{if(!c){c=document.createElement('canvas');c.width=w;c.height=h}return c}})();
+const KILL_SHADE=(()=>{let c=null;return im=>{if(c)return c;c=document.createElement('canvas');c.width=im.width;c.height=im.height;const q=c.getContext('2d');q.fillStyle='rgb(120,118,138)';q.fillRect(0,0,c.width,c.height);q.globalCompositeOperation='lighter';
+  for(const x of[517,858]){const gr=q.createRadialGradient(x,260,10,x,300,420);gr.addColorStop(0,'rgba(135,137,117,1)');gr.addColorStop(.6,'rgba(70,72,60,1)');gr.addColorStop(1,'rgba(0,0,0,1)');q.fillStyle=gr;q.fillRect(0,0,c.width,c.height)}
+  q.globalCompositeOperation='multiply';const v=q.createLinearGradient(0,0,0,c.height);v.addColorStop(0,'rgb(120,120,130)');v.addColorStop(.22,'#fff');v.addColorStop(.85,'#fff');v.addColorStop(1,'rgb(150,150,150)');q.fillStyle=v;q.fillRect(0,0,c.width,c.height);return c}})();
 const STUDIO_GEAR=[[268,394,1.2,"255,128,50","b",0],[267,396,1.3,"255,120,50","b",0],[257,397,1.3,"255,153,50","b",0],[254,399,1.2,"255,162,50","b",0],[266,400,1.2,"255,122,50","b",0],[254,405,1.2,"255,197,50","b",0],[86,422,1.2,"171,255,50","s",0],[122,424,1.2,"215,255,50","b",0],[114,424,1.2,"50,255,171","s",0],[97,432,1.6,"156,255,50","b",0],[115,432,1.4,"255,197,50","s",0],[122,432,1.7,"255,145,50","s",0],[126,432,1.6,"255,150,50","b",0],[71,433,2.6,"255,141,50","s",0],[86,433,1.2,"173,255,50","b",0],[89,432,1.2,"174,255,50","s",0],[93,432,1.2,"124,255,50","b",0],[102,433,1.5,"174,255,50","b",0],[108,433,1.3,"255,249,50","s",0],[112,432,1.2,"255,190,50","s",0],[118,433,1.4,"255,183,50","b",0],[121,442,1.2,"50,255,78","s",0],[794,442,1.2,"255,151,50","s",0],[98,443,1.2,"50,255,147","s",0],[104,443,1.2,"50,255,113","s",0],[108,443,1.2,"50,255,106","s",0],[114,443,1.2,"80,255,50","s",0],[282,446,2.8,"255,158,50","b",0],[291,445,2.3,"255,158,50","s",0],[299,446,2.6,"255,148,50","s",0],[311,446,2.5,"255,147,50","b",0],[319,446,2.5,"255,159,50","b",0],[327,446,2.7,"255,158,50","s",0],[335,446,2.5,"255,162,50","s",0],[352,446,1.2,"255,91,50","b",0],[93,448,1.3,"179,255,50","s",0],[105,447,1.2,"173,255,50","s",0],[107,447,1.2,"183,255,50","s",0],[788,449,1.2,"255,132,50","s",0],[794,448,1.2,"255,146,50","b",0],[1067,452,1.4,"255,142,50","b",0],[1070,452,1.2,"255,92,50","b",0],[1074,452,1.2,"255,91,50","s",0],[54,452,1.2,"90,255,120","mA",0.78],[1058,452,1.2,"255,140,50","s",0],[33,456,2.3,"90,255,120","mA",0.44],[292,456,2.5,"255,177,50","s",0],[300,456,2.4,"255,149,50","s",0],[310,455,1.9,"255,151,50","s",0],[317,456,2.0,"255,117,50","s",0],[324,455,2.3,"255,130,50","s",0],[747,454,1.3,"50,192,255","s",0],[752,454,1.2,"50,255,229","s",0],[755,454,1.2,"50,255,219","s",0],[760,454,1.3,"50,255,239","s",0],[780,454,1.2,"255,158,50","s",0],[1,457,1.9,"90,255,120","mA",0.0],[9,457,2.6,"90,255,120","mA",0.11],[17,456,2.2,"90,255,120","mA",0.22],[26,456,2.2,"90,255,120","mA",0.33],[41,456,2.3,"90,255,120","mA",0.56],[48,456,1.8,"90,255,120","mA",0.67],[283,456,1.6,"255,176,50","s",0],[1053,456,1.2,"255,160,50","s",0],[1062,457,2.1,"255,169,50","s",0],[1066,457,2.1,"255,164,50","b",0],[1071,457,2.5,"255,176,50","s",0],[780,457,1.2,"255,75,50","s",0],[82,460,1.2,"90,255,120","mA",0.89],[104,460,2.0,"90,255,120","mA",1.0],[396,462,1.2,"50,255,173","b",0],[1096,462,1.3,"255,99,50","s",0],[792,464,1.2,"255,209,50","b",0],[800,464,1.2,"255,222,50","s",0],[308,466,2.5,"255,142,50","s",0],[320,466,1.6,"255,100,50","s",0],[326,466,1.5,"255,91,50","s",0],[293,467,1.4,"255,132,50","s",0],[332,466,1.2,"255,97,50","s",0],[1098,468,1.2,"221,255,50","s",0],[170,470,1.7,"255,131,50","s",0],[178,470,1.2,"255,143,50","s",0],[1048,472,1.2,"255,215,50","s",0],[1056,472,1.2,"255,225,50","s",0],[1073,474,1.5,"255,115,50","s",0],[1210,472,3.2,"255,149,50","s",0],[1224,472,1.2,"255,96,50","b",0],[1078,474,1.7,"255,86,50","s",0],[1086,474,2.1,"255,103,50","s",0],[1093,474,1.9,"255,129,50","s",0],[1235,473,1.9,"255,137,50","s",0],[322,474,1.2,"255,50,76","s",0],[327,475,1.2,"255,50,50","s",0],[332,474,1.2,"255,67,50","s",0],[338,474,1.2,"255,89,50","b",0],[1224,481,3.5,"255,141,50","s",0],[337,478,1.2,"255,93,50","mB",0.79],[1232,480,2.5,"255,127,50","b",0],[330,478,1.2,"255,115,50","mB",0.57],[334,478,1.2,"255,97,50","mB",0.71],[322,479,1.3,"255,110,50","mB",0.43],[332,481,1.6,"255,151,50","mB",0.64],[340,480,1.2,"255,152,50","mB",0.86],[344,480,1.3,"255,149,50","mB",0.93],[349,481,1.3,"255,159,50","mB",1.0],[1054,480,1.2,"50,214,255","b",0],[1083,480,1.2,"255,84,50","b",0],[1091,481,1.9,"255,50,60","s",0],[316,482,1.2,"255,152,50","mB",0.29],[321,482,1.2,"255,150,50","mB",0.36],[325,481,1.3,"255,150,50","mB",0.5],[297,482,1.2,"255,148,50","mB",0.0],[302,483,1.2,"255,173,50","mB",0.07],[306,482,1.3,"255,149,50","mB",0.14],[311,482,1.2,"255,168,50","mB",0.21],[1216,484,1.2,"255,135,50","b",0],[1234,487,1.6,"255,122,50","s",0],[1247,489,1.3,"255,149,50","s",0],[1196,490,2.3,"255,146,50","s",0],[1203,491,1.6,"255,153,50","b",0],[1231,493,2.8,"255,129,50","s",0],[144,492,1.7,"255,140,50","s",0],[148,492,1.4,"255,139,50","s",0],[134,492,3.0,"255,129,50","s",0],[152,493,1.7,"255,142,50","s",0],[85,495,1.7,"255,124,50","s",0],[92,495,2.0,"255,120,50","s",0],[98,495,1.7,"255,120,50","s",0],[148,495,1.2,"255,141,50","s",0],[72,496,1.7,"255,141,50","s",0],[78,496,1.8,"255,131,50","b",0],[128,496,1.6,"255,145,50","b",0],[134,496,1.2,"255,157,50","s",0],[1076,496,1.6,"255,50,90","s",0],[58,497,1.8,"255,131,50","s",0],[66,497,1.8,"255,146,50","s",0],[178,496,1.2,"255,162,50","s",0],[1084,497,1.5,"255,50,81","b",0],[1090,497,1.2,"255,95,50","s",0],[1201,496,1.2,"255,139,50","s",0],[38,498,2.0,"255,131,50","s",0],[44,498,1.9,"255,106,50","s",0],[51,498,2.0,"255,111,50","s",0],[105,498,1.6,"255,131,50","s",0],[32,499,1.9,"255,114,50","s",0],[86,499,2.6,"255,144,50","s",0],[24,500,1.8,"255,154,50","b",0],[2,500,2.0,"255,124,50","s",0],[1195,500,2.1,"255,154,50","s",0],[1227,502,1.2,"255,105,50","s",0],[1238,502,1.4,"255,154,50","s",0],[38,502,1.3,"255,178,50","s",0],[1162,502,1.2,"255,184,50","s",0],[1168,503,1.3,"255,201,50","b",0],[1244,502,1.7,"255,145,50","s",0],[1206,504,1.3,"255,141,50","c",0.93],[1122,504,1.2,"255,214,50","c",0.19],[1182,512,1.2,"214,255,50","c",0.89],[1053,513,1.5,"255,94,50","b",0],[1151,513,1.3,"255,184,50","c",0.33],[1158,513,1.5,"255,142,50","c",0.44],[1214,512,1.2,"255,160,50","c",1.0],[1164,514,1.5,"255,140,50","c",0.56],[1171,515,1.7,"255,147,50","c",0.74],[1058,515,1.2,"255,121,50","b",0],[1045,517,1.2,"255,96,50","b",0],[1137,519,1.2,"255,135,50","c",0.22],[1143,519,1.3,"255,144,50","c",0.26],[1149,519,2.0,"255,151,50","c",0.3],[1155,520,2.2,"255,100,50","c",0.37],[1101,520,1.2,"255,127,50","c",0.04],[1162,521,2.0,"255,116,50","c",0.48],[1168,522,1.9,"255,122,50","c",0.63],[1173,522,1.5,"255,113,50","c",0.78],[1213,522,2.2,"255,114,50","c",0.96],[1100,522,1.2,"255,117,50","c",0.0],[1114,522,1.2,"255,153,50","c",0.15],[1104,523,1.3,"255,129,50","c",0.07],[1108,524,1.4,"255,139,50","c",0.11],[1179,523,1.2,"255,223,50","c",0.85],[1157,526,2.7,"255,126,50","c",0.41],[1176,530,3.1,"255,112,50","c",0.81],[1168,528,1.2,"255,111,50","c",0.67],[1166,530,1.2,"255,106,50","c",0.59],[1162,531,1.2,"255,111,50","c",0.52],[1169,531,1.2,"255,117,50","c",0.7],[356,310,1.6,"90,170,255","s",0],[1003,456,1.6,"90,170,255","s",0],[1238,452,1.6,"90,170,255","s",0]];
 const ALIVE={
   riverfront:[['ripple',{x0:0,x1:2320,y0:700,y1:850,amp:3,sp:.05,glints:34,rgb:'190,210,255'}],['lightning',{x0:0,x1:2320,y0:0,y1:520,every:300,thunder:1}],['smoke',{x:1800,y:880,n:8,spread:900,rise:120,size:140,a:.12,rate:.0015,wind:.4,rgb:'150,165,200'}]],
@@ -2595,6 +2617,69 @@ Object.assign(ALIVE_FX,{
       if(a<.99){g.globalCompositeOperation='source-over';g.globalAlpha=(1-a)*.75;g.fillStyle='#14161c';g.fillRect(X-w/2*k,Y-4*k,w*k,8*k);g.globalCompositeOperation='lighter'}
       g.globalAlpha=Math.min(1,.18*a);const s=w*1.6*k;g.drawImage(sp('190,210,255'),X-s/2,Y-s*.15,s,s*.7)});
     g.restore()},
+  // The Kill Room, alive: shading from the two tubes, their beams and dust, a bare bulb swinging on its cord, meat hooks and a carcass
+  // swaying from the ceiling (knocked about by heavy hits), blood dripping off the table, a wet floor that shines and mirrors the lights,
+  // a shadow passing the door's window, and blackouts lit only by a red emergency lamp. Painting px, k=1 here.
+  killroom(g,rc,t,o){const k=rc.k,E=envK(),kick=E.kick||0,P=(x,y)=>[rc.x+x*k,rc.y+y*k],sp=FIRE_SPR,tb=KILL_TUBE(t),L=(tb[0]+tb[1])/2,blk=KILL_BLACK(t)>0;
+    const B=KILL_BULB(t,kick);g.save();
+    // plastic sheeting breathes a little in the draft
+    ALIVE_FX.cloth(g,rc,t,{box:[560,95,895,268],tile:12,amp:1.1,wave:300,speed:.006});
+    // blood on the floor: deeper and redder in the pools, then the gloss
+    const WM=STIMG.killroom_wet,SM=STIMG.killroom_spec,BM=STIMG.killroom_blood,fy=386;
+    if(BM&&BM.ok){g.globalCompositeOperation='multiply';g.globalAlpha=.9;g.drawImage(BM,rc.x,rc.y+fy*k,BM.width*k,BM.height*k)}
+    g.globalCompositeOperation='lighter';
+    if(SM&&SM.ok){g.globalAlpha=Math.min(1,.3+.7*L);g.drawImage(SM,rc.x,rc.y+fy*k,SM.width*k,SM.height*k)}
+    // reflections of the tubes and the bulb in the wet floor: long streaks that waver, only where the floor is wet
+    if(WM&&WM.ok){const c=KILL_RC(WM.width,WM.height),q=c.getContext('2d');q.globalCompositeOperation='source-over';q.clearRect(0,0,c.width,c.height);
+      const streak=(x,w,a,rgb)=>{if(a<.02)return;const gr=q.createLinearGradient(0,4,0,c.height);gr.addColorStop(0,`rgba(${rgb},${a})`);gr.addColorStop(.55,`rgba(${rgb},${a*.45})`);gr.addColorStop(1,`rgba(${rgb},0)`);q.fillStyle=gr;
+        for(let y=4;y<c.height;y+=3){const wob=Math.sin(t*.06+y*.35)*2.5*(y/c.height);q.fillRect(x-w/2+wob,y,w*(1+y/c.height*.6),3)}};
+      streak(517,160,1*tb[0],'215,228,255');streak(858,160,1*tb[1],'215,228,255');streak(B.x,46,.9*B.lv,'255,205,140');
+      if(blk)streak(1107,70,.5*KILL_RED(t),'255,40,30');
+      q.globalCompositeOperation='destination-in';q.drawImage(WM,0,0);g.globalAlpha=1;g.drawImage(c,rc.x,rc.y+fy*k,c.width*k,c.height*k)}
+    // ripples from footsteps and landings
+    g.globalCompositeOperation='source-over';for(const r of G.ripples){const a=r.life/40,[x,y]=P(r.x+12,r.y+2);g.strokeStyle=`rgba(190,60,60,${a*.55})`;g.lineWidth=1.4*k;g.beginPath();g.ellipse(x,y,(40-r.life)*1.5*k,(40-r.life)*.38*k,0,0,7);g.stroke()}
+    // blood dripping off the front edge of the table: a drop swells, falls, splashes
+    for(const[x,per,ph]of[[612,170,0],[735,230,60],[842,200,130]]){const f=(t+ph)%per,[px,py]=P(x,300);
+      if(f<per-40){const sw=Math.min(1,f/(per-40));g.fillStyle='rgba(95,4,6,.95)';g.beginPath();g.ellipse(px,py+sw*3*k,(1.4+sw*1.2)*k,(1.6+sw*2.6)*k,0,0,7);g.fill()}
+      else{const u=(f-(per-40))/40,y=300+u*u*112;if(u<.92){const[qx,qy]=P(x,y);g.fillStyle='rgba(110,6,8,.95)';g.beginPath();g.ellipse(qx,qy,1.6*k,3.2*k,0,0,7);g.fill()}
+        else{const v=(u-.92)/.08,[qx,qy]=P(x,413);g.strokeStyle=`rgba(150,20,20,${.7*(1-v)})`;g.lineWidth=1.2*k;g.beginPath();g.ellipse(qx,qy,(3+v*12)*k,(1+v*3)*k,0,0,7);g.stroke()}}}
+    // a shadow slides past the door's little window now and then
+    {const per=1100,c=Math.floor(t/per),f=t%per;if(aH(c*2.9+.1)<.55&&f<140){const u=f/140,[a,b]=P(1072,153),[cc,d]=P(1143,214);g.save();g.beginPath();g.rect(a,b,cc-a,d-b);g.clip();
+      const dir=aH(c)<.5?1:-1,x=dir>0?1040+u*140:1180-u*140,[hx,hy]=P(x,178);g.fillStyle='rgba(0,0,0,.88)';g.beginPath();g.ellipse(hx,hy,20*k,25*k,0,0,7);g.fill();g.fillRect(hx-38*k,hy+18*k,76*k,40*k);g.restore()}}
+    // meat hooks and a carcass on chains from the ceiling rail
+    const sw=(i,amp)=>Math.sin(t*(.02+aH(i)*.012)+aH(i+.4)*9)*amp+Math.sin(t*.13+i)*kick*.12;
+    g.globalCompositeOperation='source-over';g.lineCap='round';
+    for(let i=0;i<o.hooks.length;i++){const[x,len,kind]=o.hooks[i],a=sw(i,kind===1?.022:.045),[px,py]=P(x,-14);g.save();g.translate(px,py);g.rotate(-a);
+      g.strokeStyle='#2c2a2c';g.lineWidth=3.2*k;g.beginPath();for(let s2=0;s2<=len;s2+=9){g.moveTo(-2*k,s2*k);g.lineTo(2*k,(s2+5)*k)}g.stroke();
+      g.strokeStyle='rgba(150,160,190,.35)';g.lineWidth=1*k;g.beginPath();for(let s2=0;s2<=len;s2+=9){g.moveTo(-1.5*k,s2*k);g.lineTo(1.5*k,(s2+4)*k)}g.stroke();
+      g.translate(0,len*k);g.strokeStyle='#0b0a0c';g.lineWidth=6*k;g.beginPath();g.arc(-7*k,11*k,10*k,-1.4,2.7);g.stroke();g.strokeStyle='#7c7f8c';g.lineWidth=3.4*k;g.beginPath();g.arc(-7*k,11*k,10*k,-1.4,2.7);g.stroke();
+      g.strokeStyle='rgba(220,230,255,.5)';g.lineWidth=1*k;g.beginPath();g.arc(-7*k,11*k,10.5*k,-1.2,.2);g.stroke();
+      if(kind===1){g.translate(0,18*k);const s=k*.3,body=()=>{g.beginPath();g.moveTo(-22*s,-10*s);g.lineTo(-30*s,40*s);g.bezierCurveTo(-120*s,80*s,-125*s,230*s,-95*s,330*s);g.bezierCurveTo(-80*s,400*s,-55*s,450*s,-20*s,470*s);g.lineTo(20*s,470*s);g.bezierCurveTo(55*s,450*s,80*s,400*s,95*s,330*s);g.bezierCurveTo(125*s,230*s,120*s,80*s,30*s,40*s);g.lineTo(22*s,-10*s);g.closePath()};
+        body();const gr=g.createLinearGradient(-110*s,0,110*s,0);gr.addColorStop(0,'#2e060c');gr.addColorStop(.3,'#7a2028');gr.addColorStop(.5,'#a85a5e');gr.addColorStop(.7,'#7a2028');gr.addColorStop(1,'#1e040a');g.fillStyle=gr;g.fill();
+        g.save();body();g.clip();g.strokeStyle='rgba(215,190,190,.42)';g.lineWidth=5*s;for(let r=0;r<6;r++){const y=(150+r*38)*s;g.beginPath();g.moveTo(-85*s,y);g.quadraticCurveTo(-30*s,y+18*s,-8*s,y+6*s);g.moveTo(85*s,y);g.quadraticCurveTo(30*s,y+18*s,8*s,y+6*s);g.stroke()}
+        g.fillStyle='rgba(15,0,0,.55)';g.fillRect(-9*s,40*s,18*s,430*s);const lg2=g.createLinearGradient(0,0,0,470*s);lg2.addColorStop(0,'rgba(170,190,255,.18)');lg2.addColorStop(.5,'rgba(0,0,0,0)');g.fillStyle=lg2;g.fillRect(-130*s,0,260*s,470*s);g.restore();
+        body();g.strokeStyle='#070507';g.lineWidth=5*s;g.stroke();
+        const f=(t+i*37)%60;if(aH(Math.floor((t+i*37)/60)+i)<.6){g.fillStyle='rgba(105,6,8,.95)';g.beginPath();g.ellipse(0,470*s+f*f*.05*s,1.4*k,2.6*k,0,0,7);g.fill()}}
+      g.restore()}
+    // the bare bulb on its cord
+    {const[cx,cy]=P(KILL_BULB_X,-14),[bx,by]=P(B.x,B.y);g.strokeStyle='#111';g.lineWidth=1.6*k;g.beginPath();g.moveTo(cx,cy);g.lineTo(bx,by-9*k);g.stroke();
+      g.fillStyle='#2a2622';g.fillRect(bx-3.5*k,by-11*k,7*k,7*k);g.fillStyle=B.lv>.2?`rgba(255,225,170,${.4+.6*B.lv})`:'rgba(90,80,70,.9)';g.beginPath();g.ellipse(bx,by,5*k,6.5*k,0,0,7);g.fill()}
+    // beams and dust under the tubes, the bulb's pool of light, and the shading of the whole room
+    g.globalCompositeOperation='lighter';
+    [[517,tb[0]],[858,tb[1]]].forEach(([x,lv])=>{if(lv<.05)return;const[px,py]=P(x,52),CN=KILL_CONE();g.globalAlpha=Math.min(1,.85*lv);g.drawImage(CN,px-CN.width/2*k,py-20*k,CN.width*k,CN.height*k);
+      g.globalAlpha=Math.min(1,.55*lv);const s2=230*k;g.drawImage(sp('190,205,255'),px-s2,py-s2*.25,s2*2,s2*.9);g.globalAlpha=1;
+      for(let j=0;j<12;j++){const u=(t*.0016*(1+aH(j+x))+aH(j*3+x))%1,dx=(aH(j+x*.3)-.5)*2*(80+u*210),[mx,my]=P(x+dx+Math.sin(t*.01+j)*10,60+u*400);g.fillStyle=`rgba(225,235,255,${.45*lv*Math.sin(u*Math.PI)})`;g.fillRect(mx,my,1.8*k,1.8*k)}});
+    if(B.lv>.05){const[bx,by]=P(B.x,B.y);g.globalAlpha=Math.min(1,.55*B.lv);let s2=150*k;g.drawImage(sp('255,190,120'),bx-s2,by-s2,s2*2,s2*2);g.globalAlpha=Math.min(1,.9*B.lv);s2=16*k;g.drawImage(sp('255,235,190'),bx-s2,by-s2,s2*2,s2*2);
+      g.globalAlpha=Math.min(1,.35*B.lv);const[fx2,fy2]=P(B.x+(B.x-KILL_BULB_X)*1.6,430);s2=120*k;g.save();g.translate(fx2,fy2);g.scale(1,.22);g.drawImage(sp('255,180,110'),-s2,-s2,s2*2,s2*2);g.restore()}
+    g.globalAlpha=1;
+    // shading: the corners and far ends fall into darkness; the whole room drops away when the tubes die
+    const SH=KILL_SHADE(rc.im);g.globalCompositeOperation='multiply';g.globalAlpha=.9;g.drawImage(SH,rc.x,rc.y,SH.width*k,SH.height*k);g.globalAlpha=1;
+    const dark=Math.max(0,1-L)*.72*(1-B.lv*.25);if(dark>.01){g.globalCompositeOperation='source-over';g.fillStyle=`rgba(3,3,8,${dark})`;g.fillRect(rc.x,rc.y,rc.im.width*k,rc.im.height*k)}
+    // the red emergency lamp over the door: dead in normal light, pulsing in a blackout
+    {const[lx,ly]=P(1107,96);g.globalCompositeOperation='source-over';g.fillStyle='#1a0c0c';g.fillRect(lx-13*k,ly-6*k,26*k,11*k);const rv=blk?KILL_RED(t):.06;
+      g.fillStyle=`rgba(${Math.round(80+170*rv)},20,18,1)`;g.fillRect(lx-10*k,ly-4*k,20*k,7*k);
+      if(rv>.1){g.globalCompositeOperation='lighter';g.globalAlpha=Math.min(1,.75*rv);let s2=380*k;g.drawImage(sp('255,30,20'),lx-s2,ly-s2*.4,s2*2,s2*1.3);g.globalAlpha=Math.min(1,rv);s2=26*k;g.drawImage(sp('255,90,70'),lx-s2,ly-s2,s2*2,s2*2)}}
+    g.restore()},
   // bats crossing the moon
   moonbats(g,rc,t,o){const k=rc.k,per=o.every||420,c=Math.floor(t/per),f=t%per;if(f>220)return;g.save();g.fillStyle='rgba(8,8,12,.9)';
     for(let j=0;j<(o.n||5);j++){const u=(f-j*10)/200;if(u<0||u>1)continue;const x=o.x-o.r*1.6+u*o.r*3.2+(aH(c+j)-.5)*60,y=o.y+(aH(c+j*.3)-.5)*o.r*1.2+Math.sin(u*9+j)*10,s=(7+aH(j+c)*6)*k,w=Math.sin(t*.45+j*2);
@@ -2674,8 +2759,8 @@ Object.assign(ALIVE,{
     ['smoke',{x:118,y:300,n:6,spread:30,rise:200,size:55,a:.12,rate:.0035,wind:.35,rgb:'80,70,70'}]],
   killroom:[
     ['tubes',{at:[[517,48,170],[858,48,166]],always:1}],
-    ['neon',{at:[[203,125,22,40,'90,140,255'],[1177,128,22,40,'90,140,255']],a:.22,every:520,dead:.02,burst:.08}],
-    ['motes',{x0:300,x1:1080,y0:70,y1:380,n:14,size:3,rgb:'200,215,255',a:.22}]],
+    ['killroom',{hooks:[[118,88,1],[300,70,0],[575,92,0],[1030,40,0],[1250,84,1],[1338,110,0]]}],
+    ['neon',{at:[[203,125,22,40,'90,140,255'],[1177,128,22,40,'90,140,255']],a:.22,every:520,dead:.04,burst:.12}]],
   nu_bigtop:[
     ['neon',{at:[[302,270,18,22,'255,170,70'],[430,290,16,20,'255,170,70'],[555,300,14,18,'255,170,70'],[690,282,14,18,'255,170,70'],[1010,192,16,20,'255,170,70'],[1100,232,16,20,'255,170,70'],[800,228,14,18,'255,170,70'],[160,250,14,18,'255,170,70']],a:.4,every:220,dead:.05,burst:.3}],
     ['neon',{at:[[720,220,180,200,'255,230,170']],a:.12,every:600,burst:.1,seed:9}],
@@ -3199,7 +3284,7 @@ function spawnAura(f){
 function footstep(f,land){
   if(!G.env)return;
   const wet=G.env.puddles.some(p=>f.x>p[0]&&f.x<p[1]);
-  if(wet){for(let i=0;i<(land?14:4);i++)G.parts.push({type:'drop',x:f.x+(Math.random()-.5)*30,y:GROUND,vx:(Math.random()-.5)*4,vy:-2-Math.random()*(land?5:2.5),life:30,max:30});G.ripples.push({x:f.x,y:GROUND+8,life:40});if(land||Math.random()<.5)sfx('splash')}
+  if(wet){const sc=STAGES[G.stage].splash;for(let i=0;i<(land?14:4);i++)G.parts.push({type:'drop',x:f.x+(Math.random()-.5)*30,y:GROUND,vx:(Math.random()-.5)*4,vy:-2-Math.random()*(land?5:2.5),life:30,max:30,col:sc});G.ripples.push({x:f.x,y:GROUND+8,life:40});if(land||Math.random()<.5)sfx('splash')}
   else if(land){sfx('land');for(let i=0;i<8;i++)G.parts.push({type:'dust',x:f.x+(Math.random()-.5)*40,y:GROUND-4,vx:(Math.random()-.5)*2,vy:-.5-Math.random(),life:40,max:40,r:8})}
 }
 
@@ -3866,7 +3951,7 @@ function drawParts(g,only){
       case'dot':C(g,p.x,p.y,p.r*a+1,p.col);break;
       case'blood':if(S.blood)C(g,p.x,p.y,p.r,p.col);break;
       case'debris':g.save();g.translate(p.x,p.y);g.rotate(p.rot);g.fillStyle=p.col;g.fillRect(-p.w/2,-p.h/2,p.w,p.h);g.restore();break;
-      case'drop':C(g,p.x,p.y,1.6,'rgba(200,215,255,.8)');break;
+      case'drop':C(g,p.x,p.y,1.6,p.col||'rgba(200,215,255,.8)');break;
       case'ring':g.beginPath();g.arc(p.x,p.y,(1-a)*46+6,0,Math.PI*2);g.lineWidth=3*a+1;g.strokeStyle=p.col;g.stroke();break;
       case'paper':g.save();g.translate(p.x,p.y);g.rotate(p.rot);g.fillStyle='#d8d2c0';g.fillRect(-7,-5,14,10);g.restore();break;
       case'steam':g.globalAlpha=a*.35;C(g,p.x,p.y,p.r,'#c8c8d0');break;
@@ -4324,7 +4409,7 @@ const ENV_STAGE={
   mansion:['cemetery',{fog:.5,lightning:0,bats:0}], hellpit:['hell',{bats:0,skyBats:1}], overpass:['city',{sparks:.35,ripples:.6}],
   alley:['city',{ripples:.5,drips:.5,bats:4}], hauntedhouse:['cemetery',{bats:4,fog:1.6}], neontunnel:['neon',{sparks:1.4,power:1.2,lights:1.8}], midway:['carnival',{ripples:.4}],
   warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0,embers:0}],
-  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], killroom:['quiet',{dust:.4,mist:.2,lights:0,power:.3}]
+  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
 };
 function envConfig(stg){const e=ENV_STAGE[stg.id]||[stg.indoor?'quiet':'city'],c={...ENV_PRESET[e[0]],...(e[1]||{})};
   if(stg.indoor){c.fireworks=0;c.shooting=0;c.lightning=0;c.bats=c.bats?c.bats*.4:0;c.flashes=0}
