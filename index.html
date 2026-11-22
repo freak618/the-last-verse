@@ -996,17 +996,52 @@ const SHEET_SYN={idle:['idle','stance','stand'],walk:['walk_fwd','walk','walk_fo
   punch:['punch','attack','light','jab'],kick:['kick'],special:['heavy','special','attack2','punch'],ultra:['heavy','ultra','special','punch'],
   hurt:['hit','hurt','damage','pain'],ko:['knockdown','ko','death','die','fall','dead'],win:['victory','win','taunt','idle']};
 const PROJ_LABEL={bass:'Bass wave',chain:'Chain',hellfire:'Hellfire',block:'Cinderblock',hexbag:'Hex bag',ink:'Ink spill',wisp:'Toxic wisp'};
-const sheetOf=c=>c.custom?CUSTOM[c.id]:c.sheet?BUILTIN_SHEETS[c.sheet]:SPR;
+const sheetOf=c=>c.custom?CUSTOM[c.id]:c.sheet?(SHEET_USE[c.sheet]&&(SHEET_USE[c.sheet]=++sheetTick),BUILTIN_SHEETS[c.sheet]):SPR;
 /* fighters with their own animated sheets (cut from AI sheets); they keep their photo for portraits */
 const BUILTIN_SHEETS={};
 /* On the Claude version the sprite sheets live in the page's own storage area (not in its files, which have a size limit).
    Each sheet loads from its normal file first (itch.io build) and falls back to stored copy. */
 const SHEET_STORE={"sheets/1eye.webp":"/_blob/21fde1f29c88ec238acd6f66b6488910","sheets/amtrak.webp":"/_blob/1c64cede1816646297b5d8cd55a77b09","sheets/azfallen.webp":"/_blob/fe39febe6416cdfa7a456ce278dd6d98","sheets/bartwayne-1a5d6685.webp":"/_blob/65094acd24fcc377b309a8190860b3ae","sheets/bash.webp":"/_blob/65cd2506c9b78825b516354343d815ba","sheets/beeker.webp":"/_blob/30d344b24d7c0aaccc8a810031e5e3b1","sheets/blessed1.webp":"/_blob/24a7898c0bddc42867e32433a427da1e","sheets/blindfury.webp":"/_blob/b129efd5e9b725a726cdc97750301274","sheets/bodmon.webp":"/_blob/98c5b0970dc9245c45db1fb996ea42f0","sheets/bonez.webp":"/_blob/742253ef181aab2a506be4cfc75fe708","sheets/bunghole.webp":"/_blob/90aff3e1c487b9425f93a4dd126faaff","sheets/cartoon.webp":"/_blob/70bd5cd27df24df6d6f5231d33b19515","sheets/cfpaul-ed1f9a81.webp":"/_blob/d3102baf15531f6cc8c930eba88fd0b2","sheets/chandler.webp":"/_blob/cb0597f3e0fa1b8ed2cf700232790596","sheets/chaz.webp":"/_blob/18eae777a3e39a81d69ca8ca8021a851","sheets/chuck.webp":"/_blob/866f824e3586d13868965ae86d989226","sheets/countrettodoh-f620dd0b.webp":"/_blob/0a53ac69741a320ee1b374d3cda14ab6","sheets/dabbalette.webp":"/_blob/a4fadd7b9709407b74b28d14b670ca31","sheets/darkone.webp":"/_blob/4ae5cb44eeb9cc3daa29e7717b0161c8","sheets/darling.webp":"/_blob/0fb92445e0b354187b4cdfd1326ef999","sheets/deadlight.webp":"/_blob/d1f3f781bff8d75886ff28da32e61146","sheets/devilette.webp":"/_blob/4cb19387ffcc7855e4f8686e5a3fc729","sheets/dotz-4b06d60d.webp":"/_blob/7fd6f31a6b4bd01a8524ba1784c9737f","sheets/dreywall.webp":"/_blob/eef7c5a2eda3abe71a48c6a92685daa0","sheets/emillion.webp":"/_blob/d225a5f5b990be1dcb20a68f1624664f","sheets/enokh.webp":"/_blob/4c2df7e125fd277faec6ecec441658f9","sheets/fkg.webp":"/_blob/9611e5d7acb7002c6b5cc9b0f5ddc82b","sheets/freakyp.webp":"/_blob/3d5ceac2d0c08ca8e15d5c753c8864ec","sheets/freekshow.webp":"/_blob/ef7c180c5820bfa74d2335f8702b04ca","sheets/frodo.webp":"/_blob/5f224944658d609845562e3a615f6feb","sheets/ged.webp":"/_blob/9af45bd3c2263d4efbc7cc2356cc83a1","sheets/grimee.webp":"/_blob/5c68871bdefb2b65be864721a15e5ad4","sheets/hippie.webp":"/_blob/06e4a49293789123ab10184b430e144d","sheets/hobie.webp":"/_blob/7f26148d324db38c048e18f645380acf","sheets/impeny.webp":"/_blob/b499d3d8e5f445014cd5deaa4bd00edc","sheets/insanityj.webp":"/_blob/a65b8d6d48363a698c66a376548c47c9","sheets/jason.webp":"/_blob/60d81a8c5113b5f72dc7895171f93f39","sheets/jayspacely.webp":"/_blob/1f91e456e6004bcd97db20614ffa0fd1","sheets/johnboi-ce5e3f96.webp":"/_blob/f9fe4c359a9cd2fb768ecde1838a4dc8","sheets/joshnaylor-d8262ab0.webp":"/_blob/02dc0f2a20ba5db5a717157c07095f5d","sheets/juggodevil.webp":"/_blob/1976f7f569ab33f7230081e156893c90","sheets/kayspaidz-33f7f415.webp":"/_blob/03ee52bb3a21b17a9533d024fa4afb80","sheets/key.webp":"/_blob/9d8390ebbc80ab7b914159bd2dcfb350","sheets/kiddjewell-c4a08683.webp":"/_blob/951fc543945dbc100c1dee5358cd81ce","sheets/kingnubs.webp":"/_blob/11774541a6cc3f4ea3e75a0a1d4f3e44","sheets/klownie-cebabefb.webp":"/_blob/34efea98d7c399ab47631315167317bf","sheets/krenshaw.webp":"/_blob/c1f282861ef502de24ddc761576c1578","sheets/kutty.webp":"/_blob/6ae40df3eb5fc1192b552dd52f6108f3","sheets/lion.webp":"/_blob/847e97c2fb9b20d7a0a74abf5f076b45","sheets/madcounty.webp":"/_blob/ddfae8d8f961210312a53094e68a2520","sheets/markbone.webp":"/_blob/319a5e7c877788f2224f1d5fa62389aa","sheets/marshall.webp":"/_blob/a8611b9dad5ad0d1301c5d2b8bb7816e","sheets/maxwicked-8ffa59f8.webp":"/_blob/f48b3e047f73ae513474a75e106cd056","sheets/meknik.webp":"/_blob/3e059b874f6248802d1dcaea0132bacc","sheets/midnightinyami.webp":"/_blob/7a580ef36c3bddedac469fa71c27eea6","sheets/modert.webp":"/_blob/7d1d06e8596710af8ecd0ca67b2bf1f0","sheets/mordemir.webp":"/_blob/1dbc35d115cc11822796eb6a20c67276","sheets/mrgreen.webp":"/_blob/8143e4a6f0f8544c87cda68a11f38fc8","sheets/mykill-398095e4.webp":"/_blob/54c4ac9bb132f2636d98f6838ab61369","sheets/mystic.webp":"/_blob/22eadf5d1d10e17cf518d6f9e987a673","sheets/nate.webp":"/_blob/41ae2387f1ce7a05bf3033da0845d1ed","sheets/nukie-60d2bcf1.webp":"/_blob/7a03433073e4a9f1bb61fe88ba59b0cd","sheets/nyteshade.webp":"/_blob/89dcac2228b06fb56c1081df4e68cc46","sheets/otice.webp":"/_blob/ef258201e4929f6ee9779ab47faff296","sheets/oxpimpin.webp":"/_blob/de97e5202581c32621a0271518cfde6a","sheets/panduh-e4323813.webp":"/_blob/cb792623ed4ccec1bac7a37ed441dad5","sheets/panduh2.webp":"/_blob/716dd0b4a487d2518ab03d7f9ffa0212","sheets/penutt-4577ba85.webp":"/_blob/3780e242cfd101096b6ea9136570c145","sheets/popz-1ff1750d.webp":"/_blob/03b2c4e2490cad67b2e3ba823756ddda","sheets/pow.webp":"/_blob/630aab22a8daa1518748a0d489c0be5a","sheets/preach-a6ef8739.webp":"/_blob/ed5a65506478e2b88f95f0fbcd6e5b02","sheets/puff.webp":"/_blob/9d2b116f0acdc975f9e572adfc2dd926","sheets/puff2.webp":"/_blob/0b6aba24563180989a4310c1159b6940","sheets/purple.webp":"/_blob/a99b65ca4937d91b90164765012b39ba","sheets/ranger2.webp":"/_blob/ee38fab02bbfb7b26b299a6a2a0b5569","sheets/rathovgod.webp":"/_blob/3f728152fc9a053d531da9af05f448e0","sheets/reaper315-6b2c29d7.webp":"/_blob/5a588a95e43d1e9746a9e1379a32864d","sheets/reup-4b9ad7cd.webp":"/_blob/fa1f63e94f9dd2b6f52f281352944e44","sheets/scopio-0290dd0c.webp":"/_blob/5f42823823eb1c13e2c5847795279bd2","sheets/siintay.webp":"/_blob/1c471f70b5b872785ddb515907a6916b","sheets/smith.webp":"/_blob/3a84507d2c9bbc06cfe6f00a04224da1","sheets/specs.webp":"/_blob/56439b7231afb2615d4bc8ab3e7dd8ca","sheets/stabby-232f9962.webp":"/_blob/9781ac970b2cc19622b28108f4d303b3","sheets/striff.webp":"/_blob/f6d01c4e875e78c9b84204a0d8c86cf0","sheets/superman-290e771e.webp":"/_blob/65798f9e86f177bb703412004777c3b5","sheets/tactics.webp":"/_blob/fdea0b6ec6f1e2c40f9fad79b73116b2","sheets/tat.webp":"/_blob/0346f452268fc6d6f543fc3e27f57a10","sheets/tdc.webp":"/_blob/d6bb44f87701ca684427b258917754fe","sheets/triple6.webp":"/_blob/ec08b3aca371f0a64979ac4c6b63d1dd","sheets/trussup.webp":"/_blob/032a8e38058473e03a7c1486a1556f14","sheets/tyjah.webp":"/_blob/94108bdbd97b820a91609053dfe2741a","sheets/uncledubb.webp":"/_blob/a080c461065c4dd59f7b5aa5ee7c23f2","sheets/unhappy.webp":"/_blob/70f2ceb18496f73cff6cf0b57de95e02","sheets/youngal-1c136927.webp":"/_blob/206182733f8f23c7073f83d4bb76e474","sheets/zacpacillo-869979d1.webp":"/_blob/111db4e98ac066cbd09fc20986d16f31","sheets/zactyrr.webp":"/_blob/971bdce3b31ca2a68ffc986e3f0628c4","sheets/zay.webp":"/_blob/a1abd3893408a13e6786f94eb28d67ce","sheets/pumpkin-917ad11d.webp":"/_blob/5b6b47806bbc3fcd64f2e87cf8421c78","sheets/zachyedirte-c83297da.webp":"/_blob/8f26d19312d6060be4a9f4a590fd0f58","sheets/kreetur-a1b6b548.webp":"/_blob/cbf11ef75b4b0bf26198247d0c515ea8","sheets/rook-35c67b20.webp":"/_blob/c7b4211cbc9ca0681faf4749b04a28b6","sheets/rwk-081c08b0.webp":"/_blob/db3063f16e7f11ab8827c1fdb21a0f0f","sheets/jraw-157a0767.webp":"/_blob/e1876accbf94ab864efaa56832f07532","sheets/xoreckless-03d345e5.webp":"/_blob/7ba679c9cab47a44614af023181e39e9","sheets/odd17y-4bc7aa4b.webp":"/_blob/0ffd546341c338d7a390f4c024cbf1f4","sheets/ccolei-635037fa.webp":"/_blob/482108c9b9ab5b4fee30784e48973922","sheets/dezlooce-3f1a5cbd.webp":"/_blob/5cf72139f5e4e38fe5fbfb9e0e90bfbf","sheets/nkpnatefrog-0f6ba6c7.webp":"/_blob/cbb84ea22abf17d3e459069f0ffe61a3","sheets/lossaint-0aad01cf.webp":"/_blob/6b9f2ce51ea03d09040965b660d9af2a","sheets/miketek-6bef35c3.webp":"/_blob/ad44424b5047c0afc6436d9c7c7e692e","sheets/swill-70cf12e4.webp":"/_blob/f8e97575de2a701c1550c29d5a7389a6","sheets/dillynatas-bae0d8a0.webp":"/_blob/f13a5a8af8d092fc270a84bee453640a","sheets/waynesavage-0240e46a.webp":"/_blob/60abe21f563cdb09466fa2668b171de7","sheets/wickedwayz-10bdbadb.webp":"/_blob/e82523cba72c3354a8c7e3d6e3292be2","sheets/jgorey-be5ac63d.webp":"/_blob/892bbbd6a5074675c09a599f65ea3793","sheets/klu-6998aaf4.webp":"/_blob/2d4c70d840f88bdc09072eeb025caaa7","sheets/frosty-f9b03eed.webp":"/_blob/2bc30bdd3a17002ab50f13e60835e0b7","sheets/poof-511792d9.webp":"/_blob/c897484e0ac12d927ae085edbe0b2dc7","sheets/revrust-5c59210b.webp":"/_blob/092091e8441cf2619b50241aabbc4c88","sheets/strickt9-1365de2c.webp":"/_blob/cc298adbd60d4bdebb4582187c247b74","sheets/boofboycloutdon-b631379b.webp":"/_blob/f637545c8c57f46089cecb7b5c28ad5d","sheets/nicky6-a5f96194.webp":"/_blob/6d943470829db3788fb2c3cb0a6a298a","sheets/ashley-650e2b8e.webp":"/_blob/745902fe7f9200c503d261d4456aa3c6","sheets/mizzmurda-9f5e768d.webp":"/_blob/f134afadb345c5a9bf5d8b470dde7c8e","sheets/vanitylette-b29e145f.webp":"/_blob/b422a5885c912d52a8a2de50ee872dba","sheets/blynd-9eef69d4.webp":"/_blob/19a886d2971ab32721d5b02357b6e221"};
 function sheetFallback(im,S){im.addEventListener('error',()=>{const b=SHEET_STORE[S.png0||S.png];if(b&&!im.dataset.fb){im.dataset.fb=1;S.png0=S.png0||S.png;S.png=b;im.src=b}})}
-function loadBuiltinSheets(){for(const id in (ASSET.sheets||{})){const S=ASSET.sheets[id],c=CHARS.find(x=>x.sheet===id);if(!c)continue;
-  const C=c.cut&&CUT.meta.chars[c.cut],size=C?C.h*C.scale/refHeight():1,im=new Image();
-  sheetFallback(im,S);im.onload=()=>{try{BUILTIN_SHEETS[id]=buildCustom({id,atlas:S.atlas,faceLeft:false,size},im)}catch(e){console.error('sheet',id,e)}
-    SPK.base[id]=im;spkLoad().then(()=>{if(SPK.edits[id]&&!spkEmpty(SPK.edits[id]))spkBake(id).catch(e=>console.error('sprite edits',id,e))})};im.src=S.png}}
+/* Fighter sheets load on demand. Holding all 126 at once takes about 4.6 GB once decoded, which phones (and many laptops) don't have,
+   so a sheet loads when its fighter is picked or steps into a fight, and the least recently used ones are let go once more than
+   SHEET_CAP are held. Fighters in the current match are never let go. The crowds don't need full sheets: each crowd member is baked
+   into small canvases (CAGE.cache) by a background warmer that loads one sheet at a time and lets it go again. */
+const LOW_MEM=(()=>{try{const dm=navigator.deviceMemory,ua=/Android|iPhone|iPad|iPod|Mobile|Silk|Kindle/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  return !!(ua||(dm&&dm<=4)||(matchMedia('(pointer:coarse)').matches&&!(dm>=8)))}catch(e){return false}})();
+const SHEET_CAP=LOW_MEM?6:24,CROWD_WARM=LOW_MEM?16:70,SHEET_LOAD={},SHEET_IMG={},SHEET_USE={},WARM_SKIP=new Set();let sheetTick=0;
+function sheetPinned(){const p=new Set(),add=c=>{if(c&&c.sheet)p.add(c.sheet)};
+  try{add(G.f1&&G.f1.c);add(G.f2&&G.f2.c);add(G.c1);add(G.c2);add(G.coopMate);(G.pick||[]).forEach(add);(G.team||[]).forEach(t=>(t||[]).forEach(add));
+    (G.teams||[]).forEach(t=>(t||[]).forEach(add))}catch(e){}return p}
+function ensureSheet(id,temp){
+  if(!id||!ASSET.sheets||!ASSET.sheets[id])return Promise.resolve(null);
+  if(!temp)SHEET_USE[id]=++sheetTick;else if(!SHEET_USE[id])SHEET_USE[id]=0;
+  if(SHEET_LOAD[id])return SHEET_LOAD[id];
+  const S=ASSET.sheets[id],c=CHARS.find(x=>x.sheet===id);if(!c)return Promise.resolve(null);
+  const C=c.cut&&CUT.meta.chars[c.cut],size=C?C.h*C.scale/refHeight():1,im=new Image();SHEET_IMG[id]=im;
+  return SHEET_LOAD[id]=new Promise(res=>{let errs=0;
+    sheetFallback(im,S);
+    im.addEventListener('error',()=>{if(im._dead)return;if(++errs>1||!im.dataset.fb){console.error('sheet failed',id);delete SHEET_LOAD[id];delete SHEET_IMG[id];res(null)}});
+    im.onload=()=>{if(im._dead)return;try{BUILTIN_SHEETS[id]=buildCustom({id,atlas:S.atlas,faceLeft:false,size},im)}catch(e){console.error('sheet',id,e)}
+      SPK.base[id]=im;try{IDLE_H.delete(c.sprite);PEAK.clear()}catch(e){}
+      spkLoad().then(()=>{if(SPK.base[id]===im&&SPK.edits[id]&&!spkEmpty(SPK.edits[id]))spkBake(id).catch(e=>console.error('sprite edits',id,e))});
+      if(!temp)sheetTrim();res(BUILTIN_SHEETS[id]||null)};
+    im.src=S.png})}
+function sheetDrop(id){const im=SHEET_IMG[id];delete SHEET_LOAD[id];delete SHEET_IMG[id];delete BUILTIN_SHEETS[id];delete SPK.base[id];
+  if(im){im._dead=1;im.onload=null;try{im.removeAttribute('src');im.src=''}catch(e){}}}
+function sheetTrim(){const pin=sheetPinned(),ids=Object.keys(SHEET_LOAD).filter(id=>BUILTIN_SHEETS[id]||SPK.base[id]);if(ids.length<=SHEET_CAP)return;
+  ids.filter(id=>!pin.has(id)).sort((a,b)=>(SHEET_USE[a]||0)-(SHEET_USE[b]||0)).slice(0,ids.length-SHEET_CAP).forEach(sheetDrop)}
+function ensureChars(...cs){for(const c of cs.flat(3))if(c&&c.sheet&&!c.custom)ensureSheet(c.sheet)}
+/* the crowd warmer: bakes crowd members one at a time while the game runs (the club's women first, since that crowd is all theirs) */
+let warmBusy=false;
+function crowdWarm(){if(warmBusy)return;if(document.hidden){setTimeout(crowdWarm,2000);return}if(CAGE.cache.size>=CROWD_WARM)return;
+  const ok=c=>c&&c.sheet&&!c.custom&&!c.villain&&!isSoon(c)&&ASSET.sheets[c.sheet]&&!CAGE.cache.has(c.id)&&!WARM_SKIP.has(c.id);
+  let c=CLUB.women.map(id=>CHARS.find(x=>x.id===id)).find(ok);if(!c){const pool=CHARS.filter(ok);c=pool[Math.floor(REAL_RANDOM()*pool.length)]}
+  if(!c)return;warmBusy=true;const had=!!SHEET_LOAD[c.sheet],next=()=>{warmBusy=false;setTimeout(crowdWarm,LOW_MEM?900:250)};
+  ensureSheet(c.sheet,true).then(SH=>{if(!SH){WARM_SKIP.add(c.id);next();return}
+    Promise.resolve(SH.img&&SH.img.decode?SH.img.decode():0).catch(()=>{}).then(()=>{try{cageCacheOne(c)}catch(e){console.error('crowd',c.id,e)}
+      if(!CAGE.cache.has(c.id))WARM_SKIP.add(c.id);if(!had&&!sheetPinned().has(c.sheet)&&!(SHEET_USE[c.sheet]>0))sheetDrop(c.sheet);next()})})}
+function loadBuiltinSheets(){setTimeout(crowdWarm,LOW_MEM?5000:1500)}
 const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 function refHeight(){return 194.62;const hs=[];for(const k in SPR.meta.chars){const ch=SPR.meta.chars[k],A=ch.anims.idle;if(A&&A.length)hs.push(SPR.meta.frames[A[0]][5]*ch.scale)}hs.sort((a,b)=>a-b);return hs.length?hs[hs.length>>1]:200}
 function parseAtlas(json){
@@ -1171,6 +1206,7 @@ function spriteFrame(f,st){
   }
 }
 function drawFighter(g,f,st){
+  if(!f.photo&&f.c.sheet&&!f.c.custom&&!SHEET_LOAD[f.c.sheet])ensureSheet(f.c.sheet);
   if(f.c.cut&&(f.photo||!(f.c.sheet&&BUILTIN_SHEETS[f.c.sheet]&&BUILTIN_SHEETS[f.c.sheet].ok)))return drawCut(g,f,st);
   const SH=sheetOf(f.c);if(!SH||!SH.ok)return;
   const k=spriteFrame(f,st),fr=SH.meta.frames[k],s=SH.meta.chars[f.c.sprite].scale*charSize(f.c);
@@ -3800,6 +3836,7 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
      startRound and die on STAGES[G.stage].setup(). Land on a real stage
      instead: the wrong backdrop beats a dead match. */
   stage=(Number.isInteger(stage)&&stage>=0&&stage<STAGES.length)?stage:0;
+  ensureChars(c1,c2);
   {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600}
   Object.assign(G,{c1,c2,ai1,ai2,stage,demo,need,round:1,wins:[0,0],mods:(!demo&&G.type==='pvp'&&FE.pendingMods)||{}});FE.pendingMods=null;
   if(isFeat(G.type))G.team=[(G.teams&&G.teams[0]||[c1]).slice(0,2),(G.teams&&G.teams[1]||[c2]).slice(0,2)];else G.team=null;
@@ -3808,6 +3845,7 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
   if(G.net4&&G.netTeams&&!demo)G.team=G.netTeams.map(t=>t.slice());
   if(G.coop&&!demo&&G.coopMate){if(!isFeat(G.type))G.team=[[c1,G.coopMate],G.type==='training'?[c2]:[c2,coopFoe(c2,[c1,G.coopMate,c2])]];
     G.own=[['p1','p2'],['cpu','cpu']]}
+  ensureChars(G.team||[]);
   startRound();
 }
 /* ---------- Features: tag team, on Tekken Tag's rules ----------
@@ -4589,7 +4627,7 @@ const SEWA={nodes:null,
 
 /* ---------- crowd manager: the roster cheering behind the fence ---------- */
 function cageBuild(){
-  const busy=new Set([G.f1&&G.f1.c.id,G.f2&&G.f2.c.id]),pool=CHARS.filter(c=>!c.villain&&c.sheet&&BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok&&!busy.has(c.id));
+  const busy=new Set([G.f1&&G.f1.c.id,G.f2&&G.f2.c.id]),pool=CHARS.filter(c=>!c.villain&&c.sheet&&(CAGE.cache.has(c.id)||BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok)&&!busy.has(c.id));
   const den={low:.55,medium:.8,high:1}[S.crowdDen||'medium'],fans=[];if(!pool.length)return fans;
   const uniq=pool.sort(()=>REAL_RANDOM()-.5);CAGE.queue=[];
   let pi=0;const take=()=>{const c=uniq[pi++];if(c&&!CAGE.cache.has(c.id)&&!CAGE.queue.includes(c))CAGE.queue.push(c);return c};
@@ -4599,7 +4637,7 @@ function cageBuild(){
   fans.sort((a,b)=>a.y-b.y);return fans}
 function cageReact(level){for(const f of CAGE.fans){if(REAL_RANDOM()>.35+level*.6)continue;f.delay=REAL_RANDOM()*20*(1.4-level);f.next=REAL_RANDOM()<.5+level*.3?'cheer':'jump';f.hold=90+level*150+REAL_RANDOM()*80}CAGE.hype=Math.min(1,CAGE.hype+level*.6)}
 /* each crowd character's idle and win frames, drawn once into small canvases so the crowd never touches the big sheets again */
-function cageCacheOne(c){const SH=sheetOf(c);if(!SH||!SH.ok)return;const CH=SH.meta.chars[c.sprite],sc=CH.scale*charSize(c)*.55*R,out={};
+function cageCacheOne(c){const SH=sheetOf(c);if(!SH||!SH.ok){if(c.sheet&&!c.custom&&!c._cw){c._cw=1;ensureSheet(c.sheet,true).then(x=>{c._cw=0;if(x&&!CAGE.cache.has(c.id)){cageCacheOne(c);if(!sheetPinned().has(c.sheet)&&!(SHEET_USE[c.sheet]>0))sheetDrop(c.sheet)}})}return}const CH=SH.meta.chars[c.sprite],sc=CH.scale*charSize(c)*.55*R,out={};
   for(const an of['idle','win']){const L=(CH.anims[an]&&CH.anims[an].length?CH.anims[an]:CH.anims.idle);out[an]=L.map(k=>{const fr=SH.meta.frames[k],w=Math.max(1,Math.ceil(fr[2]*sc)),h=Math.max(1,Math.ceil(fr[3]*sc)),cv=document.createElement('canvas');cv.width=w;cv.height=h;
     cv.getContext('2d').drawImage(SH.img,fr[0],fr[1],fr[2],fr[3],0,0,w,h);return{cv,ax:fr[4]*sc,ay:fr[5]*sc}})}
   CAGE.cache.set(c.id,out)}
@@ -4666,7 +4704,7 @@ function cageNear(g,t){const E=envK(),sh=(E.kick||0)*1.2,jx=(aH(Math.floor(t)+7)
 
 /* ---------- The Wet Kitty: live lights, gear and the crowd ---------- */
 const hsl=(h,s,l,a)=>`hsla(${h},${s}%,${l}%,${a})`;
-function clubBuild(){const pool=CLUB.women.map(id=>CHARS.find(c=>c.id===id)).filter(c=>c&&c.sheet&&BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok&&c!==(G.f1&&G.f1.c)&&c!==(G.f2&&G.f2.c));
+function clubBuild(){const pool=CLUB.women.map(id=>CHARS.find(c=>c.id===id)).filter(c=>c&&c.sheet&&(CAGE.cache.has(c.id)||BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok)&&c!==(G.f1&&G.f1.c)&&c!==(G.f2&&G.f2.c));
   const den={low:.6,medium:.85,high:1}[S.crowdDen||'medium'],n=Math.max(1,Math.min(pool.length,Math.round(CLUB.slots.length*den))),fans=[];if(!pool.length)return fans;
   CAGE.queue.push(...pool.filter(c=>!CAGE.cache.has(c.id)&&!CAGE.queue.includes(c)));
   const order=pool.slice().sort(()=>REAL_RANDOM()-.5),per=Math.ceil(n/2),L=CLUB.slots.slice(0,6),Rr=CLUB.slots.slice(6),pickEven=a=>a.filter((_,i)=>Math.floor((i+1)*per/6)>Math.floor(i*per/6)),slots=pickEven(L).concat(pickEven(Rr));
@@ -4752,7 +4790,7 @@ function scReact(level){for(const f of SC.fans){if(REAL_RANDOM()>.3+level*.5)con
 ALIVE_FX.crowd=function(g,rc,t,o){
   const k=rc.k,W0=rc.im.width,id=STAGES[G.stage]&&STAGES[G.stage].id,key=id+'|'+(G.f1&&G.f1.c.id)+'|'+(G.f2&&G.f2.c.id)+'|'+(S.crowdDen||'medium');
   if(SC.key!==key){SC.key=key;SC.lastT=t;const busy=new Set([G.f1&&G.f1.c.id,G.f2&&G.f2.c.id]);
-    const pool=CHARS.filter(c=>!c.villain&&!isSoon(c)&&c.sheet&&BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok&&!busy.has(c.id)).sort(()=>REAL_RANDOM()-.5);
+    const pool=CHARS.filter(c=>!c.villain&&!isSoon(c)&&c.sheet&&(CAGE.cache.has(c.id)||BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok)&&!busy.has(c.id)).sort(()=>REAL_RANDOM()-.5);
     const den={low:.6,medium:.85,high:1}[S.crowdDen||'medium'],uniq=pool;SC.fans=[];let ci=0;
     for(const row of o.rows){const n=Math.max(2,Math.round(row.n*den));for(let i=0;i<n;i++){const c=uniq[ci++];if(!c)break;if(!CAGE.cache.has(c.id)&&!CAGE.queue.includes(c))CAGE.queue.push(c);
       const x=W0*(row.x0+(row.x1-row.x0)*(i+.5+(REAL_RANDOM()-.5)*.5)/n);SC.fans.push({c,x,y:row.y-REAL_RANDOM()*5,s:row.s*(.93+REAL_RANDOM()*.14),facing:x<W0/2?1:-1,anim:REAL_RANDOM()*400|0,rate:.8+REAL_RANDOM()*.5,mode:'idle',modeT:REAL_RANDOM()*240,jy:0,vy:0,bob:REAL_RANDOM()*6.28})}}
@@ -4863,6 +4901,7 @@ const TEST_API=window.__TEST__={ready:false,
     envSpawn(kind,n=1){ENV.flock(n,false,kind);const b=ENV.bats.filter(x=>x.kind===kind);b.forEach(x=>{const v=ENV.view(x.par);x.x=v.x0+(v.x1-v.x0)*(.3+Math.random()*.4)});return b.length},
     envBats(){return ENV.bats.map(b=>{const v=ENV.view(b.par);return{x:Math.round(b.x),y:Math.round(b.y),vx:+b.vx.toFixed(2),x0:Math.round(v.x0),x1:Math.round(v.x1),par:+b.par.toFixed(2)}})},
     spkOpen(){spkOpen();return true},spkState(){return{open:SPK.open,edits:Object.keys(SPK.edits),base:Object.keys(SPK.base).length}},
+    sheetState(){return{lowMem:LOW_MEM,cap:SHEET_CAP,loaded:Object.keys(BUILTIN_SHEETS).filter(k=>BUILTIN_SHEETS[k].ok),pending:Object.keys(SHEET_LOAD).length,crowd:CAGE.cache.size,cage:CAGE.fans.length,club:CLUB.fans.length,sc:(typeof SC!=='undefined'&&SC.fans)?SC.fans.length:-1,stage:G.stage,f1:G.f1&&G.f1.c.sheet,f2:G.f2&&G.f2.c.sheet}},
     timeRender(n=3){const a=performance.now();for(let i=0;i<n;i++)render();return (performance.now()-a)/n},
     cageProf(){const out={};let a=performance.now();useCam(1);cageFront(ctx,G.env,tick);out.front=performance.now()-a;a=performance.now();cageNear(ctx,tick);out.near=performance.now()-a;a=performance.now();const f=CAGE.fans[0];for(let i=0;i<20;i++)drawFighter(ctx,{c:f.c,x:100,y:300,facing:1,anim:5,walkT:0,atk:null,flash:0,vy:0,vx:0},'win');out.fan20=performance.now()-a;out.n=CAGE.fans.length;return out},
     cageProf2(){const stg=STAGES[G.stage],rc={...fullRect(stg),im:STIMG.cage};useCam(1);const out={};let a=performance.now();ALIVE_FX.cage(ctx,rc,tick,{});out.alive=performance.now()-a;a=performance.now();ENV.drawBack();ENV.drawFront();out.env=performance.now()-a;a=performance.now();drawStageBack(stg,tick);out.back=performance.now()-a;out.k=rc.k;out.p=CAGE.prof;return out},
@@ -5290,6 +5329,7 @@ const ACT={
   },
 };
 function afterPicks(){
+  ensureChars(G.pick);
   {
     const c=G.pick[0];
     if((G.type==='pvp'||G.type==='features'||G.type==='training'||G.type==='watch')&&G.pick.length<2){showSelect();return}
@@ -7601,7 +7641,7 @@ function spkOrd(id,a,e){const at=spkAtlas(id),n=((at.animations[a]||[]).length)+
 function spkCharH(id){const at=spkAtlas(id),m=at.meta||{};if(m.charHeight)return m.charHeight;const f=at.frames[(at.animations.idle||[])[0]];return f?(f.anchor?f.anchor.y:f.frame.h)*.92:200}
 function spkMoveH(id,a){const at=spkAtlas(id),L=(at.animations[a]&&at.animations[a].length?at.animations[a]:at.animations.idle)||[];const hs=L.map(n=>at.frames[n].frame.h).sort((x,y)=>x-y);return hs.length?hs[hs.length>>1]:spkCharH(id)}
 /* rebuild a fighter's sheet in memory from its original picture + the saved edits (or back to the original when there are none) */
-async function spkBake(id){const S=ASSET.sheets[id],c=CHARS.find(x=>x.sheet===id),base=SPK.base[id];if(!S||!c||!base)return;
+async function spkBake(id){if(!SPK.base[id])await ensureSheet(id);const S=ASSET.sheets[id],c=CHARS.find(x=>x.sheet===id),base=SPK.base[id];if(!S||!c||!base)return;
   const C=c.cut&&CUT.meta&&CUT.meta.chars[c.cut],size=C?C.h*C.scale/refHeight():1;
   const e=SPK.edits[id]?spkFill(SPK.edits[id]):null;
   if(!e||spkEmpty(e)){BUILTIN_SHEETS[id]=buildCustom({id,atlas:S.atlas,faceLeft:false,size},base);spkFlush(c);return}
@@ -7909,7 +7949,7 @@ $('q').oninput=e=>{q=e.target.value.trim().toLowerCase();render()};
 $('walkonly').onchange=e=>{walkOnly=e.target.checked;render()};
 $('wrap').addEventListener('dragover',e=>{if(hasFiles(e))e.preventDefault()});$('wrap').addEventListener('drop',e=>{if(hasFiles(e))e.preventDefault()});
 return{start(){build();stats();render();startTick();const n=Object.keys(SPK.edits).filter(k=>!spkEmpty(SPK.edits[k])).length;setState(n?`Saved edits on ${n} fighter(s)`:'No saved edits yet');
-    const miss=Object.keys(ASSET.sheets).filter(id=>!SPK.base[id]).length;if(miss)setState(`Still loading ${miss} sheet(s) — reopen the checker in a moment to see their problem-frame checks.`)},
+    const miss=Object.keys(ASSET.sheets).filter(id=>!SPK.base[id]).length;if(miss)setState(`Pixel checks cover the ${Object.keys(ASSET.sheets).length-miss} fighter(s) loaded right now — the rest load when they're picked.`)},
   refresh(){if(!DATA.length){this.start();return}build();stats();render();startTick()}}}
 
 loadSavedFighters();
