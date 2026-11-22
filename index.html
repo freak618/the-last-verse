@@ -3454,7 +3454,7 @@ function scrEntries(id,withLocal=scrDev()){const stg=STAGES.find(s=>s.id===id),o
   if(withLocal)for(const e of scrState(id).lib)out.push(e);return out}
 /* which video is on the screen right now: your override, else the schedule, else the stage's default */
 function scrActive(id,pub=!scrDev()){const s=pub?{manual:null,sched:[]}:scrState(id),all=scrEntries(id,!pub),find=k=>all.find(e=>e.id===k);
-  const lead={id:'leader',kind:'leader',name:'Film leader (built in)'},dflt=()=>all.find(e=>e.bundled&&!e.from)||lead;
+  const lead={id:'leader',kind:'leader',name:'Film leader (built in)'},und=all.filter(e=>e.bundled&&!e.from),dflt=()=>und.length?und[(SCR.rot||0)%und.length]:lead;   // several undated videos take turns, one per match
   if(s.manual==='default')return{e:dflt(),why:'default'};
   if(s.manual==='leader')return{e:lead,why:'manual'};
   if(s.manual&&find(s.manual))return{e:find(s.manual),why:'manual'};
@@ -4076,6 +4076,7 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
      instead: the wrong backdrop beats a dead match. */
   stage=(Number.isInteger(stage)&&stage>=0&&stage<STAGES.length)?stage:0;
   ensureChars(c1,c2);
+  if(!demo&&typeof SCR!=='undefined')SCR.rot=(SCR.rot||0)+1;
   {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600;WL=st&&st.wall?st.wall[0]:40;WR=st&&st.wall?st.wall[1]:WW-40}
   Object.assign(G,{c1,c2,ai1,ai2,stage,demo,need,round:1,wins:[0,0],mods:(!demo&&G.type==='pvp'&&FE.pendingMods)||{}});FE.pendingMods=null;
   if(isFeat(G.type))G.team=[(G.teams&&G.teams[0]||[c1]).slice(0,2),(G.teams&&G.teams[1]||[c2]).slice(0,2)];else G.team=null;
