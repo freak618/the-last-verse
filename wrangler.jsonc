@@ -1,0 +1,6 @@
+// Cloudflare deploy settings: publish this folder as a static site.
+{
+  "name": "the-last-verse",
+  "compatibility_date": "2026-11-18",
+  "assets": { "directory": "." }
+}
