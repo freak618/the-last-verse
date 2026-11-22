@@ -617,8 +617,12 @@ body:not(.phone) .frame:not(:fullscreen){width:min(100%,calc((100vh - 20px - 58p
 .fe-juke .jb-tx .btn{font-size:max(10px,1.25cqw);padding:.55cqw 1cqw;min-width:0;letter-spacing:.08em}
 .fe-juke .jb-tx .jb-play{flex:1}
 .fe-juke .jb-tx{flex-direction:row!important;flex-wrap:nowrap!important;align-items:center}.fe-juke .jb-tx .btn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0!important}.fe-juke .jb-tx .btn{width:auto!important;margin:0!important;display:inline-flex;justify-content:center;flex:0 1 auto}
-.jb-prog{width:100%;height:.55cqw;min-height:4px;background:#2a211a;border-radius:1cqw;cursor:pointer;overflow:hidden}
-.jb-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c7182a,#ffb040)}
+.jb-prog{position:relative;width:100%;height:.8cqw;min-height:7px;background:#2a211a;border-radius:1cqw;cursor:pointer;touch-action:none;margin:.5cqw 0;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.jb-prog::before{content:'';position:absolute;inset:-1cqw 0}
+.jb-prog:hover,.jb-prog.drag{height:1cqw}
+.jb-prog i{position:relative;display:block;height:100%;width:0;border-radius:1cqw;background:linear-gradient(90deg,#c7182a,#ffb040);pointer-events:none}
+.jb-prog i::after{content:'';position:absolute;right:-.8cqw;top:50%;width:1.6cqw;height:1.6cqw;min-width:12px;min-height:12px;border-radius:50%;transform:translate(0,-50%);background:radial-gradient(circle at 35% 35%,#fff2cf,#ffb040 60%,#a8641c);box-shadow:0 0 .6cqw rgba(255,150,40,.7),0 .2cqw .4cqw rgba(0,0,0,.7)}
+.jb-prog.drag i::after,.jb-prog:hover i::after{box-shadow:0 0 1cqw rgba(255,170,60,.95),0 .2cqw .4cqw rgba(0,0,0,.7)}
 .jb-time{width:100%;display:flex;justify-content:space-between;font-size:max(10px,1.1cqw);color:#9d8c70;font-variant-numeric:tabular-nums}
 .jb-tx{display:flex;gap:.7cqw;justify-content:center;flex-wrap:wrap}
 .jb-list{display:flex;flex-direction:column;gap:.35cqw;min-height:0;overflow-y:auto;padding:.4cqw;background:rgba(10,8,7,.55);border:1px solid #3a2a1a;border-radius:.6cqw}
@@ -6610,7 +6614,7 @@ TEST_API.net4=()=>({live:N4.live,role:N4.role,me:N4.me,slot:N4.mySlot,code:N4.co
   hashes:N4.hashes?[...N4.hashes.entries()].slice(-4):[],act:G.act,team:G.team&&G.team.map(t=>t.map(c=>c.id)),live2:G.f1&&[G.f1.c.id,G.f2.c.id],wins:G.wins&&G.wins.slice(),mode:G.mode,view:N4.view,cpu:N4.cpu,stall:N4.stall});
 
 TEST_API.netdbg=()=>NET.dbg;
-TEST_API.screens={trim:()=>({db:JB.trim?+(20*Math.log10(JB.trim.gain.value)).toFixed(1):null,vol:JB.el?JB.el.volume:null,chain:!!SA.an}),rms:()=>{if(!SA.an)return null;const b=new Float32Array(SA.an.fftSize);SA.an.getFloatTimeDomainData(b);let q=0;for(const v of b)q+=v*v;return Math.sqrt(q/b.length)},sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
+TEST_API.screens={juke:()=>{feJukebox();return true},trim:()=>({db:JB.trim?+(20*Math.log10(JB.trim.gain.value)).toFixed(1):null,vol:JB.el?JB.el.volume:null,chain:!!SA.an}),rms:()=>{if(!SA.an)return null;const b=new Float32Array(SA.an.fftSize);SA.an.getFloatTimeDomainData(b);let q=0;for(const v of b)q+=v*v;return Math.sqrt(q/b.length)},sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
 TEST_API.unlocks=()=>({...UNL});TEST_API.towerWin=()=>{G.type='tower';G.c1=G.c1||CHARS[0];G.tower={order:[CHARS[1]],i:0};endMatch(0)};
 TEST_API.netbench=()=>{const t=performance.now();for(let i=0;i<200;i++)netSnap();return{msPerSnap:(performance.now()-t)/200,parts:G.parts.length,decals:G.decals.length}};
 TEST_API.net=()=>({live:NET.live,role:NET.role,link:NET.link,F:NET.F,confirmed:NET.confirmed,rollbacks:NET.rollbacks,maxDepth:NET.maxDepth,desync:NET.desync,
@@ -7231,9 +7235,22 @@ function jbIntroStart(){if(JB.introStarted)return;JB.introStarted=true;
   setTimeout(()=>{const a=JB.el;if(a&&a.paused&&!JB.userPaused){window.addEventListener('pointerdown',retry,true);window.addEventListener('keydown',retry,true)}},600)}
 function jbAuto(){if(G.demo||JB.userPaused||!jbOnList().length||(JB.fails||0)>=4)return;const a=JB.el;if(a&&!a.paused)return;if(a&&JB.i>=0&&jbOn(JB.i)&&!a.ended&&a.currentTime>0){jbPlay();return}jbNext()}
 function jbPrev(){if(!TRACKS.length)return;if(JB.el&&JB.el.currentTime>3&&!(typeof SCR!=='undefined'&&SCR.ghOn)){JB.el.currentTime=0;return}const on=(typeof SCR!=='undefined'&&SCR.ghOn&&ghAllowed().length)?ghAllowed():jbOnList();if(!on.length)return;const k=on.indexOf(JB.i);jbPlay(on[(k<0?0:k-1+on.length)%on.length])}
+/* scrubbing: click or drag along the bar (or use the arrow keys on it) to jump to any point in the song. In the Grindhouse, where the
+   song follows the video, it moves the video there instead and the song follows. */
+function jbSeek(f){const a=JB.el;if(!a||!a.duration||JB.i<0)return;const t=Math.max(0,Math.min(a.duration-.25,f*a.duration));
+  if(typeof SCR!=='undefined'&&SCR.ghOn){const act=scrActive(STAGES[G.stage].id);if(act&&act.e.kind==='youtube'){ytCmd('seekTo',[t+(act.e.audioAt||0),true]);SA.yt.t=t+(act.e.audioAt||0);SA.yt.at=performance.now()}}
+  try{a.currentTime=t}catch(e){}jbTick()}
+addEventListener('pointerdown',e=>{const bar=e.target.closest&&e.target.closest('#jbBar');if(!bar||!JB.el||!JB.el.duration)return;e.preventDefault();e.stopPropagation();
+  const f=ev=>{const r=bar.getBoundingClientRect();return Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))};
+  bar.classList.add('drag');try{bar.setPointerCapture(e.pointerId)}catch(x){}JB.drag=f(e);jbTick();
+  const mv=ev=>{JB.drag=f(ev);jbTick()},up=ev=>{bar.removeEventListener('pointermove',mv);bar.removeEventListener('pointerup',up);bar.removeEventListener('pointercancel',up);bar.classList.remove('drag');
+    const v=JB.drag;JB.drag=null;if(ev.type!=='pointercancel'&&v!=null)jbSeek(v);jbTick()};
+  bar.addEventListener('pointermove',mv);bar.addEventListener('pointerup',up);bar.addEventListener('pointercancel',up)},true);
+addEventListener('keydown',e=>{if(!e.target||e.target.id!=='jbBar'||!JB.el||!JB.el.duration)return;const d=JB.el.duration,st={ArrowLeft:-5,ArrowRight:5,PageDown:-15,PageUp:15}[e.key];
+  if(st==null&&e.key!=='Home'&&e.key!=='End')return;e.preventDefault();e.stopPropagation();const t=e.key==='Home'?0:e.key==='End'?d-1:JB.el.currentTime+st;jbSeek(t/d)},true);
 const jbFmt=t=>{t=isFinite(t)?Math.floor(t):0;return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
-function jbTick(){const a=JB.el,p=document.getElementById('jbP');if(!a||!p)return;const d=a.duration||0;
-  p.style.width=(d?a.currentTime/d*100:0)+'%';document.getElementById('jbC').textContent=jbFmt(a.currentTime);document.getElementById('jbD').textContent=jbFmt(d)}
+function jbTick(){const a=JB.el,p=document.getElementById('jbP');if(!a||!p)return;const d=a.duration||0,cur=JB.drag!=null?JB.drag*d:a.currentTime;
+  p.style.width=(d?cur/d*100:0)+'%';document.getElementById('jbC').textContent=jbFmt(cur);document.getElementById('jbD').textContent=jbFmt(d)}
 function jbPaint(){const box=ov.querySelector('.fe-juke');if(!box)return;const a=JB.el,on=a&&!a.paused&&JB.i>=0,t=TRACKS[JB.i];
   box.querySelector('.jb-disc').classList.toggle('spin',!!on);
   document.getElementById('jbT').textContent=t?t.title:(TRACKS.length?'Nothing playing':'No songs yet');
@@ -7271,7 +7288,7 @@ function feJukebox({pause=false}={}){
         <div class="jb-disc"><span></span></div>
         <div class="jb-side">
           <div class="jb-now"><small>Now playing</small><b id="jbT"></b><span id="jbA"></span></div>
-          <div class="jb-prog" id="jbBar"><i id="jbP"></i></div><div class="jb-time"><span id="jbC">0:00</span><span id="jbD">0:00</span></div>
+          <div class="jb-prog" id="jbBar" role="slider" aria-label="Song position" tabindex="0"><i id="jbP"></i></div><div class="jb-time"><span id="jbC">0:00</span><span id="jbD">0:00</span></div>
           <div class="jb-tx"><button class="btn sm" data-act="jb" data-c="prev" aria-label="Previous song" ${dis}>⏮</button><button class="btn red sm jb-play" data-act="jb" data-c="play" ${dis}>▶ Play</button><button class="btn sm" data-act="jb" data-c="next" aria-label="Next song" ${dis}>⏭</button></div>
           <div class="jb-tx"><button class="btn sm" data-act="jb" data-c="shuffle">Random: On</button><button class="btn sm" data-act="jb" data-c="repeat">Repeat: All</button></div>
         </div>
@@ -7281,7 +7298,7 @@ function feJukebox({pause=false}={}){
     <div class="jb-knobs">${KNOBS.map(([k,l])=>knobHTML(k,l)).join('')}<button class="btn sm jb-back${pause?' red':''}" data-back data-act="goback">${pause?'Back to pause':'Back'}</button></div>
     ${feBar([['nav','Move'],['ok','Select'],['alt','Play / Pause'],['tabs','Skip'],['back','Back']])}</div>`,{clear:!pause});
   vslWire(ov.querySelector('.jb-knobs'));
-  const bar=document.getElementById('jbBar');bar.onclick=e=>{const a=JB.el;if(!a||!a.duration)return;const r=bar.getBoundingClientRect();a.currentTime=clamp((e.clientX-r.left)/r.width,0,1)*a.duration};
+  const bar=document.getElementById('jbBar');   /* clicking and dragging the bar: see jbSeek */
   FE.cur={id:'jukebox',input(m){const a=document.activeElement;
     if(a&&a.classList.contains('fe-sld')&&(m.a==='left'||m.a==='right')){knobStep(a,m.a==='right'?1:-1);return true}
     if(m.a==='alt'){jbToggle();return true}
