@@ -753,7 +753,7 @@ const ASSET={"mature":"assets/mature.webp","atlas":"assets/atlas-6ea2b326.webp",
 const QS=new URLSearchParams(location.search),TEST=QS.has('test');
 const REAL_RANDOM=Math.random;
 if(QS.has('seed')){let s=(+QS.get('seed')||1)>>>0;Math.random=()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
-const W=960,H=540,GROUND=468,INK='#050506';let WW=1600;
+const W=960,H=540,GROUND=468,INK='#050506';let WW=1600,WL=40,WR=1560;
 const GOTH='"Bangers","Impact","Arial Black",sans-serif';
 const COND='"Barlow Condensed","Arial Narrow",sans-serif';
 const BONE='#e9e4d8',BLOOD='#b3121f';
@@ -1543,7 +1543,7 @@ const STAGES=[
    build(g){},fg(g){},lights(){},
  },
  /* ---- New Update stages ---- */
- { id:'nu_ring',name:'The Backyard Ring',img:'nu_ring',full:{scale:0.7308,feet:735/977,p:.15,floor:612,bands:[[0,612,.16]],pNear:1.06},indoor:false,dry:true,wet:false,ambient:[90,85,110],grade:'#5a3a5a',rim:'rgba(255,200,150,.36)',farTone:'none',shadowL:[{x:1500,y:-260,a:.32}],crowd:{groups:[],front:0},
+ { id:'nu_ring',name:'The Backyard Ring',img:'nu_ring',ww:1204,wall:[193,1014],zoom:1.12,full:{scale:1204/1672,feet:688/941,p:1,rigid:true,front:'nu_ring_front'},indoor:false,dry:true,wet:false,ambient:[140,130,150],grade:'#5a3a5a',rim:'rgba(255,200,150,.36)',farTone:'none',shadowL:[{x:1500,y:-260,a:.32}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -1844,7 +1844,7 @@ function paintClub(){
 const STIMG={};
 for(const k in ASSET.stages){const im=new Image();im.onload=()=>{im.ok=true};im.src=ASSET.stages[k];STIMG[k]=im}
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',nu_ring:'nu_ring',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 STIMG.slaughter=(()=>{try{return paintSlaughterhouse()}catch(e){return{ok:false}}})();
 STIMG.sewer=(()=>{try{return paintSewer()}catch(e){return{ok:false}}})();
 STIMG.cage=(()=>{try{return paintCage()}catch(e){return{ok:false}}})();
@@ -1912,7 +1912,7 @@ function drawStageBack(stg,t){
       // effects ride the backdrop exactly: same depth and same width as the painting's band behind them
       const rc=fullRect(stg),fx=FX[stg.id],BB=F.bands||[[0,F.floor||im.height,F.p]],bb=BB.find(b=>b[1]>=im.height*.55)||BB[BB.length-1],bp=bb[2];
       const rcb={...rc,x:(WW-W)/2*bp-(w-W)/2,p:bp,im},wsb=Math.max(w,W+(WW-W)*bp+80),bx=(WW-W)/2*bp-(wsb-W)/2;
-      if(F.legacyFloor){useCam(F.p);ctx.save();Object.assign(rcb,{x:rc.x,p:rc.p})}else{useCam(bp);ctx.save();ctx.translate(bx,0);ctx.scale(wsb/w,1);ctx.translate(-rcb.x,0)}
+      if(F.rigid){useCam(1);ctx.save();Object.assign(rcb,{x:rc.x,p:1})}else if(F.legacyFloor){useCam(F.p);ctx.save();Object.assign(rcb,{x:rc.x,p:rc.p})}else{useCam(bp);ctx.save();ctx.translate(bx,0);ctx.scale(wsb/w,1);ctx.translate(-rcb.x,0)}
       if(stg.screen||(S.screenTune&&S.screenTune[stg.id]))try{drawScreen(stg,ctx,rcb,t)}catch(e){}
       if(fx&&S.fx!==false){fx(ctx,rcb,t,'back');fx(ctx,rcb,t,'front')}
       if(S.fx!==false&&ALIVE[stg.id])aliveDraw(ALIVE[stg.id],ctx,rcb,t);
@@ -1936,6 +1936,11 @@ function drawStageBack(stg,t){
     for(const p of G.env.props)drawProp(ctx,p,t);
   }
 }
+/* a rigid stage's front pieces (a ring's front posts, front turnbuckles, the near half of the side ropes and the apron), cut from the same
+   painting and drawn over the fighters at exactly the same place and scale as the painting itself, so the two never drift apart */
+function drawRigidFront(stg){const F=stg.full,im=STIMG[F.front],bk=STIMG[stg.img];if(!im||!im.ok||!bk||!bk.ok)return;
+  const w=bk.width*F.scale,h=bk.height*F.scale;useCam(1);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(im,(WW-w)/2,GROUND-h*F.feet,w,h)}
 function drawStageFront(stg,t){
   if(stg.front){useCam(1);stg.front(ctx,G.env,t)}
   drawStageFx();
@@ -2207,7 +2212,7 @@ function stageReact(ev){
   if(S.fx===false)return;
   const stg=STAGES[G.stage];
   if(ev.type==='hit'&&ev.amp>=.9)dustAt(ev.x,3,.8);
-  else if(ev.type==='slam'){const wx=ev.x<WW/2?40:WW-40;dustAt(wx,9,1.4);debrisAt(wx,GROUND-120,14);if(stg.id==='overpass')ceilingDebris(16)}
+  else if(ev.type==='slam'){const wx=ev.x<WW/2?WL:WR;dustAt(wx,9,1.4);debrisAt(wx,GROUND-120,14);if(stg.id==='overpass')ceilingDebris(16)}
   else if(ev.type==='ko'){dustAt(ev.x,12,1.8);debrisAt(ev.x,GROUND-10,8);(STAGE_KO[stg.id]||(()=>{}))(ev.x)}
   else if(ev.type==='super'){sparksAt(ev.x,GROUND-110,26,'255,220,150')}
 }
@@ -2597,10 +2602,9 @@ Object.assign(ALIVE,{
     ['wave',{x0:40,x1:440,y0:40,y1:760,amp:2,sp:.03}],['wave',{x0:2060,x1:2460,y0:40,y1:760,amp:2,sp:.033}],
     ['thump',{at:[[1100,470,180,140],[1530,470,180,140]],amt:.02,bpm:96}]],
   nu_ring:[
-    ['wave',{x0:140,x1:215,y0:30,y1:125,amp:3,sp:.07}],
-    ['neon',{at:[[1590,45,60,50,'255,240,200'],[200,330,22,26,'255,200,110'],[740,330,22,26,'255,200,110'],[1450,330,22,26,'255,200,110'],[215,215,24,30,'255,200,110'],[570,330,12,14,'255,200,110']],a:.35,spill:300,every:280}],
-    ['moths',{at:[[1590,50]],n:9}],
-    ['neon',{at:[[100,260,90,60,'255,60,60'],[1500,250,90,60,'255,40,40']],a:.12,every:360,burst:.4,seed:5}]],
+    ['neon',{at:[[300,63,46,34,'255,50,50'],[476,66,46,34,'205,185,255'],[1197,66,46,34,'205,185,255'],[1366,63,46,34,'255,50,50']],a:.32,spill:260,every:300,dead:.02,burst:.12}],
+    ['flame',{at:[[116,352,1.1]],size:34}],
+    ['smoke',{x:116,y:330,n:5,spread:30,rise:160,size:60,a:.10,rate:.003,wind:.3,rgb:'90,80,80'}]],
   nu_bigtop:[
     ['neon',{at:[[302,270,18,22,'255,170,70'],[430,290,16,20,'255,170,70'],[555,300,14,18,'255,170,70'],[690,282,14,18,'255,170,70'],[1010,192,16,20,'255,170,70'],[1100,232,16,20,'255,170,70'],[800,228,14,18,'255,170,70'],[160,250,14,18,'255,170,70']],a:.4,every:220,dead:.05,burst:.3}],
     ['neon',{at:[[720,220,180,200,'255,230,170']],a:.12,every:600,burst:.1,seed:9}],
@@ -3046,7 +3050,7 @@ class Fighter{
       this.y=GROUND;this.vy=0;if(this.stun>0||this.ko)this.vx*=.82;
     }
     this.wasAir=this.y<GROUND-2;
-    if(this.x<40||this.x>WW-40){if(Math.abs(this.vx)>7&&(this.stun>0||this.ko)){this.vx*=-.45;G.shake=Math.max(G.shake,6);burst(this.x<40?40:WW-40,this.y-80,'#c9c2b0',10,5);sfx('thud');crowdEvent('slam',this.x,1)}this.x=Math.max(40,Math.min(WW-40,this.x))}
+    if(this.x<WL||this.x>WR){if(Math.abs(this.vx)>7&&(this.stun>0||this.ko)){this.vx*=-.45;G.shake=Math.max(G.shake,6);burst(this.x<WL?WL:WR,this.y-80,'#c9c2b0',10,5);sfx('thud');crowdEvent('slam',this.x,1)}this.x=Math.max(WL,Math.min(WR,this.x))}
   }
   startAtk(type){
     this.atk={type,f:0,hit:false,hits:0,prop:false};
@@ -3876,7 +3880,7 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
      instead: the wrong backdrop beats a dead match. */
   stage=(Number.isInteger(stage)&&stage>=0&&stage<STAGES.length)?stage:0;
   ensureChars(c1,c2);
-  {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600}
+  {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600;WL=st&&st.wall?st.wall[0]:40;WR=st&&st.wall?st.wall[1]:WW-40}
   Object.assign(G,{c1,c2,ai1,ai2,stage,demo,need,round:1,wins:[0,0],mods:(!demo&&G.type==='pvp'&&FE.pendingMods)||{}});FE.pendingMods=null;
   if(isFeat(G.type))G.team=[(G.teams&&G.teams[0]||[c1]).slice(0,2),(G.teams&&G.teams[1]||[c2]).slice(0,2)];else G.team=null;
   G.own=null;
@@ -3981,8 +3985,8 @@ function separate(a,b){
   if(!a.ko&&!b.ko&&Math.abs(a.y-b.y)<100){
     const dx=b.x-a.x,min=58;
     if(Math.abs(dx)<min){const push=(min-Math.abs(dx))/2,s=Math.sign(dx)||a.facing;a.x-=s*push;b.x+=s*push;
-      a.x=Math.max(40,Math.min(WW-40,a.x));b.x=Math.max(40,Math.min(WW-40,b.x));
-      if(Math.abs(b.x-a.x)<min-1){if(a.x<=40)b.x=a.x+min;else if(b.x<=40)a.x=b.x+min;else if(a.x>=WW-40)b.x=a.x-min;else if(b.x>=WW-40)a.x=b.x-min}}
+      a.x=Math.max(WL,Math.min(WR,a.x));b.x=Math.max(WL,Math.min(WR,b.x));
+      if(Math.abs(b.x-a.x)<min-1){if(a.x<=WL)b.x=a.x+min;else if(b.x<=WL)a.x=b.x+min;else if(a.x>=WR)b.x=a.x-min;else if(b.x>=WR)a.x=b.x-min}}
   }
   const maxD=W-120;if(!a.ko&&!b.ko){if(a.x<b.x-maxD)a.x=b.x-maxD;if(a.x>b.x+maxD)a.x=b.x+maxD;if(b.x<a.x-maxD)b.x=a.x-maxD;if(b.x>a.x+maxD)b.x=a.x+maxD}
 }
@@ -4864,6 +4868,7 @@ function drawWorld(stg){
   for(const a of G.assists){const st=a.t<50?(a.y<GROUND?'jump':'special'):'jump';drawFighterLit(a,st,.92);useCam(1)}
   const order=(G.f2.atk&&!G.f1.atk)?[G.f1,G.f2]:[G.f2,G.f1];
   for(const f of order){drawFighterLit(f,stateOf(f));useCam(1);drawHeld(f)}
+  if(stg.full&&stg.full.rigid)drawRigidFront(stg);
   edObjMark();
   for(const p of G.projs)drawProj(ctx,p);
   drawParts(ctx);
@@ -4940,7 +4945,9 @@ const TEST_API=window.__TEST__={ready:false,
     envSpawn(kind,n=1){ENV.flock(n,false,kind);const b=ENV.bats.filter(x=>x.kind===kind);b.forEach(x=>{const v=ENV.view(x.par);x.x=v.x0+(v.x1-v.x0)*(.3+Math.random()*.4)});return b.length},
     envBats(){return ENV.bats.map(b=>{const v=ENV.view(b.par);return{x:Math.round(b.x),y:Math.round(b.y),vx:+b.vx.toFixed(2),x0:Math.round(v.x0),x1:Math.round(v.x1),par:+b.par.toFixed(2)}})},
     spkOpen(){spkOpen();return true},spkState(){return{open:SPK.open,edits:Object.keys(SPK.edits),base:Object.keys(SPK.base).length}},
-    sheetState(){return{lowMem:LOW_MEM,cap:SHEET_CAP,loaded:Object.keys(BUILTIN_SHEETS).filter(k=>BUILTIN_SHEETS[k].ok),pending:Object.keys(SHEET_LOAD).length,crowd:CAGE.cache.size,cage:CAGE.fans.length,club:CLUB.fans.length,sc:(typeof SC!=='undefined'&&SC.fans)?SC.fans.length:-1,stage:G.stage,f1:G.f1&&G.f1.c.sheet,f2:G.f2&&G.f2.c.sheet}},
+    ringXf(){const st=STAGES[G.stage],F=st.full,im=STIMG[st.img],r=cv.getBoundingClientRect();return{R,z:cam.z,camx:cam.x,sx:cam.sx,sy:cam.sy,k:F.scale,feet:F.feet,WW,GROUND,iw:im.width,ih:im.height,
+      css:[r.left,r.top,r.width,r.height],cvw:cv.width,cvh:cv.height,walls:[WL,WR],f:[G.f1.x,G.f2.x]}},
+        sheetState(){return{lowMem:LOW_MEM,cap:SHEET_CAP,loaded:Object.keys(BUILTIN_SHEETS).filter(k=>BUILTIN_SHEETS[k].ok),pending:Object.keys(SHEET_LOAD).length,crowd:CAGE.cache.size,cage:CAGE.fans.length,club:CLUB.fans.length,sc:(typeof SC!=='undefined'&&SC.fans)?SC.fans.length:-1,stage:G.stage,f1:G.f1&&G.f1.c.sheet,f2:G.f2&&G.f2.c.sheet}},
     timeRender(n=3){const a=performance.now();for(let i=0;i<n;i++)render();return (performance.now()-a)/n},
     cageProf(){const out={};let a=performance.now();useCam(1);cageFront(ctx,G.env,tick);out.front=performance.now()-a;a=performance.now();cageNear(ctx,tick);out.near=performance.now()-a;a=performance.now();const f=CAGE.fans[0];for(let i=0;i<20;i++)drawFighter(ctx,{c:f.c,x:100,y:300,facing:1,anim:5,walkT:0,atk:null,flash:0,vy:0,vx:0},'win');out.fan20=performance.now()-a;out.n=CAGE.fans.length;return out},
     cageProf2(){const stg=STAGES[G.stage],rc={...fullRect(stg),im:STIMG.cage};useCam(1);const out={};let a=performance.now();ALIVE_FX.cage(ctx,rc,tick,{});out.alive=performance.now()-a;a=performance.now();ENV.drawBack();ENV.drawFront();out.env=performance.now()-a;a=performance.now();drawStageBack(stg,tick);out.back=performance.now()-a;out.k=rc.k;out.p=CAGE.prof;return out},
@@ -6577,6 +6584,7 @@ function tuneBase(st){if(!st._b){const F=st.full;st._b={ww:st.ww||1600,zoom:st.z
 function tuneOf(st){return(S.stageTune||{})[st.id]||{}}
 function tuneVal(st,k){const t=tuneOf(st),d={ww:tuneBase(st).ww,zoom:tuneBase(st).zoom,pMul:1,pNear:tuneBase(st).F?tuneBase(st).F.pNear:1.25,scale:1,feet:0};return t[k]==null?d[k]:t[k]}
 function applyTune(st){const b=tuneBase(st);
+  if(st.full&&st.full.rigid){st.zoom=tuneVal(st,'zoom');return}
   st.ww=tuneVal(st,'ww');st.zoom=tuneVal(st,'zoom');
   if(st.full&&b.F){const F=st.full,m=tuneVal(st,'pMul');F.scale=b.F.scale*tuneVal(st,'scale');F.feet=b.F.feet+tuneVal(st,'feet');F.p=b.F.p*m;
     if(b.F.bands)F.bands=b.F.bands.map(x=>[x[0],x[1],x[2]*m]);F.pNear=tuneVal(st,'pNear')}
@@ -6686,7 +6694,7 @@ function edPanel(){
   edInfo();
 }
 function edSet(k,v){const st=STAGES[ED.si];S.stageTune=S.stageTune||{};const t=S.stageTune[st.id]=S.stageTune[st.id]||{};t[k]=v;
-  applyTune(st);if(k==='ww'){WW=st.ww;for(const f of[G.f1,G.f2])if(f)f.x=Math.max(40,Math.min(WW-40,f.x))}
+  applyTune(st);if(k==='ww'){WW=st.ww;WL=st.wall?st.wall[0]:40;WR=st.wall?st.wall[1]:WW-40;for(const f of[G.f1,G.f2])if(f)f.x=Math.max(WL,Math.min(WR,f.x))}
   saveS();const r=ED_ROWS.find(x=>x.k===k),e=document.querySelector(`#stEd [data-v="${k}"]`);if(e&&r)e.textContent=r.fmt(v);edInfo()}
 function edObjs(){const st=STAGES[ED.si];return(S.objTune&&S.objTune[st.id])?S.objTune[st.id].map(o=>({...o})):objLayout(G.env)}
 function edObjSave(L){const st=STAGES[ED.si];S.objTune=S.objTune||{};S.objTune[st.id]=L;saveS();buildObjs(G.env,L)}

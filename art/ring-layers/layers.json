@@ -1,0 +1,164 @@
+{
+ "size": [
+  1672,
+  941
+ ],
+ "front": [
+  "post_front_left",
+  "post_front_right",
+  "turnbuckles_front_left",
+  "turnbuckles_front_right",
+  "apron",
+  "rope_top_left_front",
+  "rope_top_right_front",
+  "rope_middle_left_front",
+  "rope_middle_right_front",
+  "rope_bottom_left_front",
+  "rope_bottom_right_front"
+ ],
+ "layers": [
+  "background",
+  "mat",
+  "rope_top_back",
+  "rope_middle_back",
+  "rope_bottom_back",
+  "rope_top_left_back",
+  "rope_top_left_front",
+  "rope_top_right_back",
+  "rope_top_right_front",
+  "rope_middle_left_back",
+  "rope_middle_left_front",
+  "rope_middle_right_back",
+  "rope_middle_right_front",
+  "rope_bottom_left_back",
+  "rope_bottom_left_front",
+  "rope_bottom_right_back",
+  "rope_bottom_right_front",
+  "turnbuckles_front_left",
+  "turnbuckles_front_right",
+  "turnbuckles_back_left",
+  "turnbuckles_back_right",
+  "post_front_left",
+  "post_front_right",
+  "post_back_left",
+  "post_back_right",
+  "apron"
+ ],
+ "info": {
+  "rope_top_back": {
+   "fit": [
+    0.00034043986696608806,
+    416.26233276723343
+   ],
+   "half": 6.0,
+   "x": [
+    360,
+    1315
+   ]
+  },
+  "rope_top_left": {
+   "fit": [
+    -0.06693478308311866,
+    434.7307974945529
+   ],
+   "half": 7.0,
+   "x": [
+    110,
+    305
+   ]
+  },
+  "rope_top_right": {
+   "fit": [
+    0.06032673780651163,
+    332.3602625093286
+   ],
+   "half": 6.75,
+   "x": [
+    1375,
+    1565
+   ]
+  },
+  "rope_middle_back": {
+   "fit": [
+    0.0004280478058502519,
+    493.75278854605
+   ],
+   "half": 5.5,
+   "x": [
+    360,
+    1315
+   ]
+  },
+  "rope_middle_left": {
+   "fit": [
+    -0.20772631191811103,
+    556.507149388717
+   ],
+   "half": 7.0,
+   "x": [
+    112,
+    305
+   ]
+  },
+  "rope_middle_right": {
+   "fit": [
+    0.19282598287561206,
+    229.85884089190822
+   ],
+   "half": 7.0,
+   "x": [
+    1375,
+    1565
+   ]
+  },
+  "rope_bottom_back": {
+   "fit": [
+    0.0007040741774436354,
+    568.8251670294817
+   ],
+   "half": 5.5,
+   "x": [
+    360,
+    1315
+   ]
+  },
+  "rope_bottom_left": {
+   "fit": [
+    -0.33363263072802196,
+    669.2785405959869
+   ],
+   "half": 5.5,
+   "x": [
+    105,
+    305
+   ]
+  },
+  "rope_bottom_right": {
+   "fit": [
+    0.32826722134577463,
+    119.68802912189167
+   ],
+   "half": 7.0,
+   "x": [
+    1375,
+    1565
+   ]
+  },
+  "split_x": {
+   "top": [
+    209.8780487804878,
+    1467.6829268292684
+   ],
+   "middle": [
+    210.85365853658539,
+    1467.6829268292684
+   ],
+   "bottom": [
+    207.4390243902439,
+    1467.6829268292684
+   ]
+  },
+  "feet_y": 688,
+  "depth": 0.4878048780487805
+ }
+}
