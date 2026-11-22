@@ -3582,6 +3582,10 @@ function ytPlace(id,e,g,x,y,w,h){const cv=g.canvas;if(!cv||cv.id!=='game')return
   const L=cv.offsetLeft+a.x*sc,T=cv.offsetTop+a.y*sc,W2=(b.x-a.x)*sc,H2=(b.y-a.y)*sc,key=`${L|0},${T|0},${W2|0},${H2|0}`;
   if(key!==YT.last){YT.last=key;Object.assign(YT.el.style,{left:L+'px',top:T+'px',width:W2+'px',height:H2+'px'})}
   YT.el.style.display='';YT.seen=performance.now()}
+/* YouTube turns loud songs down (loudness normalization, about 6 dB for a typical loud track) and its player stops at 100%, so a video
+   set to the same number as the jukebox sounds much quieter. Doubling the setting (+6 dB) brings it level with a jukebox song; at Music
+   volume 50% and up the player is at its maximum. */
+const YT_GAIN=2;
 /* sound: on a stage whose screen is set to carry the music, the jukebox goes quiet and the video plays at the music volume */
 function scrTick(){const now=performance.now(),stg=STAGES[G.stage],c=stg&&scrCfg(stg),fight=G.mode==='fight'&&!G.demo;
   const act=c&&scrActive(stg.id),o=stg&&SCR.vids[stg.id],ytLive=YT.el&&now-YT.seen<400,vidLive=o&&now-o.seen<600&&!o.err&&o.src;
@@ -3592,7 +3596,7 @@ function scrTick(){const now=performance.now(),stg=STAGES[G.stage],c=stg&&scrCfg
     if(mine){q.v.volume=vol;if(q.v.muted){q.v.muted=false}if(G.paused&&!q.v.paused)q.v.pause();else if(!G.paused&&q.v.paused&&q.src){const pp=q.v.play();if(pp&&pp.catch)pp.catch(()=>{q.v.muted=true;q.v.play().catch(()=>{})})}}
     else if(!q.v.muted)q.v.muted=true}
   if(YT.el){if(!ytLive){if(YT.el.style.display!=='none'){YT.el.style.display='none';ytCmd('pauseVideo')}if(now-YT.seen>8000&&YT.vid){YT.el.src='about:blank';YT.vid=null}}
-    else if(YT.ready){if(G.paused)ytCmd('pauseVideo');else ytCmd('playVideo');if(on&&vol>0){ytCmd('unMute');ytCmd('setVolume',[Math.round(vol*100)])}else ytCmd('mute')}}}
+    else if(YT.ready){if(G.paused)ytCmd('pauseVideo');else ytCmd('playVideo');if(on&&vol>0){ytCmd('unMute');ytCmd('setVolume',[Math.round(clamp(vol*YT_GAIN,0,1)*100)])}else ytCmd('mute')}}}
 setInterval(scrTick,250);
 /* thumbnails for the library */
 function scrThumb(src){return new Promise(ok=>{const v=document.createElement('video');v.muted=true;v.preload='auto';v.playsInline=true;let done=false;
