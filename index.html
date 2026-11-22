@@ -3627,11 +3627,18 @@ const ghTrackOf=e=>e&&e.audio?TRACKS.findIndex(t=>t.src===e.audio):-1;
 function ghVideos(){const stg=STAGES[G.stage];return stg?scrEntries(stg.id,false).filter(e=>e.kind==='youtube'&&ghTrackOf(e)>=0):[]}
 function ghAllowed(){return ghVideos().map(ghTrackOf)}
 function ghVideoFor(i){return ghVideos().find(e=>ghTrackOf(e)===i)||null}
-function ghTap(){if(SA.an||!AC||AC.state!=='running'||!JB.el)return;try{const n=AC.createMediaElementSource(JB.el);SA.an=AC.createAnalyser();SA.an.fftSize=1024;SA.an.smoothingTimeConstant=.55;SA.data=new Uint8Array(SA.an.frequencyBinCount);n.connect(SA.an);SA.an.connect(AC.destination)}catch(x){SA.an=null}}
+/* the jukebox's sound path: song -> its own level (so every song plays equally loud, see JB_TARGET) -> a safety limiter -> analyser -> out.
+   Built once the game's audio is running; until then songs play straight, as before. */
+const JB_TARGET=-10;   // loudness every song is brought to (LUFS); each track's measured loudness is its "lufs"
+function jbTrim(t){return t&&t.lufs!=null?Math.pow(10,Math.max(-8,Math.min(8,JB_TARGET-t.lufs))/20):1}
+function ghTap(){if(SA.an||!AC||AC.state!=='running'||!JB.el)return;try{const n=AC.createMediaElementSource(JB.el);JB.trim=AC.createGain();JB.trim.gain.value=jbTrim(TRACKS[JB.i]);
+  const lim=AC.createDynamicsCompressor();lim.threshold.value=-2;lim.knee.value=2;lim.ratio.value=20;lim.attack.value=.002;lim.release.value=.12;
+  SA.an=AC.createAnalyser();SA.an.fftSize=1024;SA.an.smoothingTimeConstant=.55;SA.data=new Uint8Array(SA.an.frequencyBinCount);n.connect(JB.trim);JB.trim.connect(lim);lim.connect(SA.an);SA.an.connect(AC.destination)}catch(x){SA.an=null}}
+function jbLevel(){ghTap();if(JB.trim)JB.trim.gain.setTargetAtTime(jbTrim(TRACKS[JB.i]),AC.currentTime,.02)}
 function saTick(gh,e){
   if(!gh){SA.live=false;SA.since=0;return false}
   const i=ghTrackOf(e),a=jbAudio(),now=performance.now();
-  if(JB.i!==i||!a.src){JB.i=i;JB.shown=-1;JB.altTried=0;a.src=jbSrc(TRACKS[i]);jbPaint()}
+  if(JB.i!==i||!a.src){JB.i=i;JB.shown=-1;JB.altTried=0;a.src=jbSrc(TRACKS[i]);jbPaint();try{jbLevel()}catch(x){}}
   if(SA.src!==e.audio||!SA.since){SA.src=e.audio;SA.since=now;SA.seen1=0}
   ghTap();
   if(JB.userPaused){if(!a.paused)a.pause();SA.live=false;return true}
@@ -3664,6 +3671,7 @@ function scrTick(){const now=performance.now(),stg=STAGES[G.stage],c=stg&&scrCfg
   if(YT.el){if(!ytLive){if(YT.el.style.display!=='none'){YT.el.style.display='none';ytCmd('pauseVideo')}if(now-YT.seen>8000&&YT.vid){YT.el.src='about:blank';YT.vid=null}}
     else if(YT.ready){if(G.paused)ytCmd('pauseVideo');else ytCmd('playVideo');if(vs&&vol>0){ytCmd('unMute');ytCmd('setVolume',[Math.round(clamp(vol*YT_GAIN,0,1)*100)])}else ytCmd('mute')}}}
 setInterval(scrTick,250);
+setInterval(()=>{try{if(JB.el&&!JB.el.paused&&!SA.an)jbLevel()}catch(e){}},500);
 /* thumbnails for the library */
 function scrThumb(src){return new Promise(ok=>{const v=document.createElement('video');v.muted=true;v.preload='auto';v.playsInline=true;let done=false;
   const fin=d=>{if(done)return;done=true;try{v.removeAttribute('src');v.load()}catch(e){}ok(d)};
@@ -6602,7 +6610,7 @@ TEST_API.net4=()=>({live:N4.live,role:N4.role,me:N4.me,slot:N4.mySlot,code:N4.co
   hashes:N4.hashes?[...N4.hashes.entries()].slice(-4):[],act:G.act,team:G.team&&G.team.map(t=>t.map(c=>c.id)),live2:G.f1&&[G.f1.c.id,G.f2.c.id],wins:G.wins&&G.wins.slice(),mode:G.mode,view:N4.view,cpu:N4.cpu,stall:N4.stall});
 
 TEST_API.netdbg=()=>NET.dbg;
-TEST_API.screens={sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
+TEST_API.screens={trim:()=>({db:JB.trim?+(20*Math.log10(JB.trim.gain.value)).toFixed(1):null,vol:JB.el?JB.el.volume:null,chain:!!SA.an}),rms:()=>{if(!SA.an)return null;const b=new Float32Array(SA.an.fftSize);SA.an.getFloatTimeDomainData(b);let q=0;for(const v of b)q+=v*v;return Math.sqrt(q/b.length)},sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
 TEST_API.unlocks=()=>({...UNL});TEST_API.towerWin=()=>{G.type='tower';G.c1=G.c1||CHARS[0];G.tower={order:[CHARS[1]],i:0};endMatch(0)};
 TEST_API.netbench=()=>{const t=performance.now();for(let i=0;i<200;i++)netSnap();return{msPerSnap:(performance.now()-t)/200,parts:G.parts.length,decals:G.decals.length}};
 TEST_API.net=()=>({live:NET.live,role:NET.role,link:NET.link,F:NET.F,confirmed:NET.confirmed,rollbacks:NET.rollbacks,maxDepth:NET.maxDepth,desync:NET.desync,
@@ -7148,46 +7156,46 @@ function feChampion(){
 /* ---------- jukebox: music player + sound / music / rain knobs ---------- */
 // Add songs here as they come in: {title:'Song',artist:'Who',src:'music/file.mp3'}
 const TRACKS=[
-  {title:'In the Basement',artist:'Deadlight Ritual & Midwest Pimpen',src:'music/in-the-basement.mp3'},
-  {title:'Say It Anyway',artist:'Fr3ak618 & SheezyB',src:'music/say-it-anyway.mp3'},
-  {title:'Frontline',artist:'Madcounty ft. Jahred (hed pe)',src:'music/frontline.mp3'},
-  {title:'Goosebumps',artist:'Deadlight Ritual',src:'music/goosebumps.mp3'},
-  {title:'Don\'t It Make You',artist:'Deadlight Ritual',src:'music/dont-it-make-you.mp3'},
-  {title:'Ski Mask',artist:'Morguemob ft. Bones',src:'music/ski-mask.mp3'},
-  {title:'Drank Too Much',artist:'Madcounty',src:'music/drank-2-much.mp3'},
-  {title:'Feel the Music',artist:'Madcounty & Missy Malicious',src:'music/feel-the-music.mp3'},
-  {title:'We Are the Ones',artist:'Madcounty & Fr3ak618',src:'music/we-are-the-ones.mp3'},
-  {title:'Run',artist:'Madcounty',src:'music/run.mp3'},
-  {title:'The Life',artist:'Madcounty & Nubbs',src:'music/the-life.mp3'},
-  {title:'Marathon',artist:'Midwest Pimpen & Fr3ak618',src:'music/marathon.mp3'},
-  {title:'Riot',artist:'BrotherhoodX',src:'music/riot.mp3'},
-  {title:'Make It Slow',artist:'Lucidity Love',src:'music/make-it-slow.mp3'},
-  {title:'I Woke Up Mad',artist:'FKDG',src:'music/i-woke-up-mad.mp3'},
-  {title:'Lewis and Clark',artist:'Zay',src:'music/lewis-and-clark.mp3'},
-  {title:'Crying',artist:'Siintay x DG Bre',src:'music/crying.mp3'},
-  {title:'Don\'t Feel Right',artist:'Siintay',src:'music/dont-feel-right.mp3'},
-  {title:'Null-n-Void',artist:'Rev. Rust',src:'music/null-n-void.mp3'},
-  {title:'Unhinged',artist:'Rev. Rust',src:'music/unhinged.mp3'},
-  {title:'Horrorcore Is Not Dead',artist:'ft. Dezlooca',src:'music/horrorcore-is-not-dead.mp3'},
-  {title:'Pest Control (The Killshot)',artist:'Blynd Logyk',src:'music/pest-control.mp3'},
-  {title:'BombShackala',artist:'',src:'music/bombshackala.mp3'},
-  {title:'Pedo Bash',artist:'Rathovgod',src:'music/pedo-bash.mp3'},
-  {title:'Show Me 2',artist:'SheezyB',src:'music/show-me-2.mp3'},
-  {title:'Mr. Sheffield',artist:'Ready-Made Jason',src:'music/ready-made.mp3'},
-  {title:'See Me Quit',artist:'Mars Hall x Nubs',src:'music/see-me-quit.mp3'},
-  {title:'Pimpin 101',artist:'Ox Pimpin',src:'music/pimpin-101.mp3'},
-  {title:'KO',artist:'Ox Pimpin',src:'music/ko.mp3'},
-  {title:'Stand on Mine',artist:'Ready-Made Jason',src:'music/stand-on-mine.mp3'},
-  {title:'Levels',artist:'Ox Pimpin',src:'music/levels.mp3'},
-  {title:'Spiked Bat',artist:'Unhappy',src:'music/spiked-bat.mp3'},
-  {title:'Keep the Lights On',artist:'Shyvox & Madcounty',src:'music/keep-the-lights-on.mp3'},
-  {title:'Eat My Barz',artist:'RWK',src:'music/eat-my-barz.mp3'},
-  {title:'Come N Get It',artist:'Stu',src:'music/come-n-get-it.mp3'},
-  {title:'I Don\'t Wanna',artist:'Mars Hall',src:'music/i-dont-wanna.mp3'},
-  {title:'Do the Damn Thang',artist:'P.R.E.A.C.H.',src:'music/do-the-damn-thang.mp3'},
-  {title:'Fire',artist:'P.R.E.A.C.H.',src:'music/fire.mp3'},
-  {title:'The Island',artist:'Deadlight Ritual ft. Beaker',src:'music/the-island.mp3'},
-  {title:'Just Waiting',artist:'BlackMasks',src:'music/just-waiting.mp3'},
+  {title:'In the Basement',artist:'Deadlight Ritual & Midwest Pimpen',src:'music/in-the-basement.mp3',lufs:-13.5},
+  {title:'Say It Anyway',artist:'Fr3ak618 & SheezyB',src:'music/say-it-anyway.mp3',lufs:-10.3},
+  {title:'Frontline',artist:'Madcounty ft. Jahred (hed pe)',src:'music/frontline.mp3',lufs:-10.2},
+  {title:'Goosebumps',artist:'Deadlight Ritual',src:'music/goosebumps.mp3',lufs:-13.5},
+  {title:'Don\'t It Make You',artist:'Deadlight Ritual',src:'music/dont-it-make-you.mp3',lufs:-13.5},
+  {title:'Ski Mask',artist:'Morguemob ft. Bones',src:'music/ski-mask.mp3',lufs:-7.4},
+  {title:'Drank Too Much',artist:'Madcounty',src:'music/drank-2-much.mp3',lufs:-9.5},
+  {title:'Feel the Music',artist:'Madcounty & Missy Malicious',src:'music/feel-the-music.mp3',lufs:-11.5},
+  {title:'We Are the Ones',artist:'Madcounty & Fr3ak618',src:'music/we-are-the-ones.mp3',lufs:-8.4},
+  {title:'Run',artist:'Madcounty',src:'music/run.mp3',lufs:-7.4},
+  {title:'The Life',artist:'Madcounty & Nubbs',src:'music/the-life.mp3',lufs:-9.7},
+  {title:'Marathon',artist:'Midwest Pimpen & Fr3ak618',src:'music/marathon.mp3',lufs:-13.8},
+  {title:'Riot',artist:'BrotherhoodX',src:'music/riot.mp3',lufs:-9.0},
+  {title:'Make It Slow',artist:'Lucidity Love',src:'music/make-it-slow.mp3',lufs:-11.4},
+  {title:'I Woke Up Mad',artist:'FKDG',src:'music/i-woke-up-mad.mp3',lufs:-6.6},
+  {title:'Lewis and Clark',artist:'Zay',src:'music/lewis-and-clark.mp3',lufs:-9.4},
+  {title:'Crying',artist:'Siintay x DG Bre',src:'music/crying.mp3',lufs:-17.2},
+  {title:'Don\'t Feel Right',artist:'Siintay',src:'music/dont-feel-right.mp3',lufs:-11.1},
+  {title:'Null-n-Void',artist:'Rev. Rust',src:'music/null-n-void.mp3',lufs:-7.1},
+  {title:'Unhinged',artist:'Rev. Rust',src:'music/unhinged.mp3',lufs:-8.4},
+  {title:'Horrorcore Is Not Dead',artist:'ft. Dezlooca',src:'music/horrorcore-is-not-dead.mp3',lufs:-8.9},
+  {title:'Pest Control (The Killshot)',artist:'Blynd Logyk',src:'music/pest-control.mp3',lufs:-8.8},
+  {title:'BombShackala',artist:'',src:'music/bombshackala.mp3',lufs:-10.0},
+  {title:'Pedo Bash',artist:'Rathovgod',src:'music/pedo-bash.mp3',lufs:-15.0},
+  {title:'Show Me 2',artist:'SheezyB',src:'music/show-me-2.mp3',lufs:-11.3},
+  {title:'Mr. Sheffield',artist:'Ready-Made Jason',src:'music/ready-made.mp3',lufs:-8.3},
+  {title:'See Me Quit',artist:'Mars Hall x Nubs',src:'music/see-me-quit.mp3',lufs:-11.4},
+  {title:'Pimpin 101',artist:'Ox Pimpin',src:'music/pimpin-101.mp3',lufs:-13.9},
+  {title:'KO',artist:'Ox Pimpin',src:'music/ko.mp3',lufs:-8.4},
+  {title:'Stand on Mine',artist:'Ready-Made Jason',src:'music/stand-on-mine.mp3',lufs:-11.0},
+  {title:'Levels',artist:'Ox Pimpin',src:'music/levels.mp3',lufs:-8.3},
+  {title:'Spiked Bat',artist:'Unhappy',src:'music/spiked-bat.mp3',lufs:-10.6},
+  {title:'Keep the Lights On',artist:'Shyvox & Madcounty',src:'music/keep-the-lights-on.mp3',lufs:-9.8},
+  {title:'Eat My Barz',artist:'RWK',src:'music/eat-my-barz.mp3',lufs:-18.0},
+  {title:'Come N Get It',artist:'Stu',src:'music/come-n-get-it.mp3',lufs:-11.1},
+  {title:'I Don\'t Wanna',artist:'Mars Hall',src:'music/i-dont-wanna.mp3',lufs:-11.0},
+  {title:'Do the Damn Thang',artist:'P.R.E.A.C.H.',src:'music/do-the-damn-thang.mp3',lufs:-8.8},
+  {title:'Fire',artist:'P.R.E.A.C.H.',src:'music/fire.mp3',lufs:-10.8},
+  {title:'The Island',artist:'Deadlight Ritual ft. Beaker',src:'music/the-island.mp3',lufs:-13.6},
+  {title:'Just Waiting',artist:'BlackMasks',src:'music/just-waiting.mp3',lufs:-12.7},
 ];
 const JB={el:null,i:-1,repeat:'all',userPaused:false,shown:-1};
 if(!Array.isArray(S.jbOff))S.jbOff=[];if(S.jbRandom===undefined)S.jbRandom=true;
@@ -7206,7 +7214,7 @@ function jbAudio(){if(!JB.el){const a=JB.el=new Audio();a.preload='auto';
   a.addEventListener('playing',()=>{JB.fails=0});a.addEventListener('play',()=>{if(JB.shown!==JB.i){JB.shown=JB.i;jbToast()}jbPaint()});a.addEventListener('pause',jbPaint);a.addEventListener('error',()=>{const cur=TRACKS[JB.i];if(cur&&!JB.altTried){JB.altTried=1;JB.alt=!JB.alt;a.src=jbSrc(cur);if(!JB.userPaused)a.play().catch(()=>{});return}JB.fails=(JB.fails||0)+1;if(TRACKS.length>1&&JB.fails<4)setTimeout(()=>jbNext(true),400)})}  /* stop after a few missing songs (music-free builds) */return JB.el}
 function jbPlay(i){if(!TRACKS.length)return;const a=jbAudio();if(i==null)i=JB.i<0?0:JB.i;
   if(typeof SCR!=='undefined'&&SCR.ghOn){const al=ghAllowed();if(al.length){if(!al.includes(i))i=al.find(x=>x>i)??al[0];const v=ghVideoFor(i);if(v){SCR.ghPick=v.id;SA.since=0}}}
-  if(i!==JB.i||!a.src){JB.i=i;JB.shown=-1;JB.altTried=0;a.src=jbSrc(TRACKS[i])}JB.userPaused=false;applyMusicVol();a.play().catch(()=>{});jbPaint()}
+  if(i!==JB.i||!a.src){JB.i=i;JB.shown=-1;JB.altTried=0;a.src=jbSrc(TRACKS[i])}JB.userPaused=false;applyMusicVol();try{jbLevel()}catch(e){}a.play().catch(()=>{});jbPaint()}
 function jbToggle(){if(!TRACKS.length)return;const a=jbAudio();if(JB.i<0){jbNext();return}if(a.paused)jbPlay();else{a.pause();JB.userPaused=true}}
 function jbNext(auto){if(!TRACKS.length)return;const a=jbAudio();
   if(auto&&JB.repeat==='one'){a.currentTime=0;a.play().catch(()=>{});return}
