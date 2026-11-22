@@ -3442,14 +3442,19 @@ function scrCfg(stg){if(!stg)return null;const t=(S.screenTune||{})[stg.id];
   if(t&&t.on===false)return null;if(!stg.screen&&!(t&&t.on))return null;
   const b=stg.screen||{x:600,y:300,w:1200,h:675};return{fit:'cover',bright:1,glow:.5,beam:.05,grit:.5,...b,...(t||{})}}
 function scrToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function scrEntries(id){const stg=STAGES.find(s=>s.id===id),out=[];
-  const add=(v,from)=>{if(!v||!v.src)return;out.push({id:'b:'+v.src,kind:'bundled',name:v.name||v.src.split('/').pop(),src:v.src,from:v.from||from||null})};
+/* What a player sees on a screen comes only from the game itself (the stage and screens.json), so every player sees the same thing.
+   Videos added in the Screen Manager are a private preview: they show only while Developer Mode is unlocked in this browser. */
+const scrDev=()=>typeof FE!=='undefined'&&!!FE.devOK;
+function scrEntries(id,withLocal=scrDev()){const stg=STAGES.find(s=>s.id===id),out=[];
+  const add=(v,from)=>{if(!v||!v.src)return;const yid=ytId(v.src),nm=v.name||(yid?'YouTube '+yid:v.src.split('/').pop());
+    if(yid)out.push({id:'b:'+v.src,kind:'youtube',bundled:true,name:nm,vid:yid,src:v.src,thumb:'https://i.ytimg.com/vi/'+yid+'/hqdefault.jpg',from:v.from||from||null});
+    else out.push({id:'b:'+v.src,kind:'bundled',bundled:true,name:nm,src:v.src,from:v.from||from||null})};
   ((stg&&stg.screen&&stg.screen.videos)||[]).forEach(v=>add(v));
   ((SCR.manifest[id]&&SCR.manifest[id].videos)||[]).forEach(v=>add(v));
-  for(const e of scrState(id).lib)out.push(e);return out}
+  if(withLocal)for(const e of scrState(id).lib)out.push(e);return out}
 /* which video is on the screen right now: your override, else the schedule, else the stage's default */
-function scrActive(id){const s=scrState(id),all=scrEntries(id),find=k=>all.find(e=>e.id===k);
-  const lead={id:'leader',kind:'leader',name:'Film leader (built in)'},dflt=()=>all.find(e=>e.kind==='bundled'&&!e.from)||lead;
+function scrActive(id,pub=!scrDev()){const s=pub?{manual:null,sched:[]}:scrState(id),all=scrEntries(id,!pub),find=k=>all.find(e=>e.id===k);
+  const lead={id:'leader',kind:'leader',name:'Film leader (built in)'},dflt=()=>all.find(e=>e.bundled&&!e.from)||lead;
   if(s.manual==='default')return{e:dflt(),why:'default'};
   if(s.manual==='leader')return{e:lead,why:'manual'};
   if(s.manual&&find(s.manual))return{e:find(s.manual),why:'manual'};
@@ -3681,13 +3686,16 @@ function scmRender(){const R=SCM.R,id=SCM.stage,stg=STAGES.find(s=>s.id===id),s=
     ${c&&c.audio?'<p class="muted">Sound: on this stage the jukebox goes quiet during fights and the video is the music, at your Music volume. Sound effects are not changed.</p>':''}
    </div>
    <div>
+    <h2>What every player sees</h2>
+    <div class="note">Right now everyone sees: <b>${esc(scrActive(id,true).e.name)}</b>.<br>Use <b>Show to everyone</b> on a video below (or <button id="pubLeader">Film leader for everyone</button>). That copies the new setting and opens your game's <b>screens.json</b> on GitHub: click in the file, press <b>Ctrl+A</b> then <b>Ctrl+V</b>, and press <b>Commit changes</b>. Every player sees it about a minute later. Videos you add here are only a preview in your browser until you do that.</div>
+    <div id="pubOut"></div>
     <h2>Add a video</h2>
     <div class="drop" id="drop">Drop an .mp4 here, or <button id="pick">Upload MP4</button> <button id="repl"${act.e.kind==='local'?'':' disabled'} title="Upload a new video and delete the one showing now">Replace current</button>
       <input type="file" id="file" accept="video/mp4,video/webm,video/quicktime" hidden></div>
     <div class="row"><input type="url" id="url" placeholder="YouTube link or https://…/movie.mp4" style="flex:1;min-width:160px"><button id="addurl">Add link</button></div>
     <h2>Schedule</h2>
     <table class="sched">${[...s.sched.map((q,i)=>({...q,i,mine:1})),...all.filter(e=>e.from).map(e=>({id:e.id,date:e.from}))].sort((a,b)=>a.date<b.date?-1:1).map(q=>{const e=all.find(x=>x.id===q.id);return`<tr><td>${esc(q.date)}${q.date<=today?' <span class="ok">✓</span>':''}</td><td>${esc(e?e.name:'(missing video)')}</td><td>${q.mine?`<button data-unsched="${q.i}">✕</button>`:'<span class="muted">screens.json</span>'}</td></tr>`}).join('')||'<tr><td class="muted">Nothing scheduled. Use “Schedule” on a video below.</td></tr>'}</table>
-    <div class="note"><b>Where videos live.</b> <span class="tag t-bundled">Bundled</span> ship with the game files, so everyone sees them. <span class="tag t-local">On this device</span> are saved in this browser only: they survive refreshes here, but <b>other players do not get them</b>. <span class="tag t-url">Web link</span> plays from that address for anyone whose game is set to it, if the site allows it. <span class="tag t-youtube">YouTube</span> plays through YouTube's own player behind the game (some videos have embedding turned off by their owner, and some hosts block YouTube players).<br>To put a video in front of every player on itch.io, add the .mp4 to a <b>videos</b> folder in the game zip and list it in <b>screens.json</b> (name, src, and an optional “from” date for weekly rotation). Claude can do that for you.</div>
+    <div class="note"><b>Where videos live.</b> <span class="tag t-bundled">Bundled</span> ship with the game files, so everyone sees them. <span class="tag t-local">On this device</span> are saved in this browser only and show only while Developer Mode is unlocked: a private preview. <b>Other players never get them</b>. <span class="tag t-url">Web link</span> plays from that address for anyone whose game is set to it, if the site allows it. <span class="tag t-youtube">YouTube</span> plays through YouTube's own player behind the game (some videos have embedding turned off by their owner, and some hosts block YouTube players).<br>Only what's in the game's <b>screens.json</b> reaches every player: use <b>Show to everyone</b>. For an uploaded .mp4, put it on YouTube and add the link, or send it to Claude to add to the game.</div>
    </div>
   </div>
   <h2>Library</h2>
@@ -3695,10 +3703,19 @@ function scmRender(){const R=SCM.R,id=SCM.stage,stg=STAGES.find(s=>s.id===id),s=
     <div class="th" style="${e.thumb?`background-image:url(${e.thumb})`:''}">${e.thumb?'':e.kind==='leader'?'8 · 7 · 6 · 5':'no preview'}</div>
     <div class="nm" title="${esc(e.name)}">${esc(e.name)}</div>
     <div><span class="tag t-${e.kind}">${tagOf(e)}</span>${on?'<span class="tag" style="background:#e8281e;color:#fff">Showing</span>':''}</div>
-    <div class="row"><button data-use="${esc(e.id)}"${on&&act.why==='manual'?' disabled':''}>Show now</button>${e.kind!=='leader'?`<button data-pv="${esc(e.id)}">Preview</button>`:''}
+    <div class="row"><button data-use="${esc(e.id)}"${on&&act.why==='manual'?' disabled':''}>Show now</button>${e.kind==='youtube'||e.kind==='url'||e.kind==='bundled'?`<button class="hot" data-pub="${esc(e.id)}">Show to everyone</button>`:e.kind==='local'?'<button disabled title="An uploaded file only lives in this browser. Put it on YouTube and add the link, or send it to Claude to put in the game.">Show to everyone</button>':''}${e.kind!=='leader'?`<button data-pv="${esc(e.id)}">Preview</button>`:''}
       ${e.kind!=='leader'?`<input type="date" data-date="${esc(e.id)}" value="" title="Schedule from this date" style="width:128px"><button data-sch="${esc(e.id)}">Schedule</button>`:''}
       ${e.kind==='local'||e.kind==='url'||e.kind==='youtube'?`<button data-ren="${esc(e.id)}">Rename</button><button data-del="${esc(e.id)}">Remove</button>`:''}</div></div>`}).join('')}</div>`;
   scmWire()}
+/* publishing a screen choice for every player: write screens.json with this one video (or none, for the film leader),
+   copy it, and open the file's editor on GitHub, where the owner pastes and commits. The game deploys from there. */
+const SCR_GH='https://github.com/freak618/the-last-verse/edit/main/screens.json';
+function scmPublish(e){const id=SCM.stage,R=SCM.R,man=JSON.parse(JSON.stringify(SCR.manifest||{}));
+  man[id]={videos:e?[{name:e.name,src:e.src}]:[]};const text=JSON.stringify(man,null,2)+'\n';
+  const out=R.getElementById('pubOut');out.innerHTML=`<div class="note"><b id="pubCp">Copying…</b> On the GitHub page: click in the file, <b>Ctrl+A</b>, <b>Ctrl+V</b>, then <b>Commit changes</b>. If the page didn't open, <a href="${SCR_GH}" target="_blank" rel="noopener">open it here</a>. If pasting gives you nothing, copy this:<textarea readonly style="width:100%;height:110px;margin-top:6px">${esc(text)}</textarea></div>`;
+  const cp=R.getElementById('pubCp'),bad=()=>{cp.textContent='Couldn’t copy automatically: copy the text in the box below first.'};try{navigator.clipboard.writeText(text).then(()=>{cp.textContent='Copied.'},bad)}catch(err){bad()}
+  try{window.open(SCR_GH,'_blank','noopener')}catch(err){}
+  scmMsg(e?`“${e.name}” is ready to go out to everyone: paste it into screens.json on GitHub and commit.`:'The film leader is ready to go out to everyone: paste it into screens.json on GitHub and commit.','ok')}
 function scmSet(fn){fn(scrState(SCM.stage));scrSave();scmRender()}
 function scmWire(){const R=SCM.R,$=k=>R.getElementById(k),id=SCM.stage;
   $('close').onclick=scmClose;$('stage').onchange=e=>{SCM.stage=e.target.value;scmRender()};
@@ -3722,6 +3739,8 @@ function scmWire(){const R=SCM.R,$=k=>R.getElementById(k),id=SCM.stage;
     scmSet(s=>{s.lib.push(e);s.manual=e.id});scmMsg('Link added and showing now.','ok')};
   if($('pvnow'))$('pvnow').onclick=()=>scmPreview(scrActive(id).e);
   R.querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>scmSet(s=>{s.manual=b.dataset.use}));
+  R.querySelectorAll('[data-pub]').forEach(b=>b.onclick=()=>scmPublish(scrEntries(id,true).find(e=>e.id===b.dataset.pub)));
+  if($('pubLeader'))$('pubLeader').onclick=()=>scmPublish(null);
   R.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>scmPreview(scrEntries(id).find(e=>e.id===b.dataset.pv)));
   R.querySelectorAll('[data-sch]').forEach(b=>b.onclick=()=>{const d=R.querySelector(`[data-date="${CSS.escape(b.dataset.sch)}"]`).value;if(!d){scmMsg('Pick a date first, then press Schedule.','warn');return}
     scmSet(s=>{s.sched=s.sched.filter(q=>q.date!==d);s.sched.push({id:b.dataset.sch,date:d});if(s.manual&&s.manual!=='default')s.manual=null});scmMsg(`Scheduled from ${d}. The screen now follows the schedule.`,'ok')});
@@ -6512,7 +6531,7 @@ TEST_API.net4=()=>({live:N4.live,role:N4.role,me:N4.me,slot:N4.mySlot,code:N4.co
   hashes:N4.hashes?[...N4.hashes.entries()].slice(-4):[],act:G.act,team:G.team&&G.team.map(t=>t.map(c=>c.id)),live2:G.f1&&[G.f1.c.id,G.f2.c.id],wins:G.wins&&G.wins.slice(),mode:G.mode,view:N4.view,cpu:N4.cpu,stall:N4.stall});
 
 TEST_API.netdbg=()=>NET.dbg;
-TEST_API.screens={ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
+TEST_API.screens={dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
 TEST_API.unlocks=()=>({...UNL});TEST_API.towerWin=()=>{G.type='tower';G.c1=G.c1||CHARS[0];G.tower={order:[CHARS[1]],i:0};endMatch(0)};
 TEST_API.netbench=()=>{const t=performance.now();for(let i=0;i<200;i++)netSnap();return{msPerSnap:(performance.now()-t)/200,parts:G.parts.length,decals:G.decals.length}};
 TEST_API.net=()=>({live:NET.live,role:NET.role,link:NET.link,F:NET.F,confirmed:NET.confirmed,rollbacks:NET.rollbacks,maxDepth:NET.maxDepth,desync:NET.desync,
