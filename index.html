@@ -202,7 +202,6 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 .fe-bar{position:absolute!important;left:0;right:0;bottom:0;display:flex;gap:2.2cqw;justify-content:flex-end;align-items:center;flex-wrap:wrap;padding:.75cqw 2.4cqw;
   background:linear-gradient(90deg,rgba(0,0,0,.15),rgba(0,0,0,.78));border-top:.12cqw solid rgba(216,162,74,.35);font-size:max(10px,1.3cqw);text-transform:uppercase;letter-spacing:.12em;color:#d8c8a8;z-index:5}
 .fe-pr{display:inline-flex;align-items:center;gap:.35em;white-space:nowrap}
-.fe-sel .fe-bar{flex-wrap:nowrap;gap:1cqw;padding-left:1cqw;padding-right:1.4cqw}.fe-sel .fe-bar .fe-pr{font-size:.8em}
 .fe-pr kbd{font-size:.92em;min-width:0}.fe-pr kbd.pd{background:#2a1e14;border-color:#5a4430;color:#ffd9a0}
 @media (max-width:640px){.fe-pr kbd:not(.pd){display:none}}
 .fe .btn:focus,.fe .btn:focus-visible{outline:none;background:var(--blood);border-color:#ffb040;color:#fff;box-shadow:0 0 1.6cqw rgba(255,60,20,.55)}
@@ -585,17 +584,6 @@ body:not(.phone) .frame:not(:fullscreen){width:min(100%,calc((100vh - 20px - 58p
 .fe-shelf .fe-tile.rand{display:grid;place-items:center;width:7cqw;aspect-ratio:236/252;background:linear-gradient(180deg,#2a2533,#14111b);
   border-radius:.5cqw;box-shadow:0 1cqw 2cqw rgba(0,0,0,.6)}
 .fe-shelf .fe-tile.rand .qm{font:700 3.4cqw/1 var(--head);color:#f0e6cf}
-.fe-gtabs{position:absolute;left:1.1cqw;top:50%;transform:translateY(-50%);z-index:90;display:flex;flex-direction:column;gap:.4cqw}
-.fe-shelves.two .fe-gtabs{top:auto;bottom:.6cqw;transform:none}
-.fe-gtabs.solo{flex-direction:row}
-.fe-gtabs.solo{position:static;transform:none;align-self:center}
-.fe-gtab{font:700 1.05cqw/1 var(--head);text-align:left;min-width:7.2cqw;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,230,207,.6);background:linear-gradient(#211813,#0c0907);
-  border:.12cqw solid #4a3a2a;padding:.35cqw 1cqw;border-radius:.3cqw;cursor:pointer}
-.fe-gtab i{font-style:normal;opacity:.55;margin-left:.25em;letter-spacing:0}
-.fe-gtab.on{color:#1a0f08;background:linear-gradient(#ffd27a,#e89a3a);border-color:#ffcf7a;box-shadow:0 0 .8cqw rgba(255,170,60,.45)}
-.fe-gtab:hover{color:#fff}.fe-gtab.on:hover{color:#1a0f08}
-.fe-shelves.two .fe-gtab{font-size:.8cqw;padding:.25cqw .7cqw}
-.fe-gsecs{width:100%}
 .fe-shlab{position:absolute;left:1.1cqw;top:.3cqw;z-index:80;font:700 .92cqw/1 var(--head);letter-spacing:.34em;
   color:rgba(238,228,206,.40);text-transform:uppercase;pointer-events:none}
 .fe-shelf.on .fe-shlab{color:rgba(255,196,110,.9)}
@@ -5284,7 +5272,7 @@ const TEST_API=window.__TEST__={ready:false,
     setHP(a,b){G.f1.hp=a;G.f2.hp=b},setMeter(a,b){G.f1.meter=a;G.f2.meter=b},
     title(){showTitle()},
     intro(){G.lock=100;G.banner={text:'Round 1',t:0};G.f1.meter=60;G.f2.meter=100},
-    roster(){return CHARS.map(c=>c.id)},select(t){G.type=t||'cpu';G.pick=[];showSelect()},selCase(v){S.selCase=v},soon(){return CHARS.filter(isSoon).map(c=>c.id)},
+    roster(){return CHARS.map(c=>c.id)},select(t){G.type=t||'cpu';G.pick=[];showSelect()},soon(){return CHARS.filter(isSoon).map(c=>c.id)},
     tick(n){for(let i=0;i<n;i++){tick++;update()}return TEST_API.state()},
     profile(){return GL.prof},
 
@@ -7510,35 +7498,27 @@ function feRecords(){
 function showTitle(){feMain()}
 
 /* ---------- fighter select: one grid, two cursors ---------- */
-/* the girls get their own window on the fighter select screen */
-const GIRLS=new Set(['mystic','ashley','triple6','darling','dabbalette','mizzmurda','devilette','vanitylette','klownie','pumpkin','infernavexx','jules','kandy','michimurderz','milo','mischef','sexsilette','shitkicker','shortea','tinydoll','anthraxx','xtina','lilith','minijugg','xshaxwnax','smokeroxx','jinx','psychokandy','eyez','missdelitreats']);
-const isGirl=c=>!!c&&typeof c==='object'&&GIRLS.has(c.id);
-const GRP_NAME=['Guys','Girls'];
 function showSelect(){
   const t=G.type,online=t==='online';
   G.mode='select';G.importOpen=false;G.pick=[];G.crew=[null,null];
   const soonList=CHARS.filter(c=>isSoon(c)&&!c.nu);
   const roster=CHARS.filter(c=>!c.villain&&(!isSoon(c)||c.nu)&&!(online&&c.custom)).sort((a,b)=>(a.unlock?1:0)-(b.unlock?1:0)||(a.cameo?1:0)-(b.cameo?1:0)||(a.sheet?0:1)-(b.sheet?0:1));  /* sprite fighters lead the grid; unlockables close it */
   const CASES=S.selCase!==false;
-  let cols,rows,tiles,SHELVES=null,POS=null,SECS=null;
-  const groups=[roster.filter(c=>!isGirl(c)),roster.filter(isGirl)];
-  const VIEW=[isGirl(FE.lastPick)?1:0,0];   /* which window (guys/girls) each flow is showing */
-  let OWN=1;
+  let cols,rows,tiles,SHELVES=null,POS=null;
   if(CASES){
     /* four alphabetical shelves; random rides at the head of the first */
     /* one big cover flow holding everyone (random first, A to Z, coming-soon last);
        in two-player modes each player gets their own copy of it */
-    const az=L=>['random',...L.slice().sort((a,b)=>(isSoon(a)?1:0)-(isSoon(b)?1:0)||a.name.localeCompare(b.name))];
+    const all=['random',...roster.slice().sort((a,b)=>(isSoon(a)?1:0)-(isSoon(b)?1:0)||a.name.localeCompare(b.name))];
     const twoFlows=t==='pvp'||t==='features'||t==='training'||t==='watch'||t==='featcpu'||(t==='cpu'&&!G.mirror);   /* a second flow for the other player, or for picking the opponent */
-    SHELVES=[];(twoFlows?[0,1]:[0]).forEach(o=>[0,1].forEach(g=>SHELVES.push({label:'',owner:o,grp:g,items:az(groups[g]),at:0})));OWN=twoFlows?2:1;
+    SHELVES=(twoFlows?[0,1]:[0]).map(o=>({label:'',owner:o,items:all.slice(),at:0}));
     tiles=[];POS=[];
     SHELVES.forEach((sh,si)=>{sh.start=tiles.length;sh.items.forEach((c,k)=>{POS.push({sh:si,k});tiles.push(c)})});
     cols=0;rows=SHELVES.length;
   }else{
-    tiles=[];SECS=[0,1].map(g=>{const L=groups[g],n=L.length+1,c=clamp(Math.ceil(n/4),10,16),r=Math.ceil(n/c);
-      const rIdx=Math.min(L.length,Math.floor((r-1)/2)*c+Math.floor(c/2)),tt=L.slice();tt.splice(rIdx,0,'random');
-      const sec={start:tiles.length,len:tt.length,cols:c,rows:r,grp:g};tiles.push(...tt);return sec});
-    cols=SECS[0].cols;rows=SECS[0].rows;
+    const n=roster.length+1;cols=clamp(Math.ceil(n/4),10,16);rows=Math.ceil(n/cols);
+    const rIdx=Math.min(roster.length,Math.floor((rows-1)/2)*cols+Math.floor(cols/2));
+    tiles=roster.slice();tiles.splice(rIdx,0,'random');
   }
   const two=t==='pvp'||t==='features',ctl=[0,two?1:0];   /* featcpu: the CPU takes the other side */
   const label={features:['Player One','Player Two'],featcpu:['Player One','CPU team'],pvp:['Player One','Player Two'],cpu:['Player One','CPU'],story:['Player One','???'],tower:['Player One','???'],training:['Player One','Sparring partner'],online:['You','Opponent'],watch:['CPU One','CPU Two']}[t]||['Player One','Player Two'];
@@ -7547,14 +7527,14 @@ function showSelect(){
   feShow(`<div class="fe fe-sel"><video class="fe-bgvid" src="media/selectbg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="fe-bgtint"></div>
       <div class="fe-side l" id="side0"><div class="fe-art" id="art0"></div><div class="fe-plate"><span class="who">${label[0]}</span><b id="nm0">—</b><i id="tt0"></i><div class="fe-crew" id="cr0"></div></div></div>
       <div class="fe-gridwrap"><div class="fe-sh"><div class="fe-sellogo" aria-hidden="true">The Last Verse</div><span class="chip">${esc(title)}</span><h2>${t==='watch'?'Choose both fighters':G.coop?'Player One picks, then Player Two':isFeat(t)?'Choose two fighters':'Choose your fighter'}</h2></div>
-        ${CASES?`<div class="fe-shelves ${two?'two':'one'}" id="feGrid"></div>`:`<div class="fe-gtabs solo" id="feGT">${GRP_NAME.map((n,g)=>`<button type="button" class="fe-gtab" data-g="${g}">${n} <i>${groups[g].length}</i></button>`).join('')}</div><div class="fe-gsecs" id="feGrid">${SECS.map(sc=>`<div class="fe-grid" data-sec="${sc.grp}" style="--cols:${sc.cols}"></div>`).join('')}</div>`}<p class="fe-ginfo" id="gInfo"></p>
+        ${CASES?`<div class="fe-shelves ${two?'two':'one'}" id="feGrid"></div>`:`<div class="fe-grid" id="feGrid" style="--cols:${cols}"></div>`}<p class="fe-ginfo" id="gInfo"></p>
         ${soonList.length?`<div class="fe-soonbox"><span class="fe-soonh">Coming soon</span><div class="fe-soongrid" id="feSoon"></div></div>`:''}</div>
       <div class="fe-side r" id="side1"><div class="fe-art" id="art1"></div><div class="fe-plate"><span class="who">${label[1]}</span><b id="nm1">—</b><i id="tt1"></i><div class="fe-crew" id="cr1"></div></div></div>
-      ${feBar(two?[['nav','Move'],['tabs','Guys / Girls'],['ok','Lock in'],['back','Undo'],['Arrows · , .','Player Two']]:[['nav','Move'],['tabs','Guys / Girls'],['ok','Lock in'],['back','Undo / Back']])}</div>`);
-  const grid=document.getElementById('feGrid');if(CASES&&OWN>1)SHELVES.forEach(sh=>sh.label=label[sh.owner]);
+      ${feBar(two?[['nav','Move'],['ok','Lock in'],['back','Undo'],['Arrows · , .','Player Two']]:[['nav','Move'],['ok','Lock in'],['back','Undo / Back']])}</div>`);
+  const grid=document.getElementById('feGrid');if(CASES&&SHELVES.length>1)SHELVES.forEach((sh,i)=>sh.label=label[i]);
   const shelfEls=[];
-  if(CASES)SHELVES.forEach((sh,si)=>{const row=document.createElement('div');row.className='fe-shelf'+(OWN>1?' own'+sh.owner:'');row.dataset.sh=si;
-    row.innerHTML='<span class="fe-shlab">'+esc(sh.label)+'</span><div class="fe-gtabs">'+GRP_NAME.map((n,g)=>'<button type="button" class="fe-gtab'+(g===sh.grp?' on':'')+'" data-o="'+sh.owner+'" data-g="'+g+'">'+n+' <i>'+groups[g].length+'</i></button>').join('')+'</div><div class="fe-rack"></div>';
+  if(CASES)SHELVES.forEach((sh,si)=>{const row=document.createElement('div');row.className='fe-shelf'+(SHELVES.length>1?' own'+si:'');row.dataset.sh=si;
+    row.innerHTML='<span class="fe-shlab">'+esc(sh.label)+'</span><div class="fe-rack"></div>';
     grid.appendChild(row);shelfEls.push(row.querySelector('.fe-rack'))});
   const mk=(c,i)=>{const b=document.createElement('button');b.type='button';b.className='vcard fe-tile';b.dataset.ti=i;
     if(c==='random'){b.classList.add('rand');b.innerHTML='<span class="qm">?</span>';b.setAttribute('aria-label','Random fighter')}
@@ -7564,9 +7544,7 @@ function showSelect(){
       if(c.cameo)b.classList.add('cameo')}
     b.onclick=e=>{e.stopPropagation();const s=sides.find(s=>s.active&&!s.locked)||sides[0];s.cur=i;paint();act(s,'ok')};
     return b};
-  const secEls=CASES?null:[...grid.querySelectorAll('.fe-grid')];
-  const secOf=i=>SECS[i>=SECS[1].start?1:0];
-  tiles.forEach((c,i)=>{const b=mk(c,i);(CASES?shelfEls[POS[i].sh]:secEls[secOf(i).grp]).appendChild(b)});
+  tiles.forEach((c,i)=>{const b=mk(c,i);(CASES?shelfEls[POS[i].sh]:grid).appendChild(b)});
   const soonEl=document.getElementById('feSoon');
   if(soonEl)soonList.forEach(c=>{const d=document.createElement('div');d.className='vcard fe-tile soon';d.title=c.name+' · coming soon';
     const art=bust(c),cv=document.createElement('canvas');cv.width=art.width;cv.height=art.height;cv.getContext('2d').drawImage(art,0,0);d.appendChild(cv);
@@ -7575,21 +7553,10 @@ function showSelect(){
     d.onmouseleave=()=>{sides.forEach(s=>s.hover=null);paint()};soonEl.appendChild(d)});
   /* with shelves the grid's children are the racks, so collect the cases themselves;
      document order matches `tiles` because they were appended shelf by shelf */
-  const tileEls=[...grid.querySelectorAll('.fe-tile')];
+  const tileEls=CASES?[...grid.querySelectorAll('.fe-tile')]:[...grid.children];
   const startIdx=c=>{const k=tiles.indexOf(c);return k<0?0:k};
-  const ownOf=si=>CASES?Math.min(si,OWN-1):0;
-  const shelfFor=(o,g)=>SHELVES.find(sh=>sh.owner===o&&sh.grp===g);
-  const shelfOfSide=si=>CASES?shelfFor(ownOf(si),VIEW[ownOf(si)]):null;
-  /* where a fighter sits in the window a side is looking at; switches that window to the fighter's group */
-  const curFor=(si,c)=>{if(!c||c==='random')return null;const o=ownOf(si),g=isGirl(c)?1:0;
-    if(CASES){const sh=shelfFor(o,g),k=sh.items.indexOf(c);if(k<0)return null;VIEW[o]=g;return sh.start+k}
-    const sc=SECS[g],k=tiles.indexOf(c,sc.start);if(k<0||k>=sc.start+sc.len)return null;VIEW[0]=g;return k};
-  /* switch a flow between the Guys and Girls windows; the cursor lands where that window was left */
-  function setView(o,g){if(VIEW[o]===g)return;VIEW[o]=g;
-    sides.forEach(s=>{if(ownOf(s.si)!==o||!s.active||s.locked||s.done)return;
-      if(CASES){const sh=shelfFor(o,g);s.cur=sh.start+Math.min(sh.at,sh.items.length-1)}else{const sc=SECS[g];s.cur=sc.start+tiles.slice(sc.start,sc.start+sc.len).indexOf('random')}});
-    SFX.navtick();paint()}
-  const sides=[0,1].map(si=>({si,cur:CASES?shelfOfSide(si).start+Math.max(0,shelfOfSide(si).items.indexOf(si===0?(FE.lastPick||roster[0]):groups[VIEW[ownOf(si)]][Math.min(groups[VIEW[ownOf(si)]].length-1,3)])):si===0?(curFor(0,FE.lastPick)??SECS[VIEW[0]].start):SECS[VIEW[0]].start+Math.min(SECS[VIEW[0]].len-1,Math.max(1,SECS[VIEW[0]].cols-1)),locked:null,crew:null,crewList:null,crewI:0,done:false,
+  const shelfOfSide=si=>CASES?SHELVES[Math.min(si,SHELVES.length-1)]:null;
+  const sides=[0,1].map(si=>({si,cur:CASES?shelfOfSide(si).start+Math.max(0,shelfOfSide(si).items.indexOf(si===0?(FE.lastPick||roster[0]):roster[Math.min(roster.length-1,3)])):si===0?startIdx(FE.lastPick||roster[0]):Math.min(tiles.length-1,Math.max(1,cols-1)),locked:null,crew:null,crewList:null,crewI:0,done:false,
     active:si===0||two,ctrl:ctl[si],live:Object.assign(liveCanvas(null,si===1),{photo:true})}));
   sides.forEach(s=>document.getElementById('art'+s.si).appendChild(s.live.cv));
   if(t==='training'||t==='watch'||t==='cpu'||t==='story'||isTowerT(t)||online){sides[1].active=false}
@@ -7607,9 +7574,7 @@ function showSelect(){
   function paint(){
     tileEls.forEach((b,i)=>{b.classList.toggle('p1',sides[0].active&&!sides[0].locked&&sides[0].cur===i);b.classList.toggle('p2',sides[1].active&&!sides[1].locked&&sides[1].cur===i);
       b.classList.toggle('lk1',sides[0].locked&&tiles[i]===sides[0].locked);b.classList.toggle('lk2',sides[1].locked&&tiles[i]===sides[1].locked)});
-    if(CASES){const show=OWN>1&&(two||sides[1].active||!!sides[1].locked);if(OWN>1){grid.classList.toggle('two',show);grid.classList.toggle('one',!show)}
-      SHELVES.forEach((sh,i)=>{shelfEls[i].parentElement.style.display=VIEW[sh.owner]===sh.grp&&(sh.owner===0||show)?'':'none'});flow()}
-    else{secEls.forEach((e,g)=>e.style.display=VIEW[0]===g?'':'none');document.querySelectorAll('#feGT .fe-gtab').forEach(b=>b.classList.toggle('on',+b.dataset.g===VIEW[0]))}
+    if(CASES){if(SHELVES.length>1){const show=two||sides[1].active||!!sides[1].locked;grid.classList.toggle('two',show);grid.classList.toggle('one',!show);shelfEls[1].parentElement.style.display=show?'':'none'}flow()}
     sides.forEach(setSide);
     const s=sides.find(s=>s.active&&!s.locked)||sides[0],c=charAt(s.cur);
     info.innerHTML=c==='random'?'<b>Random</b> · let the block decide':c&&isSoon(c)?`<b>${esc(c.name)}</b> · Coming soon`:c&&!isUnlocked(c)?`<b>Locked</b> · ${esc(UNLOCK_HOW[c.unlock]||'')}`:'';
@@ -7621,10 +7586,9 @@ function showSelect(){
       if(d==='left'||d==='right'){const len=sh.items.length;s.cur=sh.start+((p.k+(d==='right'?1:-1)+len)%len)}
       else{const len=sh.items.length,j=Math.round(len/8)||1;s.cur=sh.start+((p.k+(d==='down'?j:-j)+len*9)%len)}  /* up/down jump a page */
     }else{
-      const sc=secOf(s.cur),cols=sc.cols,rows=sc.rows,o=sc.start,i=s.cur-o;
-      const r=Math.floor(i/cols),c=i%cols,L=k=>Math.min(cols,sc.len-k*cols);
-      if(d==='left'||d==='right'){const len=L(r);s.cur=o+r*cols+((c+(d==='right'?1:-1)+len)%len)}
-      else{const nr=clamp(r+(d==='down'?1:-1),0,rows-1);s.cur=o+nr*cols+Math.min(c,L(nr)-1)}
+      const r=Math.floor(s.cur/cols),c=s.cur%cols,L=k=>Math.min(cols,tiles.length-k*cols);
+      if(d==='left'||d==='right'){const len=L(r);s.cur=r*cols+((c+(d==='right'?1:-1)+len)%len)}
+      else{const nr=clamp(r+(d==='down'?1:-1),0,rows-1);s.cur=nr*cols+Math.min(c,L(nr)-1)}
     }
     SFX.navtick();paint();
   }
@@ -7634,9 +7598,9 @@ function showSelect(){
     const live=sides.filter(s=>s.active&&!s.locked);
     live.forEach(s=>{const p=POS[s.cur];SHELVES[p.sh].at=p.k});
     sides.forEach(s=>{if(s.locked&&!s.active)return;if(s.locked){const k=SHELVES[POS[s.cur].sh].items.indexOf(s.locked);if(k>=0)SHELVES[POS[s.cur].sh].at=k}});
-    const tw=(tileEls.find(e=>e.offsetWidth&&!e.classList.contains('rand'))||tileEls[0]).offsetWidth||90;
+    const tw=(tileEls[1]||tileEls[0]).offsetWidth||90;
     SHELVES.forEach((sh,si)=>{
-      const on=true,step=tw*(OWN>1?.7:.74),depth=on?150:90;
+      const on=true,step=tw*(SHELVES.length>1?.7:.74),depth=on?150:90;
       shelfEls[si].parentElement.classList.toggle('on',on);
       sh.items.forEach((c,k)=>{
         const el=tileEls[sh.start+k],d=k-sh.at,ad=Math.abs(d);
@@ -7682,12 +7646,12 @@ function showSelect(){
     const spin=()=>{s.cur=pool[Math.random()*pool.length|0];SFX.navtick();paint();if(++n<14)feLater(spin,40+n*9);else{rolling=false;lockFighter(s,tiles[s.cur])}};spin();
   }
   function check(){
-    const mirrorCur=()=>{if(!(CASES&&OWN>1))return sides[0].cur;const p=POS[sides[0].cur],g=SHELVES[p.sh].grp;VIEW[1]=g;return shelfFor(1,g).start+p.k};
+    const mirrorCur=()=>CASES&&SHELVES.length>1?SHELVES[1].start+POS[sides[0].cur].k:sides[0].cur;
     if((t==='training'||t==='watch'||(t==='cpu'&&!G.mirror))&&sides[0].done&&!sides[1].active){sides[1].active=true;sides[1].ctrl=0;sides[1].cur=mirrorCur();paint();return}
     if(t==='featcpu'&&sides[0].done&&!sides[1].active&&!sides[1].done){sides[1].active=true;sides[1].ctrl=0;sides[1].cur=mirrorCur();sides[1].picks=[];paint();return}
     if(t==='cpu'&&sides[0].done&&!sides[1].locked){
       const pool=playable().filter(x=>x!==sides[0].locked);const s1=sides[1];s1.active=true;let n=0;
-      const spin=()=>{const c=G.mirror?sides[0].locked:rnd(pool);s1.cur=curFor(1,c)??tiles.indexOf(c);paint();SFX.navtick();if(++n<12)feLater(spin,60+n*8);else{s1.active=false;s1.locked=c;s1.live.c=c;SFX.lock();say(c.name);s1.done=true;s1.crewList=null;paint();feLater(finish,900)}};spin();return}
+      const spin=()=>{const c=G.mirror?sides[0].locked:rnd(pool);s1.cur=tiles.indexOf(c);paint();SFX.navtick();if(++n<12)feLater(spin,60+n*8);else{s1.active=false;s1.locked=c;s1.live.c=c;SFX.lock();say(c.name);s1.done=true;s1.crewList=null;paint();feLater(finish,900)}};spin();return}
     const need=sides.filter(s=>s.active||s.locked);if(need.every(s=>s.done))feLater(finish,700);
   }
   function finish(){
@@ -7706,13 +7670,11 @@ function showSelect(){
       if(two)s=sides[m.p];else s=sides.find(x=>x.active&&!x.done)||[...sides].reverse().find(x=>x.active)||sides[0];
       if(!s)return true;
       if(m.a==='ok'||m.a==='back'){act(s,m.a);return true}
-      if(m.a==='tabL'||m.a==='tabR'){if(s.active&&!s.locked&&!s.done){const o=ownOf(s.si);setView(o,1-VIEW[o])}return true}
       if(m.a==='left'||m.a==='right'||m.a==='up'||m.a==='down'){
         if(s.done)return true;
         if(s.locked&&s.crewList){if(m.a==='left'||m.a==='right')crewStep(s,m.a==='right'?1:-1);return true}
         if(!s.active||s.locked)return true;move(s,m.a);return true}
       return true}};
-  document.querySelectorAll('.fe-sel .fe-gtab').forEach(b=>b.onclick=e=>{e.stopPropagation();const o=b.dataset.o!=null?+b.dataset.o:0,s=sides.find(x=>ownOf(x.si)===o&&x.active&&!x.locked&&!x.done);if(s)setView(o,+b.dataset.g)});
   paint();
 }
 
