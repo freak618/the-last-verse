@@ -2712,7 +2712,7 @@ Object.assign(ALIVE_FX,{
         g.strokeStyle='#050405';g.lineWidth=3*K;g.strokeRect(X,y,W*K,h*K);
         const ex=face>0?X+W*K-3*K:X+3*K;g.strokeStyle='rgba(255,70,55,.75)';g.lineWidth=3*K;g.beginPath();g.moveTo(ex,y+4*K);g.lineTo(ex,y+h*K-4*K);g.stroke();
         g.fillStyle='#5a5254';for(const[cx,cy]of[[0,0],[1,0],[0,1],[1,1]]){g.fillRect(X+cx*(W-16)*K,y+cy*(h-16)*K,16*K,16*K)}g.fillStyle='rgba(255,255,255,.12)';for(const[cx,cy]of[[0,0],[1,0],[0,1],[1,1]])g.fillRect(X+cx*(W-16)*K+2*K,y+cy*(h-16)*K+2*K,6*K,2*K)};
-      const cone=(cx,cy,r,lv)=>{const P=1+lv*.1;g.fillStyle='#030203';g.beginPath();g.arc(cx,cy,r*1.12*K,0,7);g.fill();const bz=g.createLinearGradient(cx-r*K,cy-r*K,cx+r*K,cy+r*K);bz.addColorStop(0,'#8a8084');bz.addColorStop(.5,'#3a3336');bz.addColorStop(1,'#6a3034');g.strokeStyle=bz;g.lineWidth=3.5*K;g.beginPath();g.arc(cx,cy,r*1.08*K,0,7);g.stroke();
+      const cone=(cx,cy,r,lv)=>{const P=1+lv*.15;g.fillStyle='#030203';g.beginPath();g.arc(cx,cy,r*1.12*K,0,7);g.fill();const bz=g.createLinearGradient(cx-r*K,cy-r*K,cx+r*K,cy+r*K);bz.addColorStop(0,'#8a8084');bz.addColorStop(.5,'#3a3336');bz.addColorStop(1,'#6a3034');g.strokeStyle=bz;g.lineWidth=3.5*K;g.beginPath();g.arc(cx,cy,r*1.08*K,0,7);g.stroke();
         g.fillStyle='#262022';g.beginPath();g.arc(cx,cy,r*K,0,7);g.fill();
         const gr=g.createRadialGradient(cx-r*.25*K,cy-r*.3*K,r*.1*K,cx,cy,r*.9*K*P);gr.addColorStop(0,`rgb(${95+lv*60},${80+lv*30},${84+lv*30})`);gr.addColorStop(.6,'#1e1719');gr.addColorStop(1,'#060405');g.fillStyle=gr;g.beginPath();g.arc(cx,cy,r*.88*K*P,0,7);g.fill();
         g.strokeStyle='rgba(0,0,0,.6)';g.lineWidth=1.5*K;for(let i=1;i<4;i++){g.beginPath();g.arc(cx,cy,r*.88*K*P*i/4,0,7);g.stroke()}
@@ -3621,10 +3621,14 @@ addEventListener('message',e=>{if(!YT.el||e.source!==YT.el.contentWindow)return;
 function saTick(on,e,vol){
   if(!(on&&e&&e.audio)){if(SA.el&&!SA.el.paused)SA.el.pause();SA.live=false;return false}
   if(!SA.el){const a=SA.el=new Audio();a.preload='auto';a.addEventListener('error',()=>{if(SA.src&&!SA.alt){SA.alt=1;a.src=SA.src.replace(/\.mp3$/,'.webm')}})}
-  if(SA.src!==e.audio){SA.src=e.audio;SA.alt=JB.alt?1:0;SA.el.src=SA.alt?e.audio.replace(/\.mp3$/,'.webm'):e.audio}
+  if(SA.src!==e.audio){SA.src=e.audio;SA.alt=JB.alt?1:0;SA.el.src=SA.alt?e.audio.replace(/\.mp3$/,'.webm'):e.audio;SA.since=performance.now();SA.seen1=0}
   if(!SA.an&&AC&&AC.state==='running'){try{const n=AC.createMediaElementSource(SA.el);SA.an=AC.createAnalyser();SA.an.fftSize=1024;SA.an.smoothingTimeConstant=.55;SA.data=new Uint8Array(SA.an.frequencyBinCount);n.connect(SA.an);SA.an.connect(AC.destination)}catch(x){SA.an=null}}
   SA.el.volume=vol;
   const yt=SA.yt,now=performance.now(),playing=yt.state===1&&!G.paused&&now-yt.at<3000,t=yt.t+(playing?(now-yt.at)/1000:0)-(e.audioAt||0),d=SA.el.duration||0;
+  if(playing)SA.seen1=now;
+  // YouTube not playing at all (blocked, embedding off, slow to start): the song plays on its own so the fight never goes silent
+  if(!SA.seen1&&now-(SA.since||now)>5000){if(G.paused){if(!SA.el.paused)SA.el.pause()}else{SA.el.loop=true;if(SA.el.paused)SA.el.play().catch(()=>{})}SA.live=!SA.el.paused;return true}
+  SA.el.loop=false;
   if(!playing||t<0||(d&&t>d-.05)){if(!SA.el.paused)SA.el.pause();SA.live=false;return true}
   if(Math.abs(SA.el.currentTime-t)>.35)try{SA.el.currentTime=t}catch(x){}
   if(SA.el.paused)SA.el.play().catch(()=>{});SA.live=!SA.el.paused;return true}
