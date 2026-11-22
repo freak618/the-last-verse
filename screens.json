@@ -1,5 +1,10 @@
 {
   "theater": {
-    "videos": []
+    "videos": [
+      {
+        "name": "Deadlight Ritual - The Island",
+        "src": "https://www.youtube.com/watch?v=GhKzzS0pQOQ"
+      }
+    ]
   }
 }
