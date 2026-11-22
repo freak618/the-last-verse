@@ -2556,6 +2556,30 @@ Object.assign(ALIVE_FX,{
     for(let i=0;i<(o.embers||16);i++){const T=110+aH(i+7)*120,ph=((t+aH(i+9)*T)/T)%1,x=o.x0+(o.x1-o.x0)*aH(i*2.3)+Math.sin(t*.05+i*2)*10*ph+ph*18,y=rim-10-ph*(140+aH(i+4)*90),
       a=(1-ph)*(.6+.4*Math.sin(t*.5+i*3));if(a<.05)continue;g.globalAlpha=Math.min(1,a);const s=(3.4+aH(i+5)*2.4)*k;g.drawImage(sp('255,180,70'),rc.x+x*k-s,rc.y+y*k-s,s*2,s*2)}
     g.restore()},
+  // a cloth banner tied at its four corners, rippling in the wind: the painting is redrawn in small tiles nudged by a travelling wave that
+  // is zero at the edges (so the outline and the ties never move), and the folds catch light on one side and fall into shade on the other.
+  // box [x0,y0,x1,y1] in the painting's pixels
+  cloth(g,rc,t,o){const im=rc.im,k=rc.k,[x0,y0,x1,y1]=o.box,w=x1-x0,h=y1-y0,T=(LOW_MEM?1.6:1)*(o.tile||20),A=o.amp||2.6,lam=o.wave||190,sp=o.speed||.018;
+    const gust=.75+.25*Math.sin(t*.011)+.12*Math.sin(t*.037+1);
+    const env=(u,v)=>Math.pow(Math.sin(Math.PI*Math.min(1,Math.max(0,u))),.8)*Math.pow(Math.sin(Math.PI*Math.min(1,Math.max(0,v))),.7);
+    const D=(x,y)=>{const u=(x-x0)/w,v=(y-y0)/h,e=env(u,v)*A*gust,ph=2*Math.PI*((x-x0)/lam-t*sp)+v*1.3;return[e*.45*Math.sin(ph*.7+1.1+v*2),e*Math.sin(ph)]};
+    g.save();g.imageSmoothingEnabled=true;
+    for(let y=y0;y<y1;y+=T)for(let x=x0;x<x1;x+=T){const tw=Math.min(T,x1-x),th=Math.min(T,y1-y),[dx,dy]=D(x+tw/2,y+th/2);
+      g.drawImage(im,x,y,tw,th,rc.x+(x+dx)*k-.5,rc.y+(y+dy)*k-.5,tw*k+1,th*k+1)}
+    // light and shade across the folds: one gradient across the banner, following the slope of the wave
+    const gr=g.createLinearGradient(rc.x+x0*k,0,rc.x+x1*k,0);
+    for(let i=0;i<=24;i++){const u=i/24,x=x0+u*w,ph=2*Math.PI*((x-x0)/lam-t*sp)+.65,sl=Math.cos(ph)*Math.pow(Math.sin(Math.PI*u),.8)*gust,a=Math.min(.16,Math.abs(sl)*.14);
+      gr.addColorStop(u,sl>0?`rgba(255,235,240,${a})`:`rgba(0,0,0,${a*1.3})`)}
+    g.beginPath();g.rect(rc.x+(x0+8)*k,rc.y+(y0+10)*k,(w-16)*k,(h-18)*k);g.clip();g.globalCompositeOperation='soft-light';g.fillStyle=gr;g.fillRect(rc.x+x0*k,rc.y+y0*k,w*k,h*k);
+    g.restore()},
+  // lightning bugs: a few drift in a loose cloud around each lamp, each glowing on and off at its own pace. at: [[x,y],...] lamps
+  bugs(g,rc,t,o){const k=rc.k,sp=FIRE_SPR,n=o.n||6,rx=o.rx||80,ry=o.ry||55;g.save();g.globalCompositeOperation='lighter';
+    o.at.forEach(([cx,cy],L)=>{for(let i=0;i<n;i++){const s=L*17+i*3.7,x=cx+rx*(Math.sin(t*(.004+aH(s)*.004)+aH(s+1)*6.3)*.8+Math.sin(t*(.011+aH(s+2)*.006)+s)*.25),
+      y=cy+ry*(Math.sin(t*(.005+aH(s+3)*.004)+aH(s+4)*6.3)*.8+Math.sin(t*(.013+aH(s+5)*.007)+s*2)*.25)+(o.dy||0),
+      per=90+aH(s+6)*150,ph=((t+aH(s+7)*per)%per)/per,on=ph<.3?Math.sin(ph/.3*Math.PI):0;if(on<.04)continue;
+      g.globalAlpha=Math.min(1,on*.55);const H=15*k;g.drawImage(sp('170,255,80'),rc.x+x*k-H/2,rc.y+y*k-H/2,H,H);
+      g.globalAlpha=Math.min(1,on);const c=4*k;g.drawImage(sp('235,255,150'),rc.x+x*k-c/2,rc.y+y*k-c/2,c,c)}});
+    g.restore()},
   // bats crossing the moon
   moonbats(g,rc,t,o){const k=rc.k,per=o.every||420,c=Math.floor(t/per),f=t%per;if(f>220)return;g.save();g.fillStyle='rgba(8,8,12,.9)';
     for(let j=0;j<(o.n||5);j++){const u=(f-j*10)/200;if(u<0||u>1)continue;const x=o.x-o.r*1.6+u*o.r*3.2+(aH(c+j)-.5)*60,y=o.y+(aH(c+j*.3)-.5)*o.r*1.2+Math.sin(u*9+j)*10,s=(7+aH(j+c)*6)*k,w=Math.sin(t*.45+j*2);
@@ -2629,7 +2653,9 @@ Object.assign(ALIVE,{
     ['thump',{at:[[1100,470,180,140],[1530,470,180,140]],amt:.02,bpm:96}]],
   nu_ring:[
     ['neon',{at:[[300,63,46,34,'255,50,50'],[476,66,46,34,'205,185,255'],[1197,66,46,34,'205,185,255'],[1366,63,46,34,'255,50,50']],a:.32,spill:260,every:300,dead:.02,burst:.12}],
+    ['cloth',{box:[600,47,1072,337],tile:11,amp:2.1,wave:250,speed:.014}],
     ['fire',{x0:80,x1:164,y0:290,rim:379,hz:200,glow:[118,345,150],n:30,embers:26}],
+    ['bugs',{at:[[300,63],[476,66],[1197,66],[1366,63]],n:8,rx:95,ry:75,dy:120}],
     ['smoke',{x:118,y:300,n:6,spread:30,rise:200,size:55,a:.12,rate:.0035,wind:.35,rgb:'80,70,70'}]],
   nu_bigtop:[
     ['neon',{at:[[302,270,18,22,'255,170,70'],[430,290,16,20,'255,170,70'],[555,300,14,18,'255,170,70'],[690,282,14,18,'255,170,70'],[1010,192,16,20,'255,170,70'],[1100,232,16,20,'255,170,70'],[800,228,14,18,'255,170,70'],[160,250,14,18,'255,170,70']],a:.4,every:220,dead:.05,burst:.3}],
@@ -4278,7 +4304,7 @@ const ENV_STAGE={
   delray:['city',{smoke:.8,sparks:.4,storm:.6,flyers:1.3,news:1,debris:1}], campground:['festival',{fwSound:1,lowFw:1,fireworks:3,embers:1,bats:0,birds:.6,crowdFlash:.5,eq:0,spot:0}],
   mansion:['cemetery',{fog:.5,lightning:0,bats:0}], hellpit:['hell',{bats:0,skyBats:1}], overpass:['city',{sparks:.35,ripples:.6}],
   alley:['city',{ripples:.5,drips:.5,bats:4}], hauntedhouse:['cemetery',{bats:4,fog:1.6}], neontunnel:['neon',{sparks:1.4,power:1.2,lights:1.8}], midway:['carnival',{ripples:.4}],
-  warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0}],
+  warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0,embers:0}],
   nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}]
 };
 function envConfig(stg){const e=ENV_STAGE[stg.id]||[stg.indoor?'quiet':'city'],c={...ENV_PRESET[e[0]],...(e[1]||{})};
