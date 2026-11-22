@@ -2701,6 +2701,36 @@ Object.assign(ALIVE_FX,{
       g.fillStyle=`rgba(${Math.round(80+170*rv)},20,18,1)`;g.fillRect(lx-10*k,ly-4*k,20*k,7*k);
       if(rv>.1){g.globalCompositeOperation='lighter';g.globalAlpha=Math.min(1,.75*rv);let s2=380*k;g.drawImage(sp('255,30,20'),lx-s2,ly-s2*.4,s2*2,s2*1.3);g.globalAlpha=Math.min(1,rv);s2=26*k;g.drawImage(sp('255,90,70'),lx-s2,ly-s2,s2*2,s2*2)}}
     g.restore()},
+  // big speaker stacks standing in the corners of the stage: a bass cabinet with an 18" woofer under a top box with two 12"s and a horn.
+  // Every cone pumps to the music that's actually playing (see saLevel), the cabinets shudder on big hits, red light from the sconces
+  // catches their inner edges. at: [[x, floor y, facing]] in painting px; s is the stack's size
+  gspeakers(g,rc,t,o){const k=rc.k,b=saLevel(t),m=SA.mid,sz=o.s||1;g.save();
+    for(const[x0,fy,face]of o.at){const W=250*sz,H1=230*sz,H2=205*sz,shk=b>.6?(aH(Math.floor(t))-.5)*2*(b-.6)*sz:0,X=rc.x+(x0+shk)*k,Y=rc.y+fy*k,K=k;
+      // contact shadow
+      g.fillStyle='rgba(0,0,0,.55)';g.beginPath();g.ellipse(X+W/2*K,Y,W*.62*K,14*K,0,0,7);g.fill();
+      const cab=(y,h)=>{const gr=g.createLinearGradient(X,0,X+W*K,0);const lit=face>0?[0,1]:[1,0];gr.addColorStop(lit[0],'#0c0a0b');gr.addColorStop(.5,'#1b1618');gr.addColorStop(lit[1],'#2c1d1f');g.fillStyle=gr;g.fillRect(X,y,W*K,h*K);
+        g.strokeStyle='#050405';g.lineWidth=3*K;g.strokeRect(X,y,W*K,h*K);
+        const ex=face>0?X+W*K-3*K:X+3*K;g.strokeStyle='rgba(255,70,55,.75)';g.lineWidth=3*K;g.beginPath();g.moveTo(ex,y+4*K);g.lineTo(ex,y+h*K-4*K);g.stroke();
+        g.fillStyle='#5a5254';for(const[cx,cy]of[[0,0],[1,0],[0,1],[1,1]]){g.fillRect(X+cx*(W-16)*K,y+cy*(h-16)*K,16*K,16*K)}g.fillStyle='rgba(255,255,255,.12)';for(const[cx,cy]of[[0,0],[1,0],[0,1],[1,1]])g.fillRect(X+cx*(W-16)*K+2*K,y+cy*(h-16)*K+2*K,6*K,2*K)};
+      const cone=(cx,cy,r,lv)=>{const P=1+lv*.1;g.fillStyle='#030203';g.beginPath();g.arc(cx,cy,r*1.12*K,0,7);g.fill();const bz=g.createLinearGradient(cx-r*K,cy-r*K,cx+r*K,cy+r*K);bz.addColorStop(0,'#8a8084');bz.addColorStop(.5,'#3a3336');bz.addColorStop(1,'#6a3034');g.strokeStyle=bz;g.lineWidth=3.5*K;g.beginPath();g.arc(cx,cy,r*1.08*K,0,7);g.stroke();
+        g.fillStyle='#262022';g.beginPath();g.arc(cx,cy,r*K,0,7);g.fill();
+        const gr=g.createRadialGradient(cx-r*.25*K,cy-r*.3*K,r*.1*K,cx,cy,r*.9*K*P);gr.addColorStop(0,`rgb(${95+lv*60},${80+lv*30},${84+lv*30})`);gr.addColorStop(.6,'#1e1719');gr.addColorStop(1,'#060405');g.fillStyle=gr;g.beginPath();g.arc(cx,cy,r*.88*K*P,0,7);g.fill();
+        g.strokeStyle='rgba(0,0,0,.6)';g.lineWidth=1.5*K;for(let i=1;i<4;i++){g.beginPath();g.arc(cx,cy,r*.88*K*P*i/4,0,7);g.stroke()}
+        const dc=g.createRadialGradient(cx-r*.08*K,cy-r*.1*K,1,cx,cy,r*.3*K*P);dc.addColorStop(0,`rgb(${110+lv*60},${95+lv*30},${100+lv*30})`);dc.addColorStop(1,'#141011');g.fillStyle=dc;g.beginPath();g.arc(cx,cy,r*.28*K*P,0,7);g.fill();
+        if(lv>.15){g.strokeStyle=`rgba(255,120,100,${(lv-.15)*.5})`;g.lineWidth=2*K;g.beginPath();g.arc(cx,cy,r*.92*K*P,Math.PI*1.1,Math.PI*1.6);g.stroke()}};
+      const yb=Y-H1*K,yt=yb-H2*K-4*K;
+      cab(yb,H1);cone(X+W/2*K,yb+H1/2*K,88*sz,b);
+      g.fillStyle='#050405';g.fillRect(X+22*K,yb+H1*K-26*K,52*K,10*K);g.fillRect(X+(W-74)*K,yb+H1*K-26*K,52*K,10*K);
+      cab(yt,H2);cone(X+68*K,yt+70*K,46*sz,b*.85);cone(X+(W-68)*K,yt+70*K,46*sz,b*.85);
+      // the horn
+      const hx=X+W/2*K,hy=yt+155*K;g.fillStyle='#0a0809';g.beginPath();g.moveTo(hx-62*K,hy-26*K);g.lineTo(hx+62*K,hy-26*K);g.lineTo(hx+30*K,hy+20*K);g.lineTo(hx-30*K,hy+20*K);g.closePath();g.fill();
+      const hg=g.createLinearGradient(0,hy-26*K,0,hy+20*K);hg.addColorStop(0,'#3a3133');hg.addColorStop(1,'#0e0b0c');g.fillStyle=hg;g.beginPath();g.moveTo(hx-54*K,hy-20*K);g.lineTo(hx+54*K,hy-20*K);g.lineTo(hx+22*K,hy+14*K);g.lineTo(hx-22*K,hy+14*K);g.closePath();g.fill();
+      g.fillStyle='#050405';g.fillRect(hx-14*K,hy+2*K,28*K,10*K);
+      // power light and the badge
+      g.fillStyle=`rgba(255,${40+m*120},30,${.7+m*.3})`;g.beginPath();g.arc(X+(face>0?W-24:24)*K,yt+16*K,3.2*K,0,7);g.fill();
+      g.globalCompositeOperation='lighter';g.fillStyle=`rgba(255,60,40,${.18+m*.4})`;g.beginPath();g.arc(X+(face>0?W-24:24)*K,yt+16*K,9*K,0,7);g.fill();g.globalCompositeOperation='source-over';
+      g.fillStyle='rgba(200,190,185,.55)';g.font=`bold ${11*K}px Impact,sans-serif`;g.textAlign='center';g.fillText('LAST VERSE',X+W/2*K,yb+18*K)}
+    g.restore()},
   // bats crossing the moon
   moonbats(g,rc,t,o){const k=rc.k,per=o.every||420,c=Math.floor(t/per),f=t%per;if(f>220)return;g.save();g.fillStyle='rgba(8,8,12,.9)';
     for(let j=0;j<(o.n||5);j++){const u=(f-j*10)/200;if(u<0||u>1)continue;const x=o.x-o.r*1.6+u*o.r*3.2+(aH(c+j)-.5)*60,y=o.y+(aH(c+j*.3)-.5)*o.r*1.2+Math.sin(u*9+j)*10,s=(7+aH(j+c)*6)*k,w=Math.sin(t*.45+j*2);
@@ -2711,7 +2741,7 @@ Object.assign(ALIVE,{
   sewer:[['sewer',{}],['fogband',{y0:1140,y1:1500,ym:1290,a:.94,rgb:'52,96,34',floor:.5}],['fogsheet',{y0:1180,y1:1400,n:24,a:.55,rgb:'90,150,60',sp:.35,ry:60,rx:480}],['fogsheet',{y0:1150,y1:1330,n:16,a:.4,rgb:'40,80,30',sp:-.25,ry:50,rx:420}]],
   cage:[['cage',{}]],
   club:[['club',{}]],
-  theater:[['beams',{at:[[634,96,'255,40,30'],[952,96,'255,60,40'],[1548,96,'255,60,40'],[1863,96,'255,40,30']],len:850,w:220,a:.06,swing:.14}],['neon',{at:[[149,381,70,90,'255,90,50'],[2347,381,70,90,'255,90,50']],a:.32,every:160,burst:.5,dead:.12}],['motes',{x0:400,x1:2100,y0:150,y1:900,n:26,size:5,rgb:'255,200,180',a:.35}],['smoke',{x:1248,y:960,n:10,spread:2000,rise:160,size:150,a:.1,rate:.002,wind:.2,rgb:'120,40,40'}]],
+  theater:[['gspeakers',{at:[[140,964,1],[2106,964,-1]],s:1}],['beams',{at:[[634,96,'255,40,30'],[952,96,'255,60,40'],[1548,96,'255,60,40'],[1863,96,'255,40,30']],len:850,w:220,a:.06,swing:.14}],['neon',{at:[[149,381,70,90,'255,90,50'],[2347,381,70,90,'255,90,50']],a:.32,every:160,burst:.5,dead:.12}],['motes',{x0:400,x1:2100,y0:150,y1:900,n:26,size:5,rgb:'255,200,180',a:.35}],['smoke',{x:1248,y:960,n:10,spread:2000,rise:160,size:150,a:.1,rate:.002,wind:.2,rgb:'120,40,40'}]],
   slaughter:[['slaughterhouse',{}],['ripple',{x0:150,x1:2400,y0:1240,y1:1620,amp:1,sp:.03,glints:18,rgb:'230,240,220',ga:.22}]],
   neontunnel:[
     ['rings',{clip:[0,0,2496,1000],hole:[1150,580,1325,1000],cx:1240,cy:720,rx0:110,ry0:200,rx1:1500,ry1:1000,n:4,sp:.0028,a:.11,cols:['255,40,200','60,255,160','120,80,255','40,220,255','255,140,40']}],
@@ -3371,7 +3401,7 @@ function stepThrows(e){
   e.throws=e.throws.filter(o=>!o.dead&&(o.perm||o.rest<300)&&o.x>-200&&o.x<WW+200);
 }
 function drawThrowItem(g,o){
-  if(o.kind==='popcorn'&&o.spilt){g.save();g.translate(o.x,GROUND);let sd=(o.x*13|0)+7;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+  if(o.kind==='popcorn'&&o.spilt){g.save();g.translate(o.x,GROUND);let sd=(Math.abs(o.x*13|0)%2147483000)+7;/* a spill left of x=0 used to give a negative seed and sizes, and a crash that froze the game */const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
     for(let i=0;i<22;i++){const px=(R()-.5)*70,py=-R()*7-1,r=2+R()*2.2;g.fillStyle=R()<.25?'#e8c04a':'#fff3d0';g.strokeStyle='#3a2a14';g.lineWidth=.8;g.beginPath();g.arc(px,py,r,0,7);g.arc(px+r*.8,py-r*.4,r*.8,0,7);g.fill();g.stroke()}g.restore()}
   if(o.kind==='soda'&&o.spilt&&o.rest){g.save();g.globalAlpha*=.8;g.fillStyle='#e8e0d8';for(let i=0;i<5;i++){g.fillRect(o.x-18+((o.x*7+i*11)%36),GROUND-3-(i%2),3,2)}g.restore()}
   g.save();g.translate(o.x,o.y);g.rotate(o.rot);g.scale(1.8*(o.sc||1),1.8*(o.sc||1));g.lineWidth=1.2;g.strokeStyle='#120c0a';
@@ -3447,7 +3477,7 @@ function scrToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 const scrDev=()=>typeof FE!=='undefined'&&!!FE.devOK;
 function scrEntries(id,withLocal=scrDev()){const stg=STAGES.find(s=>s.id===id),out=[];
   const add=(v,from)=>{if(!v||!v.src)return;const yid=ytId(v.src),nm=v.name||(yid?'YouTube '+yid:v.src.split('/').pop());
-    if(yid)out.push({id:'b:'+v.src,kind:'youtube',bundled:true,name:nm,vid:yid,src:v.src,thumb:'https://i.ytimg.com/vi/'+yid+'/hqdefault.jpg',from:v.from||from||null});
+    if(yid)out.push({id:'b:'+v.src,kind:'youtube',bundled:true,name:nm,vid:yid,src:v.src,thumb:'https://i.ytimg.com/vi/'+yid+'/hqdefault.jpg',from:v.from||from||null,audio:v.audio||null,audioAt:+v.audioAt||0});
     else out.push({id:'b:'+v.src,kind:'bundled',bundled:true,name:nm,src:v.src,from:v.from||from||null})};
   ((stg&&stg.screen&&stg.screen.videos)||[]).forEach(v=>add(v));
   ((SCR.manifest[id]&&SCR.manifest[id].videos)||[]).forEach(v=>add(v));
@@ -3582,6 +3612,26 @@ function ytPlace(id,e,g,x,y,w,h){const cv=g.canvas;if(!cv||cv.id!=='game')return
   const L=cv.offsetLeft+a.x*sc,T=cv.offsetTop+a.y*sc,W2=(b.x-a.x)*sc,H2=(b.y-a.y)*sc,key=`${L|0},${T|0},${W2|0},${H2|0}`;
   if(key!==YT.last){YT.last=key;Object.assign(YT.el.style,{left:L+'px',top:T+'px',width:W2+'px',height:H2+'px'})}
   YT.el.style.display='';YT.seen=performance.now()}
+/* A screen video can carry its own song file ("audio" in screens.json, with "audioAt": the second of the video where the song starts).
+   Then the YouTube picture stays muted and the game plays the song itself, at exactly the jukebox's loudness, kept in step with the
+   video from the time YouTube reports. Its sound runs through an analyser so the Grindhouse speakers pump to the real music. */
+const SA={el:null,src:'',alt:0,an:null,data:null,yt:{t:0,at:0,state:-1},bass:0,mid:0,live:false};
+addEventListener('message',e=>{if(!YT.el||e.source!==YT.el.contentWindow)return;let d;try{d=typeof e.data==='string'?JSON.parse(e.data):e.data}catch(x){return}
+  const i=d&&d.info;if(!i)return;if(typeof i.currentTime==='number'){SA.yt.t=i.currentTime;SA.yt.at=performance.now()}if(typeof i.playerState==='number')SA.yt.state=i.playerState});
+function saTick(on,e,vol){
+  if(!(on&&e&&e.audio)){if(SA.el&&!SA.el.paused)SA.el.pause();SA.live=false;return false}
+  if(!SA.el){const a=SA.el=new Audio();a.preload='auto';a.addEventListener('error',()=>{if(SA.src&&!SA.alt){SA.alt=1;a.src=SA.src.replace(/\.mp3$/,'.webm')}})}
+  if(SA.src!==e.audio){SA.src=e.audio;SA.alt=JB.alt?1:0;SA.el.src=SA.alt?e.audio.replace(/\.mp3$/,'.webm'):e.audio}
+  if(!SA.an&&AC&&AC.state==='running'){try{const n=AC.createMediaElementSource(SA.el);SA.an=AC.createAnalyser();SA.an.fftSize=1024;SA.an.smoothingTimeConstant=.55;SA.data=new Uint8Array(SA.an.frequencyBinCount);n.connect(SA.an);SA.an.connect(AC.destination)}catch(x){SA.an=null}}
+  SA.el.volume=vol;
+  const yt=SA.yt,now=performance.now(),playing=yt.state===1&&!G.paused&&now-yt.at<3000,t=yt.t+(playing?(now-yt.at)/1000:0)-(e.audioAt||0),d=SA.el.duration||0;
+  if(!playing||t<0||(d&&t>d-.05)){if(!SA.el.paused)SA.el.pause();SA.live=false;return true}
+  if(Math.abs(SA.el.currentTime-t)>.35)try{SA.el.currentTime=t}catch(x){}
+  if(SA.el.paused)SA.el.play().catch(()=>{});SA.live=!SA.el.paused;return true}
+/* how hard the music is hitting right now (0..1), for the speakers: the real song when the game is playing it, otherwise a beat */
+function saLevel(t){if(SA.live&&SA.an&&SA.data){SA.an.getByteFrequencyData(SA.data);let b=0,m=0;for(let i=1;i<6;i++)b+=SA.data[i];for(let i=8;i<40;i++)m+=SA.data[i];
+    b=Math.max(0,(b/5-110)/140);m=Math.max(0,(m/32-70)/150);SA.bass=Math.max(b,SA.bass*.82);SA.mid=Math.max(m,SA.mid*.8);return SA.bass}
+  const ph=(t/60*92/60)%1,beat=Math.pow(1-ph,4)*(SCR.audioOn?.55:.12);SA.bass=Math.max(beat,SA.bass*.85);SA.mid=SA.bass*.6;return SA.bass}
 /* YouTube turns loud songs down (loudness normalization, about 6 dB for a typical loud track) and its player stops at 100%, so a video
    set to the same number as the jukebox sounds much quieter. Doubling the setting (+6 dB) brings it level with a jukebox song; at Music
    volume 50% and up the player is at its maximum. */
@@ -3592,11 +3642,12 @@ function scrTick(){const now=performance.now(),stg=STAGES[G.stage],c=stg&&scrCfg
   const on=!!(fight&&c&&c.audio&&(act.e.kind==='youtube'?ytLive:act.e.kind==='leader'?false:vidLive));
   const vol=clamp((muted?0:S.vol)*(S.musicVol??.7),0,1);
   if(on!==SCR.audioOn){SCR.audioOn=on;applyMusicVol();if(!on&&JB.el&&JB.el.paused&&!JB.userPaused&&G.mode==='fight'&&JB.i>=0)JB.el.play().catch(()=>{})}
+  const sa=saTick(on&&act.e.kind==='youtube',act&&act.e,vol);
   for(const k in SCR.vids){const q=SCR.vids[k],mine=on&&stg&&k===stg.id&&act.e.kind!=='youtube';
     if(mine){q.v.volume=vol;if(q.v.muted){q.v.muted=false}if(G.paused&&!q.v.paused)q.v.pause();else if(!G.paused&&q.v.paused&&q.src){const pp=q.v.play();if(pp&&pp.catch)pp.catch(()=>{q.v.muted=true;q.v.play().catch(()=>{})})}}
     else if(!q.v.muted)q.v.muted=true}
   if(YT.el){if(!ytLive){if(YT.el.style.display!=='none'){YT.el.style.display='none';ytCmd('pauseVideo')}if(now-YT.seen>8000&&YT.vid){YT.el.src='about:blank';YT.vid=null}}
-    else if(YT.ready){if(G.paused)ytCmd('pauseVideo');else ytCmd('playVideo');if(on&&vol>0){ytCmd('unMute');ytCmd('setVolume',[Math.round(clamp(vol*YT_GAIN,0,1)*100)])}else ytCmd('mute')}}}
+    else if(YT.ready){if(G.paused)ytCmd('pauseVideo');else ytCmd('playVideo');if(on&&vol>0&&!sa){ytCmd('unMute');ytCmd('setVolume',[Math.round(clamp(vol*YT_GAIN,0,1)*100)])}else ytCmd('mute')}}}
 setInterval(scrTick,250);
 /* thumbnails for the library */
 function scrThumb(src){return new Promise(ok=>{const v=document.createElement('video');v.muted=true;v.preload='auto';v.playsInline=true;let done=false;
@@ -7120,6 +7171,8 @@ const TRACKS=[
   {title:'I Don\'t Wanna',artist:'Mars Hall',src:'music/i-dont-wanna.mp3'},
   {title:'Do the Damn Thang',artist:'P.R.E.A.C.H.',src:'music/do-the-damn-thang.mp3'},
   {title:'Fire',artist:'P.R.E.A.C.H.',src:'music/fire.mp3'},
+  {title:'The Island',artist:'Deadlight Ritual ft. Beaker',src:'music/the-island.mp3'},
+  {title:'Just Waiting',artist:'BlackMasks',src:'music/just-waiting.mp3'},
 ];
 const JB={el:null,i:-1,repeat:'all',userPaused:false,shown:-1};
 if(!Array.isArray(S.jbOff))S.jbOff=[];if(S.jbRandom===undefined)S.jbRandom=true;
