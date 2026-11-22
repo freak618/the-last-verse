@@ -1,4 +1,4 @@
-# Sends the game to itch.io every time main changes.
+# Sends the itch.io launcher (which shows the Cloudflare-hosted game) to itch.io every time main changes.
 # Needs the repository secret BUTLER_API_KEY (an itch.io API key).
 # The itch.io page is set by the repository variable ITCH_GAME (username/game), default below.
 name: Publish to itch.io
@@ -18,19 +18,16 @@ jobs:
         run: echo "::notice::Add the BUTLER_API_KEY secret to turn on itch.io uploads."
       - uses: actions/checkout@v4
         if: env.BUTLER_API_KEY != ''
+        with:
+          sparse-checkout: itch
       - name: Gather the game files
         if: env.BUTLER_API_KEY != ''
         run: |
-          # Every asset folder ships, not a hand-written list: stages/ was added
-          # later and went missing from itch for weeks because the list was not
-          # updated with it. Anything new the game loads now goes automatically.
+          # The full game is hosted on Cloudflare, which has no total size limit.
+          # itch.io caps browser games at 500 MB, so it gets a small launcher
+          # page that shows the Cloudflare copy instead of the whole game.
           mkdir build
-          cp index.html build/
-          for d in */; do
-            [ "$d" = "build/" ] && continue
-            [ "$d" = "tools/" ] && continue   # sprite pipeline, not part of the game
-            cp -r "$d" build/
-          done
+          cp itch/index.html build/
           echo "shipping:" && ls build/
       - name: Install butler
         if: env.BUTLER_API_KEY != ''
