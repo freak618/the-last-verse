@@ -2509,11 +2509,22 @@ Object.assign(ALIVE_FX,{
   // speakers: the cone area pumps to a beat, harder when the fight is hot
   thump(g,rc,t,o){const im=rc.im,k=rc.k,E=envK(),bt=(t/60*(o.bpm||92)/60)%1,p=Math.pow(1-bt,6)*(o.amt||.02)*(1+E.heat*1.5);if(p<.002)return;
     o.at.forEach(([x,y,w,h])=>{const s=1+p,cx=x+w/2,cy=y+h/2;g.drawImage(im,x,y,w,h,rc.x+(cx-w*s/2)*k,rc.y+(cy-h*s/2)*k,w*s*k,h*s*k)})},
-  // a speaker's woofer cone pumping on the beat: only the round cone moves, clipped to its rim, so the cabinet stays still. at: [cx,cy,rx,ry]
-  woofer(g,rc,t,o){const im=rc.im,k=rc.k,E=envK(),bt=(t/60*(o.bpm||92)/60)%1,p=Math.pow(1-bt,5)*(o.amt||.06)*(1+E.heat*1.5);if(p<.002)return;
-    for(const[cx,cy,rx,ry]of o.at){const s=1+p,w=rx*2.3,h=ry*2.3;g.save();g.beginPath();g.ellipse(rc.x+cx*k,rc.y+cy*k,rx*k,ry*k,0,0,Math.PI*2);g.clip();
-      g.drawImage(im,cx-w/2,cy-h/2,w,h,rc.x+(cx-w*s/2)*k,rc.y+(cy-h*s/2)*k,w*s*k,h*s*k);
-      g.globalCompositeOperation='lighter';g.globalAlpha=p*2.2;g.fillStyle='rgb(255,235,210)';g.fill();g.restore()}},
+  // a speaker's woofer cone pumping on the beat. Only the cone moves, clipped to its rim so the cabinet stays still: it punches out on the hit and
+  // springs back past rest, the centre cap travels further than the outer cone, and light and shadow follow it (lit when out, the rim's
+  // shadow deepening as it pulls away). at: [cx,cy,rx,ry]
+  woofer(g,rc,t,o){const im=rc.im,k=rc.k,E=envK(),bt=(t/60*(o.bpm||92)/60)%1,A=(o.amt||.08)*(1+E.heat*1.2);
+    const d=Math.exp(-bt*10)*(1-bt)-.3*Math.sin(Math.min(1,bt*3)*Math.PI)*Math.exp(-bt*3);if(Math.abs(d)<.01)return;
+    for(const[cx,cy,rx,ry]of o.at){const X=rc.x+cx*k,Y=rc.y+cy*k,w=rx*2.3,h=ry*2.3;
+      const layer=(f,sc)=>{g.save();g.beginPath();g.ellipse(X,Y,rx*f*k,ry*f*k,0,0,Math.PI*2);g.clip();const s=1+A*sc*d;
+        g.drawImage(im,cx-w/2,cy-h/2,w,h,rc.x+(cx-w*s/2)*k,rc.y+(cy-h*s/2)*k,w*s*k,h*s*k);g.restore()};
+      layer(1,1);layer(.42,2.4);
+      g.save();g.translate(X,Y);g.scale(1,ry/rx);const r=rx*k;
+      if(d>0){g.globalCompositeOperation='lighter';const hl=g.createRadialGradient(-r*.2,-r*.25,0,0,0,r*.85);hl.addColorStop(0,`rgba(255,240,220,${.32*d})`);hl.addColorStop(1,'rgba(255,240,220,0)');
+        g.fillStyle=hl;g.beginPath();g.arc(0,0,r,0,Math.PI*2);g.fill();g.globalCompositeOperation='source-over'}
+      const sh=g.createRadialGradient(0,0,r*.62,0,0,r);sh.addColorStop(0,'rgba(0,0,0,0)');sh.addColorStop(1,`rgba(0,0,0,${Math.min(.6,.55*Math.abs(d))})`);
+      g.fillStyle=sh;g.beginPath();g.arc(0,0,r,0,Math.PI*2);g.fill();
+      if(d<0){g.fillStyle=`rgba(0,0,0,${.25*-d})`;g.beginPath();g.arc(0,0,r*.5,0,Math.PI*2);g.fill()}
+      g.restore()}},
   // bats crossing the moon
   moonbats(g,rc,t,o){const k=rc.k,per=o.every||420,c=Math.floor(t/per),f=t%per;if(f>220)return;g.save();g.fillStyle='rgba(8,8,12,.9)';
     for(let j=0;j<(o.n||5);j++){const u=(f-j*10)/200;if(u<0||u>1)continue;const x=o.x-o.r*1.6+u*o.r*3.2+(aH(c+j)-.5)*60,y=o.y+(aH(c+j*.3)-.5)*o.r*1.2+Math.sin(u*9+j)*10,s=(7+aH(j+c)*6)*k,w=Math.sin(t*.45+j*2);
@@ -2598,7 +2609,7 @@ Object.assign(ALIVE,{
   nu_studio:[
     ['neon',{at:[[390,28,40,30,'255,230,180'],[860,25,40,30,'255,230,180'],[820,102,30,24,'255,230,180'],[450,105,30,24,'255,230,180'],[770,342,50,30,'255,210,150'],[390,380,24,24,'255,210,150']],a:.3,every:420,dead:.03,burst:.15}],
     ['gear',{pts:STUDIO_GEAR,bpm:90,scr:[[361,456,46,24,'60,220,200','bars'],[1163,478,17,14,'255,200,90','glow'],[1085,449,16,8,'255,80,60','glow'],[86,422,46,9,'120,255,160','bars'],[745,443,22,9,'120,220,255','bars']]}],
-    ['woofer',{at:[[320,281,19,19.5],[951,428,19,21],[1222,397,20,30]],amt:.07,bpm:90}],
+    ['woofer',{at:[[320,281,19,19.5],[951,428,19,21],[1222,397,20,30]],amt:.09,bpm:90}],
     ['motes',{x0:200,x1:1100,y0:80,y1:560,n:16,size:4,rgb:'255,230,200',a:.3}]]
 });
 
