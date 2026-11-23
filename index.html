@@ -1818,8 +1818,8 @@ function paintCage(){
    VIP balcony and railings. Live: every light (LED strips, the neon sign, floor tiles,
    beams, pole rings), the DJ gear, speaker cones, and the roster's women in the crowd. */
 const CLUB={FL:1100,pole:[1248,330,900],plat:[1248,905,300,62],dj:[200,800,580,1000],spk:[[880,640],[1616,640]],
-  vip:[1736,700,2496,860],vipL:[0,700,760,860],slots:[[70,700],[195,700],[320,700],[445,700],[570,700],[695,700],[1801,700],[1926,700],[2051,700],[2176,700],[2301,700],[2426,700]],
-  women:['ashley','mystic','darling','dabbalette','mizzmurda','devilette','vanitylette','klownie','triple6'],fans:[],key:'',hype:0,sync:0,syncT:600,lastT:0};
+  vip:[1736,700,2496,860],vipL:[0,700,760,860],slots:[[45,700,1],[97,686,0.93],[150,700,1],[202,686,0.93],[255,700,1],[307,686,0.93],[360,700,1],[412,686,0.93],[465,700,1],[517,686,0.93],[570,700,1],[622,686,0.93],[675,700,1],[727,686,0.93],[1767,686,0.93],[1820,700,1],[1872,686,0.93],[1925,700,1],[1977,686,0.93],[2030,700,1],[2082,686,0.93],[2135,700,1],[2187,686,0.93],[2240,700,1],[2292,686,0.93],[2345,700,1],[2397,686,0.93],[2450,700,1]],
+  women:['ashley','triple6','mystic','darling','dabbalette','mizzmurda','devilette','vanitylette','klownie','pumpkin','infernavexx','anthraxx','xtina','lilith','minijugg','xshaxwnax','smokeroxx','jinx','psychokandy','eyez','missdelitreats','jules','kandy','michimurderz','milo','mischef','sexsilette','shitkicker','shortea','tinydoll'],fans:[],key:'',hype:0,sync:0,syncT:600,lastT:0};
 function paintClub(){
   const W0=2496,H0=1664,FL=CLUB.FL,cv=document.createElement('canvas');cv.width=W0;cv.height=H0;const g=cv.getContext('2d');
   let sd=4242;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};const INK='#06050a';
@@ -5026,11 +5026,11 @@ function cageNear(g,t){const E=envK(),sh=(E.kick||0)*1.2,jx=(aH(Math.floor(t)+7)
 
 /* ---------- The Wet Kitty: live lights, gear and the crowd ---------- */
 const hsl=(h,s,l,a)=>`hsla(${h},${s}%,${l}%,${a})`;
-function clubBuild(){const pool=CLUB.women.map(id=>CHARS.find(c=>c.id===id)).filter(c=>c&&c.sheet&&(CAGE.cache.has(c.id)||BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok)&&c!==(G.f1&&G.f1.c)&&c!==(G.f2&&G.f2.c));
-  const den={low:.6,medium:.85,high:1}[S.crowdDen||'medium'],n=Math.max(1,Math.min(pool.length,Math.round(CLUB.slots.length*den))),fans=[];if(!pool.length)return fans;
+function clubBuild(){const pool=CLUB.women.map(id=>CHARS.find(c=>c.id===id)).filter(c=>c&&c.sheet&&!c.custom&&!isSoon(c)&&ASSET.sheets[c.sheet]&&c!==(G.f1&&G.f1.c)&&c!==(G.f2&&G.f2.c));
+  const den={low:.6,medium:1,high:1}[S.crowdDen||'medium'],n=Math.max(1,Math.min(pool.length,Math.round(CLUB.slots.length*den))),fans=[];if(!pool.length)return fans;
   CAGE.queue.push(...pool.filter(c=>!CAGE.cache.has(c.id)&&!CAGE.queue.includes(c)));
-  const order=pool.slice().sort(()=>REAL_RANDOM()-.5),per=Math.ceil(n/2),L=CLUB.slots.slice(0,6),Rr=CLUB.slots.slice(6),pickEven=a=>a.filter((_,i)=>Math.floor((i+1)*per/6)>Math.floor(i*per/6)),slots=pickEven(L).concat(pickEven(Rr));
-  slots.slice(0,order.length).forEach(([x,y],i)=>fans.push({c:order[i],x,y,s:.42*(.95+REAL_RANDOM()*.1),facing:x<1248?1:-1,anim:REAL_RANDOM()*400|0,rate:.8+REAL_RANDOM()*.5,
+  const order=pool.slice().sort(()=>REAL_RANDOM()-.5),per=Math.ceil(n/2),L=CLUB.slots.filter(q=>q[0]<1248),Rr=CLUB.slots.filter(q=>q[0]>=1248),pickEven=(a,m)=>a.filter((_,i)=>Math.floor((i+1)*m/a.length)>Math.floor(i*m/a.length)),slots=pickEven(L,per).concat(pickEven(Rr,n-per));
+  slots.slice(0,order.length).forEach(([x,y,k],i)=>fans.push({c:order[i],x,y,s:.42*(k||1)*(.95+REAL_RANDOM()*.1),facing:x<1248?1:-1,anim:REAL_RANDOM()*400|0,rate:.8+REAL_RANDOM()*.5,
     mode:'cheer',modeT:REAL_RANDOM()*200,jy:0,vy:0,bob:REAL_RANDOM()*6.28,next:null}));
   fans.sort((a,b)=>a.y-b.y);return fans}
 function clubReact(level){for(const f of CLUB.fans){if(REAL_RANDOM()>.4+level*.6)continue;f.delay=REAL_RANDOM()*18*(1.4-level);f.next=REAL_RANDOM()<.55?'cheer':'jump';f.hold=90+level*160}CLUB.hype=Math.min(1,CLUB.hype+level*.6);if(level>=1)CLUB.sync=240}
