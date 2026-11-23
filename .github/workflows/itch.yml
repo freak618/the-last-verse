@@ -6,9 +6,17 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+# Least privilege: this job only needs to read the repo.
+permissions:
+  contents: read
+# Never run two uploads at once.
+concurrency:
+  group: itch-publish
+  cancel-in-progress: true
 jobs:
   itch:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       ITCH_GAME: ${{ vars.ITCH_GAME || 'freak618/the-last-verse' }}
@@ -16,10 +24,11 @@ jobs:
       - name: Skip until the itch.io key is added
         if: env.BUTLER_API_KEY == ''
         run: echo "::notice::Add the BUTLER_API_KEY secret to turn on itch.io uploads."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1 (pinned to an exact commit)
         if: env.BUTLER_API_KEY != ''
         with:
           sparse-checkout: itch
+          persist-credentials: false
       - name: Gather the game files
         if: env.BUTLER_API_KEY != ''
         run: |
