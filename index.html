@@ -1578,7 +1578,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'deadmall',name:'The Dead Mall',img:'deadmall',full:{scale:0.5059,feet:1040/1184,p:.15,floor:815,bands:[[0,815,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[110,70,95],grade:'#7a2a4a',rim:'rgba(255,90,140,.40)',farTone:'none',shadowL:[{x:1160,y:-300,a:.30}],crowd:{groups:[],front:0},
+ { id:'deadmall',name:'The Dead Mall',img:'deadmall',ww:1234,zoom:1.12,full:{scale:0.6,feet:960/1184,p:1,rigid:true},indoor:true,dry:true,wet:false,ambient:[110,70,95],grade:'#7a2a4a',rim:'rgba(255,90,140,.40)',farTone:'none',shadowL:[{x:1160,y:-300,a:.30}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -2781,6 +2781,7 @@ Object.assign(ALIVE,{
   sewer:[['sewer',{}],['fogband',{y0:1140,y1:1500,ym:1290,a:.94,rgb:'52,96,34',floor:.5}],['fogsheet',{y0:1180,y1:1400,n:24,a:.55,rgb:'90,150,60',sp:.35,ry:60,rx:480}],['fogsheet',{y0:1150,y1:1330,n:16,a:.4,rgb:'40,80,30',sp:-.25,ry:50,rx:420}]],
   cage:[['cage',{}]],
   deadmall:[
+    ['neon',{at:[[88,458,95,30,'255,90,200'],[88,500,130,90,'255,60,170'],[537,545,50,18,'255,200,190'],[537,575,80,70,'255,90,80'],[1607,528,40,16,'235,235,255'],[1607,560,70,60,'210,215,255'],[1945,458,60,18,'240,235,230'],[1945,495,95,70,'230,225,220'],[1925,528,45,16,'240,235,230'],[1925,560,80,60,'230,225,220']],a:.5,every:900,dead:0,burst:0,seed:7}],
     ['neon',{at:[[175,262,120,60,'255,40,140'],[1890,280,140,70,'60,255,120'],[1900,530,80,45,'255,40,40'],[2018,510,45,45,'255,170,40'],[1680,90,70,60,'210,220,255'],[100,610,45,40,'120,160,255'],[270,610,45,40,'255,90,90'],[370,615,40,35,'255,120,90']],a:.12,every:300,dead:.05,burst:.15}],
     ['wave',{x0:960,x1:1200,y0:530,y1:740,amp:2,sp:.05}],
     ['drip',{at:[[620,300,1000],[1450,330,1010],[1580,240,990]],every:110}],
