@@ -3665,7 +3665,8 @@ function ghTap(){if(SA.an||!AC||AC.state!=='running'||!JB.el)return;try{const n=
 function jbLevel(){ghTap();if(JB.trim)JB.trim.gain.setTargetAtTime(jbTrim(TRACKS[JB.i]),AC.currentTime,.02)}
 function saTick(gh,e){
   if(!gh){SA.live=false;SA.since=0;return false}
-  const i=ghTrackOf(e),a=jbAudio(),now=performance.now();
+  const i=ghTrackOf(e);if(i<0){SA.live=false;SA.since=0;return false}
+  const a=jbAudio(),now=performance.now();
   if(JB.i!==i||!a.src){JB.i=i;JB.shown=-1;JB.altTried=0;a.src=jbSrc(TRACKS[i]);jbPaint();try{jbLevel()}catch(x){}}
   if(SA.src!==e.audio||!SA.since){SA.src=e.audio;SA.since=now;SA.seen1=0}
   ghTap();
@@ -6639,7 +6640,7 @@ TEST_API.net4=()=>({live:N4.live,role:N4.role,me:N4.me,slot:N4.mySlot,code:N4.co
   hashes:N4.hashes?[...N4.hashes.entries()].slice(-4):[],act:G.act,team:G.team&&G.team.map(t=>t.map(c=>c.id)),live2:G.f1&&[G.f1.c.id,G.f2.c.id],wins:G.wins&&G.wins.slice(),mode:G.mode,view:N4.view,cpu:N4.cpu,stall:N4.stall});
 
 TEST_API.netdbg=()=>NET.dbg;
-TEST_API.screens={juke:()=>{feJukebox();return true},trim:()=>({db:JB.trim?+(20*Math.log10(JB.trim.gain.value)).toFixed(1):null,vol:JB.el?JB.el.volume:null,chain:!!SA.an}),rms:()=>{if(!SA.an)return null;const b=new Float32Array(SA.an.fftSize);SA.an.getFloatTimeDomainData(b);let q=0;for(const v of b)q+=v*v;return Math.sqrt(q/b.length)},sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
+TEST_API.screens={juke:()=>{feJukebox();return true},music:()=>({n:TRACKS.length,ok:JB.ok,src:JB.el?JB.el.src:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,paused:JB.el?JB.el.paused:null,err:JB.el&&JB.el.error?JB.el.error.code:null}),trim:()=>({db:JB.trim?+(20*Math.log10(JB.trim.gain.value)).toFixed(1):null,vol:JB.el?JB.el.volume:null,chain:!!SA.an}),rms:()=>{if(!SA.an)return null;const b=new Float32Array(SA.an.fftSize);SA.an.getFloatTimeDomainData(b);let q=0;for(const v of b)q+=v*v;return Math.sqrt(q/b.length)},sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
 TEST_API.unlocks=()=>({...UNL});TEST_API.towerWin=()=>{G.type='tower';G.c1=G.c1||CHARS[0];G.tower={order:[CHARS[1]],i:0};endMatch(0)};
 TEST_API.netbench=()=>{const t=performance.now();for(let i=0;i<200;i++)netSnap();return{msPerSnap:(performance.now()-t)/200,parts:G.parts.length,decals:G.decals.length}};
 TEST_API.net=()=>({live:NET.live,role:NET.role,link:NET.link,F:NET.F,confirmed:NET.confirmed,rollbacks:NET.rollbacks,maxDepth:NET.maxDepth,desync:NET.desync,
@@ -7183,7 +7184,9 @@ function feChampion(){
   document.getElementById('tnAgain').focus({preventScroll:true});
 }
 /* ---------- jukebox: music player + sound / music / rain knobs ---------- */
-// Add songs here as they come in: {title:'Song',artist:'Who',src:'music/file.mp3'}
+// The songs live in their own repo (freak618/the-last-verse-music) and load from its GitHub Pages site.
+// Add songs there, then add a line here: {title:'Song',artist:'Who',src:'music/file.mp3'}
+const MUSIC_HOME='https://freak618.github.io/the-last-verse-music/';
 const TRACKS=[
   {title:'In the Basement',artist:'Deadlight Ritual & Midwest Pimpen',src:'music/in-the-basement.mp3',lufs:-13.5},
   {title:'Say It Anyway',artist:'Fr3ak618 & SheezyB',src:'music/say-it-anyway.mp3',lufs:-10.3},
@@ -7227,6 +7230,10 @@ const TRACKS=[
   {title:'Just Waiting',artist:'BlackMasks',src:'music/just-waiting.mp3',lufs:-12.7},
 ];
 const JB={el:null,i:-1,repeat:'all',userPaused:false,shown:-1};
+/* Where the songs can't be reached (the Claude version blocks other sites, or the player is offline), the jukebox shows no songs. */
+function musicGone(){JB.ok=false;if(JB.el){try{JB.el.pause();JB.el.removeAttribute('src');JB.el.load()}catch(e){}}JB.i=-1;TRACKS.length=0;try{jbPaint()}catch(e){}}
+(async()=>{if(/claude/i.test(location.hostname)){musicGone();return}
+  try{const r=await fetch(MUSIC_HOME+TRACKS[0].src,{method:'HEAD',mode:'cors',cache:'no-store'});if(!r.ok)throw 0;JB.ok=true}catch(e){musicGone()}})();
 if(!Array.isArray(S.jbOff))S.jbOff=[];if(S.jbRandom===undefined)S.jbRandom=true;
 /* one-time reset: every song checked and shuffle on (new songs always start checked) */
 if(!S.jbAll1){S.jbOff=[];S.jbRandom=true;S.jbAll1=1;try{saveS()}catch(e){}}
@@ -7236,9 +7243,8 @@ function jbToast(){const t=TRACKS[JB.i];if(!t||ov.querySelector('.fe-juke'))retu
   scr.querySelectorAll('.jb-toast').forEach(e=>e.remove());const d=document.createElement('div');d.className='jb-toast';
   d.innerHTML=`<span class="note">♪</span><span class="tx"><b>${esc(t.title)}</b><small>${esc(t.artist||'')}</small></span>`;scr.appendChild(d);setTimeout(()=>d.classList.add('out'),4200);setTimeout(()=>d.remove(),4800)}
 function applyMusicVol(){if(JB.el)JB.el.volume=(typeof SCR!=='undefined'&&SCR.audioOn)?0:clamp((muted?0:S.vol)*(S.musicVol??.7),0,1)}
-/* The Claude version carries lighter .webm copies of the songs; the itch.io build has the original mp3s. Try one, fall back to the other. */
-function jbSrc(t){return JB.alt?t.src.replace(/\.mp3$/,'.webm'):t.src}
-function jbAudio(){if(!JB.el){const a=JB.el=new Audio();a.preload='auto';
+function jbSrc(t){return MUSIC_HOME+t.src}
+function jbAudio(){if(!JB.el){const a=JB.el=new Audio();a.crossOrigin='anonymous';a.preload='auto';
   a.addEventListener('ended',()=>jbNext(true));a.addEventListener('timeupdate',jbTick);a.addEventListener('loadedmetadata',jbTick);
   a.addEventListener('playing',()=>{JB.fails=0});a.addEventListener('play',()=>{if(JB.shown!==JB.i){JB.shown=JB.i;jbToast()}jbPaint()});a.addEventListener('pause',jbPaint);a.addEventListener('error',()=>{const cur=TRACKS[JB.i];if(cur&&!JB.altTried){JB.altTried=1;JB.alt=!JB.alt;a.src=jbSrc(cur);if(!JB.userPaused)a.play().catch(()=>{});return}JB.fails=(JB.fails||0)+1;if(TRACKS.length>1&&JB.fails<4)setTimeout(()=>jbNext(true),400)})}  /* stop after a few missing songs (music-free builds) */return JB.el}
 function jbPlay(i){if(!TRACKS.length)return;const a=jbAudio();if(i==null)i=JB.i<0?0:JB.i;
