@@ -6028,14 +6028,6 @@ function showStageSelect(){
     const c=cols(),d={ArrowRight:1,ArrowLeft:-1,ArrowDown:c,ArrowUp:-c}[e.key];if(!d)return;e.preventDefault();e.stopPropagation();const n=items[Math.max(0,Math.min(items.length-1,i+d))];if(n)n.focus()});
   B.k=k0;setStage(k0,true);nm.textContent=STAGES[k0].name;num.textContent=`Stage ${k0+1} of ${N}`;nm.classList.add('pop');
   const f0=strip.querySelector(`.scard[data-k="${k0}"]`)||strip.querySelector('.scard');f0.focus({preventScroll:true});
-  // left alone for a while, it shows the stages off by itself (stops the moment anyone moves the mouse or presses a key,
-  // and never while the pointer is resting on a card)
-  let last=performance.now(),overGrid=false;const poke=()=>{last=performance.now()};
-  root.addEventListener('mousemove',poke);root.addEventListener('keydown',poke,true);addEventListener('gamepadconnected',poke);root.addEventListener('wheel',poke);root.addEventListener('pointerdown',poke);
-  strip.addEventListener('focusin',()=>{if(!B.autoF)poke()});strip.addEventListener('mouseenter',()=>overGrid=true);strip.addEventListener('mouseleave',()=>overGrid=false);
-  const idle=()=>{if(!cv.isConnected)return;const now=performance.now();
-    if(!overGrid&&!B.rnd&&now-last>4500&&(!B.lastAuto||now-B.lastAuto>2800)){B.lastAuto=now;const nk=((B.k<0?-1:B.k)+1)%N,c=strip.querySelector(`.scard[data-k="${nk}"]`);if(c){B.autoF=1;c.focus({preventScroll:true});B.autoF=0}}
-    setTimeout(idle,250)};setTimeout(idle,1000);
   requestAnimationFrame(frame);
 }
 Object.assign(ACT,{
