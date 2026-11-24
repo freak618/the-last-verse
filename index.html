@@ -1578,6 +1578,10 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
+ { id:'deadmall',name:'The Dead Mall',img:'deadmall',full:{scale:0.5059,feet:1040/1184,p:.15,floor:815,bands:[[0,815,.16]],pNear:1.06},indoor:true,dry:true,wet:false,ambient:[110,70,95],grade:'#7a2a4a',rim:'rgba(255,90,140,.40)',farTone:'none',shadowL:[{x:1160,y:-300,a:.30}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
  /* ---- New Update stages ---- */
  { id:'nu_ring',name:'The Backyard Ring',img:'nu_ring',ww:1204,wall:[193,1014],zoom:1.12,full:{scale:1204/1672,feet:688/941,p:1,rigid:true,front:'nu_ring_front'},indoor:false,dry:true,wet:false,ambient:[140,130,150],grade:'#5a3a5a',rim:'rgba(255,200,150,.36)',farTone:'none',shadowL:[{x:1500,y:-260,a:.32}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
@@ -1892,7 +1896,7 @@ function paintClub(){
 const STIMG={};
 for(const k in ASSET.stages){const im=new Image();im.onload=()=>{im.ok=true};im.src=ASSET.stages[k];STIMG[k]=im}
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 STIMG.slaughter=(()=>{try{return paintSlaughterhouse()}catch(e){return{ok:false}}})();
 STIMG.sewer=(()=>{try{return paintSewer()}catch(e){return{ok:false}}})();
 STIMG.cage=(()=>{try{return paintCage()}catch(e){return{ok:false}}})();
@@ -2776,6 +2780,11 @@ Object.assign(ALIVE_FX,{
 Object.assign(ALIVE,{
   sewer:[['sewer',{}],['fogband',{y0:1140,y1:1500,ym:1290,a:.94,rgb:'52,96,34',floor:.5}],['fogsheet',{y0:1180,y1:1400,n:24,a:.55,rgb:'90,150,60',sp:.35,ry:60,rx:480}],['fogsheet',{y0:1150,y1:1330,n:16,a:.4,rgb:'40,80,30',sp:-.25,ry:50,rx:420}]],
   cage:[['cage',{}]],
+  deadmall:[
+    ['neon',{at:[[175,262,120,60,'255,40,140'],[1890,280,140,70,'60,255,120'],[1900,530,80,45,'255,40,40'],[2018,510,45,45,'255,170,40'],[1680,90,70,60,'210,220,255'],[100,610,45,40,'120,160,255'],[270,610,45,40,'255,90,90'],[370,615,40,35,'255,120,90']],a:.12,every:300,dead:.05,burst:.15}],
+    ['wave',{x0:960,x1:1200,y0:530,y1:740,amp:2,sp:.05}],
+    ['drip',{at:[[620,300,1000],[1450,330,1010],[1580,240,990]],every:110}],
+    ['ripple',{x0:60,x1:2040,y0:860,y1:1180,amp:1,sp:.03,glints:14,rgb:'255,150,190',ga:.18}]],
   club:[['club',{}]],
   theater:[['gspeakers',{at:[[140,964,1],[2106,964,-1]],s:1}],['beams',{at:[[634,96,'255,40,30'],[952,96,'255,60,40'],[1548,96,'255,60,40'],[1863,96,'255,40,30']],len:850,w:220,a:.06,swing:.14}],['neon',{at:[[149,381,70,90,'255,90,50'],[2347,381,70,90,'255,90,50']],a:.32,every:160,burst:.5,dead:.12}],['motes',{x0:400,x1:2100,y0:150,y1:900,n:26,size:5,rgb:'255,200,180',a:.35}],['smoke',{x:1248,y:960,n:10,spread:2000,rise:160,size:150,a:.1,rate:.002,wind:.2,rgb:'120,40,40'}]],
   slaughter:[['slaughterhouse',{}],['ripple',{x0:150,x1:2400,y0:1240,y1:1620,amp:1,sp:.03,glints:18,rgb:'230,240,220',ga:.22}]],
@@ -4565,7 +4574,7 @@ const ENV_STAGE={
   mansion:['cemetery',{fog:.5,lightning:0,bats:0}], hellpit:['hell',{bats:0,skyBats:1}], overpass:['city',{sparks:.35,ripples:.6}],
   alley:['city',{ripples:.5,drips:.5,bats:4}], hauntedhouse:['cemetery',{bats:4,fog:1.6}], neontunnel:['neon',{sparks:1.4,power:1.2,lights:1.8}], midway:['carnival',{ripples:.4}],
   warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0,embers:0}],
-  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
+  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
 };
 function envConfig(stg){const e=ENV_STAGE[stg.id]||[stg.indoor?'quiet':'city'],c={...ENV_PRESET[e[0]],...(e[1]||{})};
   if(stg.indoor){c.fireworks=0;c.shooting=0;c.lightning=0;c.bats=c.bats?c.bats*.4:0;c.flashes=0}
