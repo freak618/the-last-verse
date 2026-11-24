@@ -5261,10 +5261,10 @@ ALIVE_FX.cage=function(g,rc,t,o){
     g.fillStyle=on?'#ff3a4a':'#3a1014';g.fillText('CAGE MATCH',px,py);if(on){g.globalCompositeOperation='lighter';glow(g,px,py-25*k,300*k,'255,40,60',.22+.06*Math.sin(t*.2)+CAGE.hype*.15)}}
   g.globalCompositeOperation='source-over';
   // --- the crowd: the roster on the risers, darker the further back
-  for(let ri=0;ri<3;ri++){for(const f of CAGE.fans)if(f.row===ri)cageFan(g,rc,f,t);
+  for(let ri=0;ri<3;ri++){if(!rc.noCrowd)for(const f of CAGE.fans)if(f.row===ri)cageFan(g,rc,f,t);
     const[a,b]=P(0,CAGE.rows[ri][0]-380),[c,d]=P(2496,CAGE.rows[ri][0]+40);g.fillStyle=`rgba(6,5,10,${[.42,.3,.2][ri]})`;g.fillRect(a,b,c-a,d-b)}
   // camera flashes in the crowd
-  g.globalCompositeOperation='lighter';{const n=Math.round(2+CAGE.hype*6);for(let i=0;i<n;i++){const c=Math.floor(t/7)+i*13;if(aH(c)<.3){const f=CAGE.fans[(c*7)%Math.max(1,CAGE.fans.length)];if(f){const[px,py]=P(f.x+20,f.y-260*f.s/.5);glow(g,px,py,40*k,'255,255,255',.9)}}}}
+  g.globalCompositeOperation='lighter';if(!rc.noCrowd){const n=Math.round(2+CAGE.hype*6);for(let i=0;i<n;i++){const c=Math.floor(t/7)+i*13;if(aH(c)<.3){const f=CAGE.fans[(c*7)%Math.max(1,CAGE.fans.length)];if(f){const[px,py]=P(f.x+20,f.y-260*f.s/.5);glow(g,px,py,40*k,'255,255,255',.9)}}}}
   g.globalCompositeOperation='source-over';
   // barrier rail drawn again over the crowd's feet
   g.drawImage(rc.im,0,1015,2496,70,rc.x,rc.y+1015*k,2496*k,70*k);
@@ -5361,7 +5361,7 @@ ALIVE_FX.club=function(g,rc,t,o){
     glow(g,px,py+40*k,380*k,base,.18*on)}
   g.globalCompositeOperation='source-over';
   // --- the crowd: the roster's women on the VIP deck and around the floor
-  for(const f of CLUB.fans){const C=CAGE.cache.get(f.c.id);if(!C)continue;let st=f.mode==='idle'?'idle':'win',dy=f.jy*k;if((f.mode==='bounce'||sync)&&crowdHop())dy-=Math.abs(Math.sin(sync?t*.105*2*Math.PI/6:t*.2+f.bob))*7*k;else dy-=Math.sin(t*.06+f.bob)*2*k;if(sync)st='win';
+  for(const f of rc.noCrowd?[]:CLUB.fans){const C=CAGE.cache.get(f.c.id);if(!C)continue;let st=f.mode==='idle'?'idle':'win',dy=f.jy*k;if((f.mode==='bounce'||sync)&&crowdHop())dy-=Math.abs(Math.sin(sync?t*.105*2*Math.PI/6:t*.2+f.bob))*7*k;else dy-=Math.sin(t*.06+f.bob)*2*k;if(sync)st='win';
     const L=C[st],fr=L[Math.floor(f.anim/9)%L.length],q=f.s/(.55*R),[px,py]=P(f.x,f.y);g.save();g.translate(px,py+dy);g.scale(f.facing*q,q);g.drawImage(fr.cv,-fr.ax,-fr.ay);g.restore()}
   // rim of colored club light over the crowd area, and the VIP railing over their feet
   g.globalCompositeOperation='lighter';{const[a,b]=P(0,560),[c,d]=P(2496,1000);const gr=g.createLinearGradient(a,0,c,0);gr.addColorStop(0,hsl(hue0,90,55,.07*I));gr.addColorStop(.5,hsl((hue0+120)%360,90,55,.07*I));gr.addColorStop(1,hsl((hue0+240)%360,90,55,.07*I));g.fillStyle=gr;g.fillRect(a,b,c-a,d-b)}
@@ -5380,7 +5380,7 @@ const STAGE_CROWD={  /* rows of fans: feet line y (picture pixels), span x0..x1 
 const crowdHop=()=>STAGES[G.stage]&&STAGES[G.stage].id==='popsinside';   /* only Pop's crowd jumps and bounces; everywhere else they cheer in place */
 const SC={fans:[],key:'',hype:0,sync:0,syncT:900,lastT:0};
 function scReact(level){for(const f of SC.fans){if(REAL_RANDOM()>.3+level*.5)continue;f.delay=REAL_RANDOM()*90;f.next=REAL_RANDOM()<.55?'cheer':'jump';f.hold=60+REAL_RANDOM()*(60+level*140)}SC.hype=Math.min(1,SC.hype+level*.6)}  /* each fan reacts on their own beat */
-ALIVE_FX.crowd=function(g,rc,t,o){
+ALIVE_FX.crowd=function(g,rc,t,o){if(rc.noCrowd)return;
   const k=rc.k,W0=rc.im.width,id=STAGES[G.stage]&&STAGES[G.stage].id,key=id+'|'+(G.f1&&G.f1.c.id)+'|'+(G.f2&&G.f2.c.id)+'|'+(S.crowdDen||'medium');
   if(SC.key!==key){SC.key=key;SC.lastT=t;const busy=new Set([G.f1&&G.f1.c.id,G.f2&&G.f2.c.id]);
     const pool=CHARS.filter(c=>!c.villain&&!isSoon(c)&&c.sheet&&(CAGE.cache.has(c.id)||BUILTIN_SHEETS[c.sheet]&&BUILTIN_SHEETS[c.sheet].ok)&&!busy.has(c.id)).sort(()=>REAL_RANDOM()-.5);
@@ -6005,7 +6005,7 @@ function showStageSelect(){
     const cov=Math.max(W2/iw,H2/ih),punch=1+(B.spin?.05:.14)*Math.exp(-age/170),z=cov*(1.07+.05*Math.sin(now/4300))*punch,dw=iw*z,dh=ih*z;
     const u=.5+.5*Math.sin(now/5200+B.k2),v=.5+.4*Math.sin(now/6300+B.k2*1.7),x=-(dw-W2)*u,y=-(dh-H2)*v;
     g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle='#000';g.fillRect(0,0,W2,H2);g.imageSmoothingQuality='high';g.drawImage(im,x,y,dw,dh);
-    if(P.live&&ALIVE[P.id]&&S.fx!==false){g.save();try{aliveDraw(ALIVE[P.id],g,{x,y,k:z,im,w:dw,h:dh,p:1},ft)}catch(e){}g.restore();g.globalCompositeOperation='source-over';g.globalAlpha=1}
+    if(P.live&&ALIVE[P.id]&&S.fx!==false){g.save();try{aliveDraw(ALIVE[P.id],g,{x,y,k:z,im,w:dw,h:dh,p:1,noCrowd:1},ft)}catch(e){}g.restore();g.globalCompositeOperation='source-over';g.globalAlpha=1}
     // the old stage melts away behind a light sweep
     if(B.pa>0){B.pa=Math.max(0,1-age/(B.spin?120:280));g.globalAlpha=B.pa;const sc=1+(1-B.pa)*.06;g.drawImage(B.prev,-(W2*sc-W2)/2,-(H2*sc-H2)/2,W2*sc,H2*sc);g.globalAlpha=1}
     g.globalCompositeOperation='lighter';
