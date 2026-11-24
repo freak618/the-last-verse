@@ -167,7 +167,7 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 @keyframes ss2num{0%{opacity:0;transform:translateX(-3cqw)}100%{opacity:1;transform:none}}
 .ss2-panel{position:relative;padding:0 2cqw .8cqw}
 .ss2-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:.55cqw;padding:.8cqw;border-radius:.6cqw;
-  background:rgba(8,6,10,.55);box-shadow:inset 0 0 0 .1cqw rgba(var(--acc),.45),0 0 2.4cqw rgba(var(--acc),.25);backdrop-filter:blur(.3cqw)}
+  background:rgba(8,6,10,.7);box-shadow:inset 0 0 0 .1cqw rgba(var(--acc),.45),0 0 2.4cqw rgba(var(--acc),.25)}
 .ss2 .scard{transition:transform .12s cubic-bezier(.2,1.6,.4,1),filter .15s,box-shadow .15s;border-color:#000}
 .ss2 .scard .nm{display:none}
 .ss2-grid:hover .scard:not(:hover),.ss2-grid:focus-within:not(:hover) .scard:not(:focus){filter:brightness(.62) saturate(.75)}
@@ -8294,6 +8294,10 @@ function launchPicked(stage){
   feVS({c1:G.pick[0],c2:G.pick[1],stage,go,codes:G.type==='pvp'});
 }
 
+/* the character and stage select screens cover the whole game, so the demo fight behind them is not drawn
+   (the character select only counts once its background video is actually showing) */
+function menuCovers(){if(typeof ov==='undefined'||!ov||ov.classList.contains('clear')||G.mode!=='select'||ov.style.display==='none')return false;
+  if(ov.classList.contains('ssmode'))return true;const v=ov.querySelector('.fe-sel>video.fe-bgvid');return !!(v&&v.readyState>=2&&!v.paused)}
 /* ---------- loop ---------- */
 let last=performance.now(),acc=0,fpsN=0,fpsT=performance.now(),fps=0;
 function step(now){
@@ -8303,7 +8307,7 @@ function step(now){
   else if(N4.live){for(let i=0;i<NETQ.fast&&N4.live;i++)net4Step();while(acc>=1000/60&&N4.live){net4Step();acc-=1000/60}}
   else while(acc>=1000/60){tick++;update();acc-=1000/60}
   fpsN++;if(now-fpsT>=1000){fps=fpsN;fpsN=0;fpsT=now}
-  if(GL.on)renderGL();else{screenEl.classList.remove('webgl');ctx=hudx;render()}
+  if(!menuCovers()){if(GL.on)renderGL();else{screenEl.classList.remove('webgl');ctx=hudx;render()}}
   feFrame();
   if(TEST_API&&!TEST_API.ready&&SPR.ok&&(GL.on||!wantGL()||GL.failed))TEST_API.ready=true;
 }
