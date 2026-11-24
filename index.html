@@ -1105,7 +1105,7 @@ function ensureSheet(id,temp){
   if(SHEET_LOAD[id])return SHEET_LOAD[id];
   const S=ASSET.sheets[id],c=CHARS.find(x=>x.sheet===id);if(!c)return Promise.resolve(null);
   const C=c.cut&&CUT.meta.chars[c.cut],size=C?C.h*C.scale/refHeight():1,im=new Image();SHEET_IMG[id]=im;
-  return SHEET_LOAD[id]=new Promise(res=>{let errs=0;
+  return SHEET_LOAD[id]=new Promise(res=>{let errs=0;im._res=res;
     sheetFallback(im,S);
     im.addEventListener('error',()=>{if(im._dead||!im.getAttribute('src'))return;if(++errs>1||!im.dataset.fb){console.error('sheet failed',id);SHEET_FAIL[id]=performance.now();delete SHEET_LOAD[id];delete SHEET_IMG[id];res(null)}});
     im.onload=()=>{if(im._dead)return;delete SHEET_FAIL[id];try{BUILTIN_SHEETS[id]=buildCustom({id,atlas:S.atlas,faceLeft:false,size},im)}catch(e){console.error('sheet',id,e)}
@@ -1114,7 +1114,7 @@ function ensureSheet(id,temp){
       if(!temp)sheetTrim();res(BUILTIN_SHEETS[id]||null)};
     im.src=S.png})}
 function sheetDrop(id){const im=SHEET_IMG[id];delete SHEET_LOAD[id];delete SHEET_IMG[id];delete BUILTIN_SHEETS[id];delete SPK.base[id];
-  if(im){im._dead=1;im.onload=null;try{im.removeAttribute('src');im.src=''}catch(e){}}}
+  if(im){im._dead=1;if(im._res){const r=im._res;im._res=null;r(null)}im.onload=null;try{im.removeAttribute('src');im.src=''}catch(e){}}}
 function sheetTrim(){const pin=sheetPinned(),ids=Object.keys(SHEET_LOAD).filter(id=>BUILTIN_SHEETS[id]||SPK.base[id]);if(ids.length<=SHEET_CAP)return;
   ids.filter(id=>!pin.has(id)).sort((a,b)=>(SHEET_USE[a]||0)-(SHEET_USE[b]||0)).slice(0,ids.length-SHEET_CAP).forEach(sheetDrop)}
 function ensureChars(...cs){for(const c of cs.flat(3))if(c&&c.sheet&&!c.custom)ensureSheet(c.sheet)}
@@ -1122,7 +1122,8 @@ function ensureChars(...cs){for(const c of cs.flat(3))if(c&&c.sheet&&!c.custom)e
 let warmBusy=false,CROWD_LOADS=0,CROWD_PREVIEW=false;
 /* crowd members wait: never while a stage-select preview is showing, never more than one or two sheets at a time,
    and never while a fighter in the current match is still loading (their art comes first) */
-function fighterSheetsPending(){for(const id of sheetPinned())if(ASSET.sheets&&ASSET.sheets[id]&&!(BUILTIN_SHEETS[id]&&BUILTIN_SHEETS[id].ok))return true;return false}
+function fighterSheetsPending(){const ids=[G.f1&&G.f1.c&&G.f1.c.sheet,G.f2&&G.f2.c&&G.f2.c.sheet];
+  for(const id of ids)if(id&&SHEET_LOAD[id]&&!(BUILTIN_SHEETS[id]&&BUILTIN_SHEETS[id].ok))return true;return false}
 function crowdHold(){return CROWD_PREVIEW||CROWD_LOADS>=(LOW_MEM?1:2)||fighterSheetsPending()}
 function crowdWarm(){if(warmBusy)return;if(document.hidden||crowdHold()){setTimeout(crowdWarm,document.hidden?2000:700);return}if(CAGE.cache.size>=CROWD_WARM)return;
   const ok=c=>c&&c.sheet&&!c.custom&&!c.villain&&!isSoon(c)&&ASSET.sheets[c.sheet]&&!CAGE.cache.has(c.id)&&!WARM_SKIP.has(c.id);
