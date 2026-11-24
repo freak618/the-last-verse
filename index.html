@@ -148,6 +148,41 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 .scard .nm{position:absolute;left:0;right:0;bottom:0;padding:.15em .3em;font-family:var(--gothic);font-size:max(10px,1.3cqw);line-height:1.1;letter-spacing:.03em;
   background:linear-gradient(transparent,rgba(0,0,0,.85));text-align:center}
 .scard:hover,.scard:focus-visible{outline:none;z-index:2;transform:scale(1.05);border-color:#ff3a2a;box-shadow:0 0 0 .22cqw #ff3a2a,0 0 1.4cqw rgba(255,60,30,.8)}
+
+/* stage select: the stage on show fills the screen, live, behind a compact card grid */
+.overlay.sel.ssmode{background:#000}
+.overlay.sel.ssmode::after{display:none}
+.ss2{position:relative;flex:1 1 auto;width:100%;min-height:0;display:flex;flex-direction:column;justify-content:space-between;--acc:255,90,40;overflow:hidden}
+.ss2-bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ss2-shade{position:absolute;inset:0;pointer-events:none;background:
+  linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 52%,rgba(0,0,0,.72) 74%,rgba(0,0,0,.9) 100%),
+  radial-gradient(ellipse 85% 75% at 50% 40%,rgba(0,0,0,0) 55%,rgba(0,0,0,.45) 100%)}
+.ss2-top{position:relative;padding:1.6cqw 2.4cqw 0;pointer-events:none}
+.ss2-num{font-family:var(--head);font-weight:700;font-size:1.5cqw;letter-spacing:.2em;text-transform:uppercase;color:rgb(var(--acc));text-shadow:0 0 1cqw rgba(var(--acc),.8),0 .15cqw .3cqw #000}
+.ss2-name{margin:0;font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:6cqw;line-height:.95;color:#fff7e6;letter-spacing:.03em;
+  text-shadow:0 0 .2cqw #fff,0 0 1.4cqw rgba(var(--acc),.95),0 0 3.4cqw rgba(var(--acc),.7),0 .35cqw .2cqw #000,0 .6cqw 1.6cqw rgba(0,0,0,.9);transform-origin:0 60%}
+.ss2-name.pop{animation:ss2pop .42s cubic-bezier(.2,1.6,.4,1)}
+.ss2-num.pop{animation:ss2num .35s ease-out}
+@keyframes ss2pop{0%{opacity:0;transform:scale(1.9) translateX(-3%) rotate(-3deg);filter:blur(.6cqw)}55%{opacity:1;transform:scale(.95) rotate(.6deg);filter:blur(0)}100%{transform:none}}
+@keyframes ss2num{0%{opacity:0;transform:translateX(-3cqw)}100%{opacity:1;transform:none}}
+.ss2-panel{position:relative;padding:0 2cqw .8cqw}
+.ss2-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:.55cqw;padding:.8cqw;border-radius:.6cqw;
+  background:rgba(8,6,10,.55);box-shadow:inset 0 0 0 .1cqw rgba(var(--acc),.45),0 0 2.4cqw rgba(var(--acc),.25);backdrop-filter:blur(.3cqw)}
+.ss2 .scard{transition:transform .12s cubic-bezier(.2,1.6,.4,1),filter .15s,box-shadow .15s;border-color:#000}
+.ss2 .scard .nm{display:none}
+.ss2-grid:hover .scard:not(:hover),.ss2-grid:focus-within:not(:hover) .scard:not(:focus){filter:brightness(.62) saturate(.75)}
+.ss2 .scard:hover,.ss2 .scard:focus-visible,.ss2 .scard:focus{outline:none;z-index:3;transform:scale(1.32) translateY(-12%);filter:none;border-color:#fff;
+  box-shadow:0 0 0 .18cqw #fff,0 0 0 .4cqw rgb(var(--acc)),0 0 2.2cqw rgba(var(--acc),.95);animation:ss2glow .9s ease-in-out infinite alternate}
+@keyframes ss2glow{to{box-shadow:0 0 0 .18cqw #fff,0 0 0 .55cqw rgb(var(--acc)),0 0 3.4cqw rgba(var(--acc),1)}}
+.ss2-rand{font-size:2.6cqw!important;background:linear-gradient(135deg,#ff2a6a,#ffb020,#3ad0ff,#b04aff)!important;background-size:300% 300%!important;color:#fff!important;
+  text-shadow:0 .1cqw .3cqw #000;animation:ss2rain 2.4s linear infinite}
+@keyframes ss2rain{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+.ss2-bar{display:flex;align-items:center;gap:1.6cqw;padding-top:.7cqw}
+.ss2-vs{margin:0;flex:1;text-align:center;font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:1.7cqw;color:#fff7e6;text-shadow:0 .15cqw .3cqw #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss2-vs b{color:rgb(var(--acc));font-weight:400}
+.ss2-hint{font-family:var(--head);font-weight:700;font-size:1.3cqw;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,247,230,.7);animation:ss2blink 1.2s steps(2) infinite}
+@keyframes ss2blink{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.ss2-name.pop,.ss2-num.pop,.ss2 .scard,.ss2-rand,.ss2-hint{animation:none!important}}
 /* fighter select: amber stage, big renders left and right, card strip along the bottom */
 .overlay.sel{justify-content:flex-start;gap:0;padding:0;overflow:hidden;
   background:radial-gradient(ellipse 70% 80% at 50% 38%,#ffd35a 0%,#f0a020 30%,#b0560c 62%,#3a1404 100%)}
@@ -5524,8 +5559,8 @@ function portrait(c){
   drawFighter(g,{c,x:0,y:0,facing:1,anim:20,walkT:0,atk:null,flash:0,vy:0,photo:true},'idle');
   return out;
 }
-function showOv(html,clear=false){feClear();ov.classList.remove('fe-on');ov.innerHTML=html;ov.hidden=false;ov.classList.toggle('clear',clear);ov.classList.remove('sel');pauseBtn.hidden=true;const b=ov.querySelector('.btn,.card,.key');if(b)b.focus({preventScroll:true})}
-function hideOv(){feClear();ov.classList.remove('fe-on');ov.hidden=true;ov.innerHTML='';ov.classList.remove('sel');pauseBtn.hidden=false;if(document.activeElement)document.activeElement.blur()}
+function showOv(html,clear=false){feClear();ov.classList.remove('fe-on');ov.innerHTML=html;ov.hidden=false;ov.classList.toggle('clear',clear);ov.classList.remove('sel','ssmode');pauseBtn.hidden=true;const b=ov.querySelector('.btn,.card,.key');if(b)b.focus({preventScroll:true})}
+function hideOv(){feClear();ov.classList.remove('fe-on');ov.hidden=true;ov.innerHTML='';ov.classList.remove('sel','ssmode');pauseBtn.hidden=false;if(document.activeElement)document.activeElement.blur()}
 function rnd(a){return a[Math.random()*a.length|0]}
 function shuffle(a){return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1])}
 function cap(s){return s.split(' ').map(w=>w.charAt(0)+w.slice(1).toLowerCase()).join(' ')}
@@ -5928,28 +5963,80 @@ function stageThumb(k,w=480){
 }
 function showStageSelect(){
   G.mode='select';
-  const k0=STAGES.includes(STAGES[G.stage])?G.stage:0;
-  showOv(`<div class="ss">
-      <div class="ss-big"><div id="ssBig"></div><div class="ss-cap"><span class="chip">Stage</span><h2 class="ov-h" id="ssName"></h2></div></div>
-      <div class="ss-strip" id="ssStrip"></div>
-      <div class="vs-bar"><div class="row"><button class="btn sm" data-act="stageback">Back</button></div><p class="vs-sub">${esc(G.pick[0].name)} vs. ${esc(G.pick[1].name)}</p></div>
+  const k0=STAGES.includes(STAGES[G.stage])?G.stage:0,N=STAGES.length;
+  showOv(`<div class="ss2">
+      <canvas class="ss2-bg" id="ssBg" aria-hidden="true"></canvas>
+      <div class="ss2-shade" aria-hidden="true"></div>
+      <div class="ss2-top"><div class="ss2-num" id="ssNum"></div><h2 class="ss2-name" id="ssName"></h2></div>
+      <div class="ss2-panel">
+        <div class="ss2-grid" id="ssStrip"></div>
+        <div class="ss2-bar"><button class="btn sm" data-act="stageback">Back</button><p class="ss2-vs">${esc(G.pick[0].name)} <b>vs.</b> ${esc(G.pick[1].name)}</p><span class="ss2-hint">Pick a stage</span></div>
+      </div>
     </div>`);
-  ov.classList.add('sel');
-  const big=document.getElementById('ssBig'),nm=document.getElementById('ssName'),strip=document.getElementById('ssStrip');
-  const show=k=>{big.innerHTML='';if(k<0){const q=document.createElement('div');q.className='ss-q';q.textContent='?';big.appendChild(q);nm.textContent='Random'}
-    else{const t=stageThumb(k,960),c=document.createElement('canvas');c.width=t.width;c.height=t.height;c.getContext('2d').drawImage(t,0,0);big.appendChild(c);nm.textContent=STAGES[k].name}};
-  let focus=null;
+  ov.classList.add('sel','ssmode');
+  const root=ov.querySelector('.ss2'),cv=document.getElementById('ssBg'),g=cv.getContext('2d'),nm=document.getElementById('ssName'),num=document.getElementById('ssNum'),strip=document.getElementById('ssStrip');
+  const accOf=k=>{const m=/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(STAGES[k].rim||STAGES[k].grade||'');return m?`${m[1]},${m[2]},${m[3]}`:'255,90,40'};
+  const picOf=k=>{const stg=STAGES[k];if(stg.full){const im=STIMG[stg.img];if(im&&im.ok)return{im,id:stg.id,live:true}}return{im:stageThumb(k,1280),id:stg.id,live:false}};
+  // background state: the stage on show, what it replaced (fades out), and when it changed
+  const B={k:-2,pic:null,acc:'255,90,40',t0:0,prev:dmCv(8,8),pa:0,ft:0,rnd:false,rk:0,rnext:0,embers:[]};
+  for(let i=0;i<46;i++)B.embers.push({x:Math.random(),y:Math.random(),v:.0006+Math.random()*.0016,r:1+Math.random()*2.6,ph:Math.random()*6.3});
+  const setStage=(k,quiet,spin)=>{const now=performance.now();B.spin=!!spin;
+    if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1}
+    B.pic=picOf(k);B.acc=accOf(k);B.t0=now;B.k2=k;root.style.setProperty('--acc',B.acc);if(!quiet&&SFX.navtick)try{SFX.navtick()}catch(e){}};
+  const RSPIN=2600,RHOLD=1500;
+  const show=k=>{if(k===B.k)return;B.k=k;B.rnd=k<0;
+    if(k<0){B.rk=Math.random()*N|0;B.rs=performance.now();setStage(B.rk,false,true);B.rnext=B.rs+60;nm.textContent='? ? ?';num.textContent='Random stage'}
+    else{setStage(k);nm.textContent=STAGES[k].name;num.textContent=`Stage ${k+1} of ${N}`}
+    nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');num.classList.remove('pop');void num.offsetWidth;num.classList.add('pop')};
+  let ft=0;
+  const frame=()=>{if(!cv.isConnected)return;requestAnimationFrame(frame);
+    const dpr=Math.min(1.5,window.devicePixelRatio||1),W2=Math.round(cv.clientWidth*dpr),H2=Math.round(cv.clientHeight*dpr);if(!W2||!H2)return;
+    if(cv.width!==W2||cv.height!==H2){cv.width=W2;cv.height=H2}
+    const now=performance.now();ft++;
+    if(B.rnd&&now>B.rnext){const el=now-B.rs;
+      if(el>RSPIN+RHOLD){B.rs=now;B.rnext=now+60}                                        // spin again
+      else if(el<RSPIN){let r;do{r=Math.random()*N|0}while(r===B.rk&&N>1);B.rk=r;const p=el/RSPIN;   // spinning, slowing down
+        if(p>.82){setStage(r);nm.textContent=STAGES[r].name+'?';num.textContent='Random stage';nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');B.rnext=B.rs+RSPIN+RHOLD+1}
+        else{setStage(r,!(p>.4||Math.random()<.5),true);nm.textContent='? ? ?';B.rnext=now+55+p*p*420}}
+    }
+    const P=B.pic;if(!P)return;const age=now-B.t0,im=P.im,iw=im.width,ih=im.height;
+    // cover the screen, breathing slowly, drifting across the whole painting so every part of it gets seen;
+    // a change of stage lands with a punch-in zoom
+    const cov=Math.max(W2/iw,H2/ih),punch=1+(B.spin?.05:.14)*Math.exp(-age/170),z=cov*(1.07+.05*Math.sin(now/4300))*punch,dw=iw*z,dh=ih*z;
+    const u=.5+.5*Math.sin(now/5200+B.k2),v=.5+.4*Math.sin(now/6300+B.k2*1.7),x=-(dw-W2)*u,y=-(dh-H2)*v;
+    g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle='#000';g.fillRect(0,0,W2,H2);g.imageSmoothingQuality='high';g.drawImage(im,x,y,dw,dh);
+    if(P.live&&ALIVE[P.id]&&S.fx!==false){g.save();try{aliveDraw(ALIVE[P.id],g,{x,y,k:z,im,w:dw,h:dh,p:1},ft)}catch(e){}g.restore();g.globalCompositeOperation='source-over';g.globalAlpha=1}
+    // the old stage melts away behind a light sweep
+    if(B.pa>0){B.pa=Math.max(0,1-age/(B.spin?120:280));g.globalAlpha=B.pa;const sc=1+(1-B.pa)*.06;g.drawImage(B.prev,-(W2*sc-W2)/2,-(H2*sc-H2)/2,W2*sc,H2*sc);g.globalAlpha=1}
+    g.globalCompositeOperation='lighter';
+    if(age<160&&!B.spin){g.fillStyle=`rgba(255,255,255,${.28*(1-age/160)})`;g.fillRect(0,0,W2,H2)}
+    if(age<620&&!B.spin){const sx=-W2*.4+(W2*1.8)*(age/620),gr=g.createLinearGradient(sx-W2*.18,0,sx+W2*.18,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,`rgba(${B.acc},.32)`);gr.addColorStop(1,'rgba(255,255,255,0)');
+      g.save();g.translate(sx,H2/2);g.transform(1,0,-.35,1,0,0);g.fillStyle=gr;g.fillRect(-W2*.2,-H2,W2*.4,H2*2);g.restore()}
+    // sparks drifting up in the stage's own colour
+    for(const e of B.embers){e.y-=e.v;if(e.y<-.05){e.y=1.05;e.x=Math.random()}const ex=(e.x+Math.sin(now/1300+e.ph)*.015)*W2,ey=e.y*H2,a=.25+.25*Math.sin(now/300+e.ph*3);glow(g,ex,ey,e.r*3*dpr,B.acc,a)}
+    g.globalCompositeOperation='source-over'};
   [-1,...STAGES.map((_,k)=>k)].forEach(k=>{
     const b=document.createElement('button');b.type='button';b.className='scard';b.dataset.act='stagepick';b.dataset.k=k;
-    if(k<0){const q=document.createElement('span');q.className='ss-q sm';q.textContent='?';b.appendChild(q)}
-    else{const t=stageThumb(k,240),c=document.createElement('canvas');c.width=t.width;c.height=t.height;c.getContext('2d').drawImage(t,0,0);b.appendChild(c)}
+    if(k<0){const q=document.createElement('span');q.className='ss-q sm ss2-rand';q.textContent='?';b.appendChild(q)}
+    else{const t=stageThumb(k,240),c=document.createElement('canvas');c.width=t.width;c.height=t.height;c.getContext('2d').drawImage(t,0,0);b.appendChild(c);b.style.setProperty('--acc',accOf(k))}
     const n=document.createElement('span');n.className='nm';n.textContent=k<0?'Random':STAGES[k].name;b.appendChild(n);
     b.setAttribute('aria-label',k<0?'Random stage':STAGES[k].name);
-    b.addEventListener('mouseenter',()=>show(k));b.addEventListener('focus',()=>show(k));strip.appendChild(b);if(k===k0)focus=b;
+    b.addEventListener('mouseenter',()=>{show(k);if(document.activeElement!==b)b.focus({preventScroll:true})});b.addEventListener('focus',()=>show(k));strip.appendChild(b);
   });
+  const cols=()=>getComputedStyle(strip).gridTemplateColumns.split(' ').length||12;
   strip.addEventListener('keydown',e=>{const items=[...strip.querySelectorAll('.scard')],i=items.indexOf(document.activeElement);if(i<0)return;
-    const d={ArrowRight:1,ArrowLeft:-1,ArrowDown:5,ArrowUp:-5}[e.key];if(!d)return;e.preventDefault();const n=items[Math.max(0,Math.min(items.length-1,i+d))];if(n)n.focus()});
-  show(k0);(focus||strip.querySelector('.scard')).focus({preventScroll:true});
+    const c=cols(),d={ArrowRight:1,ArrowLeft:-1,ArrowDown:c,ArrowUp:-c}[e.key];if(!d)return;e.preventDefault();e.stopPropagation();const n=items[Math.max(0,Math.min(items.length-1,i+d))];if(n)n.focus()});
+  B.k=k0;setStage(k0,true);nm.textContent=STAGES[k0].name;num.textContent=`Stage ${k0+1} of ${N}`;nm.classList.add('pop');
+  const f0=strip.querySelector(`.scard[data-k="${k0}"]`)||strip.querySelector('.scard');f0.focus({preventScroll:true});
+  // left alone for a while, it shows the stages off by itself (stops the moment anyone moves the mouse or presses a key,
+  // and never while the pointer is resting on a card)
+  let last=performance.now(),overGrid=false;const poke=()=>{last=performance.now()};
+  root.addEventListener('mousemove',poke);root.addEventListener('keydown',poke,true);addEventListener('gamepadconnected',poke);root.addEventListener('wheel',poke);root.addEventListener('pointerdown',poke);
+  strip.addEventListener('focusin',()=>{if(!B.autoF)poke()});strip.addEventListener('mouseenter',()=>overGrid=true);strip.addEventListener('mouseleave',()=>overGrid=false);
+  const idle=()=>{if(!cv.isConnected)return;const now=performance.now();
+    if(!overGrid&&!B.rnd&&now-last>4500&&(!B.lastAuto||now-B.lastAuto>2800)){B.lastAuto=now;const nk=((B.k<0?-1:B.k)+1)%N,c=strip.querySelector(`.scard[data-k="${nk}"]`);if(c){B.autoF=1;c.focus({preventScroll:true});B.autoF=0}}
+    setTimeout(idle,250)};setTimeout(idle,1000);
+  requestAnimationFrame(frame);
 }
 Object.assign(ACT,{
   stagepick(d){const k=+d.k;launchPicked(k<0?rndStage():k)},
@@ -6852,7 +6939,7 @@ TEST_API.net4=()=>({live:N4.live,role:N4.role,me:N4.me,slot:N4.mySlot,code:N4.co
 
 TEST_API.netdbg=()=>NET.dbg;
 TEST_API.screens={juke:()=>{feJukebox();return true},music:()=>({n:TRACKS.length,ok:JB.ok,src:JB.el?JB.el.src:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,paused:JB.el?JB.el.paused:null,err:JB.el&&JB.el.error?JB.el.error.code:null}),trim:()=>({db:JB.trim?+(20*Math.log10(JB.trim.gain.value)).toFixed(1):null,vol:JB.el?JB.el.volume:null,chain:!!SA.an}),rms:()=>{if(!SA.an)return null;const b=new Float32Array(SA.an.fftSize);SA.an.getFloatTimeDomainData(b);let q=0;for(const v of b)q+=v*v;return Math.sqrt(q/b.length)},sa:()=>({jb:JB.i>=0?TRACKS[JB.i].title:null,paused:JB.el?JB.el.paused:null,t:JB.el?+JB.el.currentTime.toFixed(2):null,vol:JB.el?JB.el.volume:null,yt:+(SA.yt.t+(SA.yt.state===1?(performance.now()-SA.yt.at)/1000:0)).toFixed(2),ytState:SA.yt.state,gh:!!SCR.ghOn,an:!!SA.an,bass:+SA.bass.toFixed(2),live:SA.live,pick:SCR.ghPick||null}),next:()=>{jbNext();return true},dev:on=>{FE.devOK=!!on;return scrDev()},ytBase:b=>{SCR.ytBase=b;return true},audio:()=>{const st=STAGES[G.stage],o=st&&SCR.vids[st.id];return{on:!!SCR.audioOn,jb:JB.el?JB.el.volume:null,jbPaused:JB.el?JB.el.paused:null,vidMuted:o?o.v.muted:null,vidVol:o?o.v.volume:null,yt:YT.el?{disp:YT.el.style.display,src:YT.el.src.slice(0,60),l:YT.el.style.left,w:YT.el.style.width}:null}},idx:id=>STAGES.findIndex(s=>s.id===id),open:id=>{scmOpen(id);return true},close:()=>{scmClose();return true},state:()=>JSON.parse(JSON.stringify(SCR.st)),active:id=>{const a=scrActive(id);return{id:a.e.id,kind:a.e.kind,name:a.e.name,why:a.why}},ready:id=>{const o=SCR.vids[id];return o?{rs:o.v.readyState,w:o.v.videoWidth,paused:o.v.paused,err:o.err,src:(o.src||'').slice(0,30)}:null}};
-TEST_API.unlocks=()=>({...UNL});TEST_API.alive=()=>({ALIVE,ALIVE_FX,aH,DMS});TEST_API.secret=()=>({inChars:CHARS.filter(c=>c.secret).map(c=>c.id),hidden:SECRET.map(c=>c.id),byId:!!byId('juffalo'),playable:playable().some(c=>c.secret)});TEST_API.storyWin=()=>{G.type='story';G.c1=G.c1||CHARS[0];G.c2=CHARS[1];G.story={order:[CHARS[1]],i:0};G.wins=[2,0];endMatch(0)};TEST_API.towerWin=()=>{G.type='tower';G.c1=G.c1||CHARS[0];G.tower={order:[CHARS[1]],i:0};endMatch(0)};
+TEST_API.unlocks=()=>({...UNL});TEST_API.alive=()=>({ALIVE,ALIVE_FX,aH,DMS});TEST_API.stageSel=()=>{G.type='cpu';G.pick=[CHARS[0],CHARS[1]];showStageSelect();return STAGES.length};TEST_API.secret=()=>({inChars:CHARS.filter(c=>c.secret).map(c=>c.id),hidden:SECRET.map(c=>c.id),byId:!!byId('juffalo'),playable:playable().some(c=>c.secret)});TEST_API.storyWin=()=>{G.type='story';G.c1=G.c1||CHARS[0];G.c2=CHARS[1];G.story={order:[CHARS[1]],i:0};G.wins=[2,0];endMatch(0)};TEST_API.towerWin=()=>{G.type='tower';G.c1=G.c1||CHARS[0];G.tower={order:[CHARS[1]],i:0};endMatch(0)};
 TEST_API.netbench=()=>{const t=performance.now();for(let i=0;i<200;i++)netSnap();return{msPerSnap:(performance.now()-t)/200,parts:G.parts.length,decals:G.decals.length}};
 TEST_API.net=()=>({live:NET.live,role:NET.role,link:NET.link,F:NET.F,confirmed:NET.confirmed,rollbacks:NET.rollbacks,maxDepth:NET.maxDepth,desync:NET.desync,
   hash:G.f1?netHash({f1:G.f1,f2:G.f2,timer:G.timer,round:G.round,rng:NET.rng}):0,hashes:[...NET.hashes.entries()].slice(-5),wins:G.wins.slice(),mode:G.mode,ping:NET.ping});
@@ -8079,7 +8166,7 @@ function showPause(){
       <button class="btn" data-act="prestart">${lad?'Restart fight':'Restart match'}</button>
       ${G.type==='tourney'?'<button class="btn" data-act="pbracket">Back to bracket</button>':lad?'':'<button class="btn" data-act="pselect">Character select</button>'}
       <button class="btn" data-act="pquit">Quit to main menu</button></div>${feBar([['nav','Move'],['ok','Select'],['back','Resume']])}</div>`;
-  ov.hidden=false;ov.classList.remove('clear','sel');ov.classList.add('fe-on');ov.querySelector('.btn').focus();
+  ov.hidden=false;ov.classList.remove('clear','sel','ssmode');ov.classList.add('fe-on');ov.querySelector('.btn').focus();
   FE.cur={id:'pause',back(){togglePause()}};
 }
 Object.assign(ACT,{
