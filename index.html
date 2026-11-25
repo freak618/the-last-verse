@@ -31,6 +31,10 @@ body{
 .frame:-webkit-full-screen .screen,.frame:-webkit-full-screen .bar{width:min(100%,calc((100vh - 64px)*16/9))}
 .frame{background:linear-gradient(#1a191e,#0e0d11);border:2px solid var(--ash);border-radius:6px;padding:10px 10px 8px;box-shadow:0 0 0 1px #000,0 18px 50px rgba(0,0,0,.8),0 0 40px rgba(179,18,31,.12)}
 .screen{position:relative;isolation:isolate;aspect-ratio:16/9;width:100%;max-width:100%;border:1px solid #000;overflow:hidden;background:#000;container-type:inline-size}
+.artwait{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);z-index:30;display:none;align-items:center;gap:1cqw;padding:.9cqw 2cqw;border-radius:99px;background:rgba(0,0,0,.72);color:#fff3d6;font:700 max(12px,1.9cqw)/1 var(--head),sans-serif;letter-spacing:.1em;text-transform:uppercase;pointer-events:none}
+.artwait.on{display:flex}
+.artwait i{width:1.8cqw;height:1.8cqw;min-width:12px;min-height:12px;border-radius:50%;border:.3cqw solid rgba(255,255,255,.25);border-top-color:#ffd21a;animation:awspin .8s linear infinite}
+@keyframes awspin{to{transform:rotate(360deg)}}
 .screen canvas{display:block;width:100%;height:100%}
 .screen #gl,.screen #fx,.screen #game{position:absolute;inset:0;width:100%;height:100%}
 .screen #gl canvas{width:100%!important;height:100%!important;pointer-events:none}
@@ -762,7 +766,7 @@ body:not(.phone) .frame:not(:fullscreen){width:min(100%,calc((100vh - 20px - 58p
   </header>
 
   <div class="frame">
-    <div class="screen">
+    <div class="screen"><div class="artwait" id="artWait" aria-live="polite"><i></i><span>Loading fighters…</span></div>
       <canvas id="game" width="960" height="540" aria-label="Game screen"></canvas>
       <div class="overlay" id="ov"></div>
     </div>
@@ -1084,7 +1088,9 @@ const BUILTIN_SHEETS={};
 /* On the Claude version the sprite sheets live in the page's own storage area (not in its files, which have a size limit).
    Each sheet loads from its normal file first (itch.io build) and falls back to stored copy. */
 const SHEET_STORE={"sheets/mrgremlyn-f9f20768.webp":"/_blob/291453ef30d0014dab10b018cc943159","sheets/krabbz-d8d010d9.webp":"/_blob/21a07acef16c1719a5cf73a06f62a9fb","sheets/repatalleon-b638fe0c.webp":"/_blob/7facbffa21306c24cd9941b9561033bf","sheets/dmikealan-c9988773.webp":"/_blob/c1bceb61bb5b7b09db899f83969785c4","sheets/trickster-0da20782.webp":"/_blob/06c024c01aea9a8e1aa690bd88b921c5","sheets/ek-78808020.webp":"/_blob/65d48f6b9626bd027ab349d861f4ab1f","sheets/pixie-b02c3ce6.webp":"/_blob/6d7a0bbb11e8b0fc2f70b334c0106882","sheets/pj-51297753.webp":"/_blob/a16cfaf44a03ec0a38e6435e182b7a8b","sheets/lazy-a2649cf3.webp":"/_blob/92d282e6ff3c077ce9d13ec7996cdcb3","sheets/saintvengence-1bb2e8fb.webp":"/_blob/478ca6ffec7ca9e1fdb22facebdd3a46","sheets/tavian-21141ab3.webp":"/_blob/370b87760de4f0c3c2643fcd15ef8f15","sheets/roadrunnin-7d09eecf.webp":"/_blob/83216e5b30be1500d2ff3fc2eb61b009","sheets/jpsalm-dd100e23.webp":"/_blob/5c341e1a483dfd906833bc956f544a4e","sheets/1eye.webp":"/_blob/21fde1f29c88ec238acd6f66b6488910","sheets/amtrak.webp":"/_blob/1c64cede1816646297b5d8cd55a77b09","sheets/azfallen.webp":"/_blob/fe39febe6416cdfa7a456ce278dd6d98","sheets/bartwayne-57303110.webp":"/_blob/3c09bc53c2e1d0d82dc7031c578ee88f","sheets/bash.webp":"/_blob/65cd2506c9b78825b516354343d815ba","sheets/beeker-26c6890b.webp":"/_blob/315dd2bfaa435e2e87de9db13e3e8886","sheets/blessed1.webp":"/_blob/24a7898c0bddc42867e32433a427da1e","sheets/blindfury-2596ea2e.webp":"/_blob/38a4bd637cdcf54d5d007bd23ec8b950","sheets/bodmon.webp":"/_blob/98c5b0970dc9245c45db1fb996ea42f0","sheets/bonez-4f2bf237.webp":"/_blob/769365ca7a998164236bd0eb5a391152","sheets/bunghole.webp":"/_blob/90aff3e1c487b9425f93a4dd126faaff","sheets/cfpaul-4f8927ff.webp":"/_blob/92ce60f530cd3cca98f3068dc9b6ef0b","sheets/chandler-c2bcb4d7.webp":"/_blob/336f329de85ec7dbfc3db105974d0eb8","sheets/chaz-a1fc1049.webp":"/_blob/d5598da89c18ab8e6c62169be67e2ded","sheets/chuck.webp":"/_blob/866f824e3586d13868965ae86d989226","sheets/countrettodoh-f620dd0b.webp":"/_blob/0a53ac69741a320ee1b374d3cda14ab6","sheets/dabbalette-7bf6d5af.webp":"/_blob/d61e602dbf47b7039f0d774d96793d17","sheets/darkone.webp":"/_blob/4ae5cb44eeb9cc3daa29e7717b0161c8","sheets/darling.webp":"/_blob/0fb92445e0b354187b4cdfd1326ef999","sheets/deadlight.webp":"/_blob/d1f3f781bff8d75886ff28da32e61146","sheets/devilette.webp":"/_blob/4cb19387ffcc7855e4f8686e5a3fc729","sheets/dotz-4b06d60d.webp":"/_blob/7fd6f31a6b4bd01a8524ba1784c9737f","sheets/dreywall-f3f16f4a.webp":"/_blob/fecc75c0d5467691379b86fd1ce76b3f","sheets/emillion-656364f4.webp":"/_blob/6fb5edf8a949b5dee4622d890aa2c257","sheets/fkg.webp":"/_blob/9611e5d7acb7002c6b5cc9b0f5ddc82b","sheets/freakyp.webp":"/_blob/3d5ceac2d0c08ca8e15d5c753c8864ec","sheets/freekshow.webp":"/_blob/ef7c180c5820bfa74d2335f8702b04ca","sheets/frodo.webp":"/_blob/5f224944658d609845562e3a615f6feb","sheets/ged.webp":"/_blob/9af45bd3c2263d4efbc7cc2356cc83a1","sheets/grimee.webp":"/_blob/5c68871bdefb2b65be864721a15e5ad4","sheets/hippie-0de222e7.webp":"/_blob/02b0def0548c11f664a969f1f588723c","sheets/hobie.webp":"/_blob/7f26148d324db38c048e18f645380acf","sheets/insanityj-7304b9a5.webp":"/_blob/96b17043d10bd9c0e8e7b6b46af97147","sheets/jason.webp":"/_blob/60d81a8c5113b5f72dc7895171f93f39","sheets/jayspacely.webp":"/_blob/1f91e456e6004bcd97db20614ffa0fd1","sheets/johnboi-ce5e3f96.webp":"/_blob/f9fe4c359a9cd2fb768ecde1838a4dc8","sheets/joshnaylor-8828c3dc.webp":"/_blob/570ece6dcf3bce91d5f71b24a07dc0d6","sheets/juggodevil.webp":"/_blob/1976f7f569ab33f7230081e156893c90","sheets/kayspaidz-5f664441.webp":"/_blob/eacb5cbfae2702e9e3d8aa2235398aac","sheets/key-23b11a37.webp":"/_blob/5a539f83254290461a477f16c4eacfff","sheets/kiddjewell-a54e3f6c.webp":"/_blob/ccf418db2d0cb8ce5e8d58bd690e12c8","sheets/kingnubs.webp":"/_blob/11774541a6cc3f4ea3e75a0a1d4f3e44","sheets/krenshaw.webp":"/_blob/c1f282861ef502de24ddc761576c1578","sheets/kutty.webp":"/_blob/6ae40df3eb5fc1192b552dd52f6108f3","sheets/lion.webp":"/_blob/847e97c2fb9b20d7a0a74abf5f076b45","sheets/markbone.webp":"/_blob/319a5e7c877788f2224f1d5fa62389aa","sheets/marshall-f6d58a15.webp":"/_blob/f9926da02419828dad1941e0c1c71d19","sheets/maxwicked-8ffa59f8.webp":"/_blob/f48b3e047f73ae513474a75e106cd056","sheets/meknik.webp":"/_blob/3e059b874f6248802d1dcaea0132bacc","sheets/midnightinyami.webp":"/_blob/7a580ef36c3bddedac469fa71c27eea6","sheets/modert-a8d14803.webp":"/_blob/51f211d775e5ff8c291bf25e89d2ba67","sheets/mordemir-988c6b92.webp":"/_blob/6ec0a9f7478fdf42d76b779ece1dfc49","sheets/mrgreen.webp":"/_blob/8143e4a6f0f8544c87cda68a11f38fc8","sheets/mykill-398095e4.webp":"/_blob/54c4ac9bb132f2636d98f6838ab61369","sheets/nate-097486bc.webp":"/_blob/8c114184b760b8e13c7c62050156d25e","sheets/nukie-a431f73d.webp":"/_blob/fc86335e293279f39157ada706979de8","sheets/nyteshade-12058d26.webp":"/_blob/19d965bcdeafbf68cf13c6d0e741d762","sheets/otice-5a9e0c02.webp":"/_blob/e4816d9ddd5aacbb48a2ab18ad67de5c","sheets/oxpimpin-7a819694.webp":"/_blob/320fa1ce4e963d66c329e1c7b9174a78","sheets/panduh2-69511d36.webp":"/_blob/d0ae1c5d718587244e623768abc0c7c3","sheets/penutt-4577ba85.webp":"/_blob/3780e242cfd101096b6ea9136570c145","sheets/preach-d4025c05.webp":"/_blob/11ccd76a68e06a341c59095003a9db89","sheets/puff2-46eae774.webp":"/_blob/de17887bc577d4172e8f95de5f0eb53b","sheets/purple-26b43797.webp":"/_blob/ef9969db168a18de1ff8985204f232b8","sheets/ranger2-7496af12.webp":"/_blob/70a8442c0f682e87ac51fa481cbc16ae","sheets/rathovgod.webp":"/_blob/3f728152fc9a053d531da9af05f448e0","sheets/reaper315-d3663c3d.webp":"/_blob/79e48443b0aa6797a716d3ada9abbacf","sheets/reup-4b9ad7cd.webp":"/_blob/fa1f63e94f9dd2b6f52f281352944e44","sheets/siintay.webp":"/_blob/1c471f70b5b872785ddb515907a6916b","sheets/smith.webp":"/_blob/3a84507d2c9bbc06cfe6f00a04224da1","sheets/specs.webp":"/_blob/56439b7231afb2615d4bc8ab3e7dd8ca","sheets/striff.webp":"/_blob/f6d01c4e875e78c9b84204a0d8c86cf0","sheets/superman-6a54535d.webp":"/_blob/7dea8a6a3b74c066a58863b35e736d97","sheets/tactics-20385995.webp":"/_blob/5e6c891ae7be998a5e77fe62c2e7cdcb","sheets/tat.webp":"/_blob/0346f452268fc6d6f543fc3e27f57a10","sheets/tdc-14faae64.webp":"/_blob/a5f39e574a497f2d8f2a983faee4ffc7","sheets/triple6-56e7d827.webp":"/_blob/95e77277c4640a9cd14d263420d75a99","sheets/trussup-9566c340.webp":"/_blob/d1bd6ed1a8a02398591a0834d644aea0","sheets/tyjah-003cc7d3.webp":"/_blob/9c4e38ccd34d1184fe3d8438a598650c","sheets/uncledubb.webp":"/_blob/a080c461065c4dd59f7b5aa5ee7c23f2","sheets/unhappy.webp":"/_blob/70f2ceb18496f73cff6cf0b57de95e02","sheets/youngal-768cdffd.webp":"/_blob/baa87f263087fdc939088cb4e58323e6","sheets/zacpacillo-6a869b8f.webp":"/_blob/18d5b08fa7c4e6bdcac89cb030b30ece","sheets/zactyrr-949247b4.webp":"/_blob/99f1ca91e26968c5c53a193962a9ae30","sheets/zay.webp":"/_blob/a1abd3893408a13e6786f94eb28d67ce","sheets/pumpkin-917ad11d.webp":"/_blob/5b6b47806bbc3fcd64f2e87cf8421c78","sheets/zachyedirte-c83297da.webp":"/_blob/8f26d19312d6060be4a9f4a590fd0f58","sheets/kreetur-a1b6b548.webp":"/_blob/cbf11ef75b4b0bf26198247d0c515ea8","sheets/rook-35c67b20.webp":"/_blob/c7b4211cbc9ca0681faf4749b04a28b6","sheets/rwk-1a898c55.webp":"/_blob/4b57d717e577b22d9e4d6de246829c48","sheets/jraw-157a0767.webp":"/_blob/e1876accbf94ab864efaa56832f07532","sheets/odd17y-4bc7aa4b.webp":"/_blob/0ffd546341c338d7a390f4c024cbf1f4","sheets/ccolei-635037fa.webp":"/_blob/482108c9b9ab5b4fee30784e48973922","sheets/dezlooce-fd778703.webp":"/_blob/6549f769dee5e21ab64f3ed3ebf467ef","sheets/nkpnatefrog-f602f55b.webp":"/_blob/0894ff12cb56050ca2d5f7786653af7d","sheets/lossaint-a5138dad.webp":"/_blob/4c2bf533f951a84470394ea3294237d3","sheets/miketek-2f7c2b67.webp":"/_blob/ee45a2885c2685607d589c110604e34d","sheets/swill-70cf12e4.webp":"/_blob/f8e97575de2a701c1550c29d5a7389a6","sheets/dillynatas-a5068d6e.webp":"/_blob/8ced21fbdf41db03e2b78289703b9937","sheets/wickedwayz-10bdbadb.webp":"/_blob/e82523cba72c3354a8c7e3d6e3292be2","sheets/jgorey-be5ac63d.webp":"/_blob/892bbbd6a5074675c09a599f65ea3793","sheets/klu-6998aaf4.webp":"/_blob/2d4c70d840f88bdc09072eeb025caaa7","sheets/poof-511792d9.webp":"/_blob/c897484e0ac12d927ae085edbe0b2dc7","sheets/revrust-5c59210b.webp":"/_blob/092091e8441cf2619b50241aabbc4c88","sheets/strickt9-1365de2c.webp":"/_blob/cc298adbd60d4bdebb4582187c247b74","sheets/boofboycloutdon-d6e49530.webp":"/_blob/b4c3e1c38cb346caf25d61747604e773","sheets/ashley-49ae7d63.webp":"/_blob/8ade6c3c3158a69614fd8e4c5d20f431","sheets/mizzmurda-9f5e768d.webp":"/_blob/f134afadb345c5a9bf5d8b470dde7c8e","sheets/blynd-9eef69d4.webp":"/_blob/19a886d2971ab32721d5b02357b6e221","sheets/klownie-8d4cd33d.webp":"/_blob/813e8cd5c7b51ec9193af0a48383f394","sheets/michimurderz-e3c52c82.webp":"/_blob/aa0767b5790d98272e9a363ed9fd1582","sheets/minijugg-aa02da0f.webp":"/_blob/13735b1d2921404ba6f928c4b5e48b62","sheets/jules-ef04bbdd.webp":"/_blob/0eaf1b52accef4d19ab022207e0b088d","sheets/psychokandy-3b06c8a8.webp":"/_blob/11a64ff640b5cbb4db537e1b276b31df","sheets/shortea-43240872.webp":"/_blob/9784ba7787e5fa8559fe33e89672ff60","sheets/xshaxwnax-0282a743.webp":"/_blob/ae492d74614d1b6deb53d72138570994","sheets/eyez-21928202.webp":"/_blob/93f4c452d0944367b07148c02cd5670c","sheets/missdelitreats-8ee4a773.webp":"/_blob/33a3b31fc4a1d2c06b00456bba5e6c9e","sheets/smokeroxx-226bfdcf.webp":"/_blob/121ed3eb0be1e64ff4b71c5693d2e807","sheets/lilith-d3cdb432.webp":"/_blob/b605c59a641bf78932b9d3e1fdacbd59","sheets/anthraxx-78b0f3dd.webp":"/_blob/7638f322b4c98d207ca96f4d51c23d23","sheets/xtina-24c3997e.webp":"/_blob/c2fb86dd4352068476432ad37e2c3835","sheets/shitkicker-67b3faec.webp":"/_blob/edf254001e2efa00bf7221381fcfdbfd","sheets/sexsilette-602b192e.webp":"/_blob/218e62dbeec6d3e4a9100465e8b2cfd0","sheets/tinydoll-df7e7fc4.webp":"/_blob/a52203fe0e30a3304fcdac4dfc2d192d","sheets/milo-9ccf1ecc.webp":"/_blob/66a75de684950a03b0d26380ebcac13e","sheets/knothead-51c74a2f.webp":"/_blob/003fe54b77f1c5580cfeeab3fc91315c","sheets/tragedy-857cc112.webp":"/_blob/9b7fe41a40e7b49b6c39f14d35482c53","sheets/chad-ba3c21a6.webp":"/_blob/8bfc9dfede28b7a4928607426fa64991","sheets/lilorphic-92e86aa1.webp":"/_blob/fdaf953303ab5aac6cdd0d42e54eed02","sheets/mrlgll-5ce2e9b0.webp":"/_blob/5e445b9f5dbea406c8355f1b7064b42d","sheets/milli-f1fac97f.webp":"/_blob/0515023ae4c6997a931b3a3bd9534496","sheets/ladylola-012a1fe9.webp":"/_blob/fa3ed231fb255cea7cad0bae38b56d53","sheets/minezdude-0f709aa4.webp":"/_blob/6cc673f405b2dfd07bbfc33366820912","sheets/aliengirl-8d643850.webp":"/_blob/6ae0dcf78977fd08e3675ab26d344217","sheets/cartoon-42fbf790.webp":"/_blob/76c7ddfe26a4e9bfc8017ef0f44f6631","sheets/highdef-1502af61.webp":"/_blob/7b8682dbaa2a626cadf7307f01307a15","sheets/infernavexx-669d6a1f.webp":"/_blob/0ec4a94af3167793be98187e04f8e21e","sheets/jinx-8fd5167d.webp":"/_blob/678a56b3fbc24a0f02a4926e16b87444","sheets/juffalo-2b3d00f6.webp":"/_blob/902910a959a01df5ee373a432fd349e5","sheets/kandy-0aed191e.webp":"/_blob/5e8397df305f9096d98a6df021b05c76","sheets/mischef-2d6d6760.webp":"/_blob/d1356708587d5d1efc1d50ec477edcae","sheets/monday7e-20d32b21.webp":"/_blob/f091b42b839812c95ad16d6c0a629448","sheets/mystic-1094a71e.webp":"/_blob/22134a43354078683e14c552dfe0e219","sheets/nicky6-4fef02f3.webp":"/_blob/df3b53d54e0efeff969c3001b5b3b1db","sheets/panduh-afc39b71.webp":"/_blob/974154b2fada553aa1d0150f67152441","sheets/popz-cd1ee176.webp":"/_blob/21217c3b8dce916195de589b44daa881","sheets/pow-b61b2bb1.webp":"/_blob/6e455b0b70ef63c41702686fb9c86b08","sheets/puff-ebfce662.webp":"/_blob/c20fe5a8b3b9769e21a145bafb4b6962","sheets/stabby-ae1be56e.webp":"/_blob/97cc53cca4c4047bbfed11f248c59d3b","sheets/vanitylette-af7d4657.webp":"/_blob/c64b0cb43ce63ee07439550e4f985660","sheets/waynesavage-bacb8678.webp":"/_blob/11951b5da879039817484f633fbe673f","sheets/xanity-388c6f61.webp":"/_blob/abf502439393f0d307318435943da88f","sheets/madcounty-555e6a5c.webp":"/_blob/a687734a50d192d2939552ee11edc028","sheets/impeny-d6a13229.webp":"/_blob/c3bcec43fd22cd8baf8283d963fb25e7","sheets/enokh-3ecd2501.webp":"/_blob/0b4ace07f04699a87c44880fd0ee627b","sheets/frosty-6fbb3139.webp":"/_blob/7863363dfa39cc2a9e8919ec4bbd4853","sheets/xoreckless-e9eca0ae.webp":"/_blob/90fed4f2c1effb1fa3f38b6fd49e5b3d","sheets/unclecreepy-54bf1754.webp":"/_blob/17b93d19136935599bc7a89fcbbe3f66","sheets/scopio-2c776d49.webp":"/_blob/fd08fed7f8315d7743a02b81590af6a5"};
-function sheetFallback(im,S){im.addEventListener('error',()=>{const b=SHEET_STORE[S.png0||S.png];if(b&&!im.dataset.fb){im.dataset.fb=1;S.png0=S.png0||S.png;S.png=b;im.src=b}})}
+/* if a sheet can't load from its own file, try the copy kept in the Claude artifact's storage, for that one image only.
+   An image the game let go of on purpose (sheetDrop) also fires 'error'; that is not a failure and must not switch anything. */
+function sheetFallback(im,S){im.addEventListener('error',()=>{if(im._dead||!im.getAttribute('src'))return;const b=SHEET_STORE[S.png];if(b&&!im.dataset.fb){im.dataset.fb=1;im.src=b}})}
 /* Fighter sheets load on demand. Holding all 126 at once takes about 4.6 GB once decoded, which phones (and many laptops) don't have,
    so a sheet loads when its fighter is picked or steps into a fight, and the least recently used ones are let go once more than
    SHEET_CAP are held. Fighters in the current match are never let go. The crowds don't need full sheets: each crowd member is baked
@@ -1095,28 +1101,35 @@ const SHEET_CAP=LOW_MEM?6:24,CROWD_WARM=LOW_MEM?16:70,SHEET_LOAD={},SHEET_IMG={}
 function sheetPinned(){const p=new Set(),add=c=>{if(c&&c.sheet)p.add(c.sheet)};
   try{add(G.f1&&G.f1.c);add(G.f2&&G.f2.c);add(G.c1);add(G.c2);add(G.coopMate);(G.pick||[]).forEach(add);(G.team||[]).forEach(t=>(t||[]).forEach(add));
     (G.teams||[]).forEach(t=>(t||[]).forEach(add))}catch(e){}return p}
+const SHEET_FAIL={};
 function ensureSheet(id,temp){
   if(!id||!ASSET.sheets||!ASSET.sheets[id])return Promise.resolve(null);
+  if(SHEET_FAIL[id]&&performance.now()-SHEET_FAIL[id]<8000)return Promise.resolve(null);
   if(!temp)SHEET_USE[id]=++sheetTick;else if(!SHEET_USE[id])SHEET_USE[id]=0;
   if(SHEET_LOAD[id])return SHEET_LOAD[id];
   const S=ASSET.sheets[id],c=CHARS.find(x=>x.sheet===id);if(!c)return Promise.resolve(null);
   const C=c.cut&&CUT.meta.chars[c.cut],size=C?C.h*C.scale/refHeight():1,im=new Image();SHEET_IMG[id]=im;
-  return SHEET_LOAD[id]=new Promise(res=>{let errs=0;
+  try{im.fetchPriority=temp?'low':'high'}catch(e){}
+  return SHEET_LOAD[id]=new Promise(res=>{let errs=0;im._res=res;
     sheetFallback(im,S);
-    im.addEventListener('error',()=>{if(im._dead)return;if(++errs>1||!im.dataset.fb){console.error('sheet failed',id);delete SHEET_LOAD[id];delete SHEET_IMG[id];res(null)}});
-    im.onload=()=>{if(im._dead)return;try{BUILTIN_SHEETS[id]=buildCustom({id,atlas:S.atlas,faceLeft:false,size},im)}catch(e){console.error('sheet',id,e)}
+    im.addEventListener('error',()=>{if(im._dead||!im.getAttribute('src'))return;if(++errs>1||!im.dataset.fb){console.error('sheet failed',id);SHEET_FAIL[id]=performance.now();delete SHEET_LOAD[id];delete SHEET_IMG[id];res(null)}});
+    im.onload=()=>{if(im._dead)return;delete SHEET_FAIL[id];try{BUILTIN_SHEETS[id]=buildCustom({id,atlas:S.atlas,faceLeft:false,size},im)}catch(e){console.error('sheet',id,e)}
       SPK.base[id]=im;try{IDLE_H.delete(c.sprite);PEAK.clear()}catch(e){}
       spkLoad().then(()=>{if(SPK.base[id]===im&&SPK.edits[id]&&!spkEmpty(SPK.edits[id]))spkBake(id).catch(e=>console.error('sprite edits',id,e))});
       if(!temp)sheetTrim();res(BUILTIN_SHEETS[id]||null)};
     im.src=S.png})}
 function sheetDrop(id){const im=SHEET_IMG[id];delete SHEET_LOAD[id];delete SHEET_IMG[id];delete BUILTIN_SHEETS[id];delete SPK.base[id];
-  if(im){im._dead=1;im.onload=null;try{im.removeAttribute('src');im.src=''}catch(e){}}}
+  if(im){im._dead=1;if(im._res){const r=im._res;im._res=null;r(null)}im.onload=null;try{im.removeAttribute('src');im.src=''}catch(e){}}}
 function sheetTrim(){const pin=sheetPinned(),ids=Object.keys(SHEET_LOAD).filter(id=>BUILTIN_SHEETS[id]||SPK.base[id]);if(ids.length<=SHEET_CAP)return;
   ids.filter(id=>!pin.has(id)).sort((a,b)=>(SHEET_USE[a]||0)-(SHEET_USE[b]||0)).slice(0,ids.length-SHEET_CAP).forEach(sheetDrop)}
 function ensureChars(...cs){for(const c of cs.flat(3))if(c&&c.sheet&&!c.custom)ensureSheet(c.sheet)}
 /* the crowd warmer: bakes crowd members one at a time while the game runs (the club's women first, since that crowd is all theirs) */
-let warmBusy=false;
-function crowdWarm(){if(warmBusy)return;if(document.hidden){setTimeout(crowdWarm,2000);return}if(CAGE.cache.size>=CROWD_WARM)return;
+let warmBusy=false,CROWD_LOADS=0,CROWD_PREVIEW=false;
+/* the fighters on screen always load first: crowd members, spare stage paintings and the like wait while either fighter is still loading */
+function fighterSheetsPending(){const ids=[G.f1&&G.f1.c&&G.f1.c.sheet,G.f2&&G.f2.c&&G.f2.c.sheet];
+  for(const id of ids)if(id&&SHEET_LOAD[id]&&!(BUILTIN_SHEETS[id]&&BUILTIN_SHEETS[id].ok))return true;return false}
+function crowdHold(){return CROWD_PREVIEW||CROWD_LOADS>=(LOW_MEM?1:2)||fighterSheetsPending()}
+function crowdWarm(){if(warmBusy)return;if(document.hidden||crowdHold()){setTimeout(crowdWarm,document.hidden?2000:700);return}if(CAGE.cache.size>=CROWD_WARM)return;
   const ok=c=>c&&c.sheet&&!c.custom&&!c.villain&&!isSoon(c)&&ASSET.sheets[c.sheet]&&!CAGE.cache.has(c.id)&&!WARM_SKIP.has(c.id);
   let c=CLUB.women.map(id=>CHARS.find(x=>x.id===id)).find(ok);if(!c){const pool=CHARS.filter(ok);c=pool[Math.floor(REAL_RANDOM()*pool.length)]}
   if(!c)return;warmBusy=true;const had=!!SHEET_LOAD[c.sheet],next=()=>{warmBusy=false;setTimeout(crowdWarm,LOW_MEM?900:250)};
@@ -1941,15 +1954,24 @@ function paintClub(){
   cv.ok=true;return cv;
 }
 
-const STIMG={};
-for(const k in ASSET.stages){const im=new Image();im.onload=()=>{im.ok=true};im.src=ASSET.stages[k];STIMG[k]=im}
+const STIMG={},STQ=[];let stqBusy=0;
+/* stage paintings: made up front but downloaded in the background two at a time, and paused while a fight's fighters load.
+   stageNeed() fetches one straight away (the stage you're about to fight on, or the one on show in stage select). */
+function stagePic(k,src){const im=new Image();im.onload=()=>{im.ok=true};im._src=src;STIMG[k]=im;STQ.push(im);return im}
+function stageStart(im,hi){if(im._go)return;im._go=1;try{im.fetchPriority=hi?'high':'low'}catch(e){}
+  if(!hi){stqBusy++;const done=()=>{stqBusy--;setTimeout(stagePump,60)};im.addEventListener('load',done,{once:true});im.addEventListener('error',done,{once:true})}im.src=im._src}
+function stagePump(){while(stqBusy<2&&STQ.length&&!(typeof fighterSheetsPending==='function'&&fighterSheetsPending())){const im=STQ.shift();if(!im._go)stageStart(im,false)}
+  if(STQ.length&&stqBusy<2)setTimeout(stagePump,500)}
+function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true)}
+for(const k in ASSET.stages)stagePic(k,ASSET.stages[k]);
 /* newer stage paintings ship as files next to the page instead of inside it */
 const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 STIMG.slaughter=(()=>{try{return paintSlaughterhouse()}catch(e){return{ok:false}}})();
 STIMG.sewer=(()=>{try{return paintSewer()}catch(e){return{ok:false}}})();
 STIMG.cage=(()=>{try{return paintCage()}catch(e){return{ok:false}}})();
 STIMG.club=(()=>{try{return paintClub()}catch(e){return{ok:false}}})();
-for(const k in STAGE_FILES)if(!STIMG[k]){const im=new Image();im.onload=()=>{im.ok=true};im.src='stages/'+STAGE_FILES[k]+'.webp';STIMG[k]=im}
+for(const k in STAGE_FILES)if(!STIMG[k])stagePic(k,'stages/'+STAGE_FILES[k]+'.webp');
+setTimeout(stagePump,0);
 function farCanvas(stg){
   const im=STIMG[stg.img];if(!im||!im.ok)return null;
   return getCache(stg,'_far',()=>{const fh=GROUND+30,sc=fh/im.height,fw=Math.round(im.width*sc);const c=document.createElement('canvas');c.width=fw;c.height=fh;const g=c.getContext('2d');
@@ -4441,7 +4463,7 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
      startRound and die on STAGES[G.stage].setup(). Land on a real stage
      instead: the wrong backdrop beats a dead match. */
   stage=(Number.isInteger(stage)&&stage>=0&&stage<STAGES.length)?stage:0;
-  ensureChars(c1,c2);
+  ensureChars(c1,c2);stageNeed(stage);
   if(!demo&&typeof SCR!=='undefined'){SCR.rot=(SCR.rot||0)+1;SCR.ghPick=null}
   {const st=STAGES[stage];WW=(st&&(G.type==='online'?st.ww0:st.ww))||1600;WL=st&&st.wall?st.wall[0]:40;WR=st&&st.wall?st.wall[1]:WW-40}
   Object.assign(G,{c1,c2,ai1,ai2,stage,demo,need,round:1,wins:[0,0],mods:(!demo&&G.type==='pvp'&&FE.pendingMods)||{}});FE.pendingMods=null;
@@ -4452,6 +4474,8 @@ function startMatch(c1,c2,{ai1=null,ai2=null,stage=0,demo=false,need=2}={}){
   if(G.coop&&!demo&&G.coopMate){if(!isFeat(G.type))G.team=[[c1,G.coopMate],G.type==='training'?[c2]:[c2,coopFoe(c2,[c1,G.coopMate,c2])]];
     G.own=[['p1','p2'],['cpu','cpu']]}
   ensureChars(G.team||[]);
+  /* a real match: stop downloading art nobody in it needs (the menu demo's fighters, crowd members) so its own fighters arrive first */
+  if(!demo){const pin=sheetPinned();for(const id of Object.keys(SHEET_LOAD))if(!pin.has(id)&&!(BUILTIN_SHEETS[id]&&BUILTIN_SHEETS[id].ok))sheetDrop(id)}
   startRound();
 }
 /* ---------- Features: tag team, on Tekken Tag's rules ----------
@@ -4556,9 +4580,16 @@ function separate(a,b){
 function dummyInput(me,opp){
   switch(G.dummy){case'block':return{...NONE,down:true};case'jump':return{...NONE,up:(tick%50)<3};case'cpu':return G.dummyAI.get(me,opp);default:return DUMMY_TEST[G.dummy]?dummyTestInput(me,opp):{...NONE}}
 }
+/* a fight doesn't start until both fighters' art has arrived, so nobody fights an invisible opponent on a slow connection */
+function artReady(c){if(!c||!c.sheet||c.custom||!ASSET.sheets||!ASSET.sheets[c.sheet])return true;const SH=BUILTIN_SHEETS[c.sheet];return !!(SH&&SH.ok)||!!SHEET_FAIL[c.sheet]}
+function artWait(){if(G.mode!=='fight'||G.demo||G.type==='online'||G.net4||!G.f1||!G.f2)return false;
+  if(artReady(G.f1.c)&&artReady(G.f2.c)){G.artT=0;return false}
+  if(!G.artT)G.artT=performance.now();if(performance.now()-G.artT>20000)return false;
+  ensureChars(G.f1.c,G.f2.c);return true}
 function update(){
   if(G.mode!=='fight'&&G.mode!=='title')return;
   if(!G.f1||G.paused)return;
+  {const w=artWait(),el=document.getElementById('artWait');if(el)el.classList.toggle('on',w);if(w)return}
   if(G.shake>0)G.shake*=.85;if(G.shake<.3)G.shake=0;
   const stg=STAGES[G.stage];
   if(G.superFlash){if(++G.superFlash.t>=32)G.superFlash=null;return}
@@ -5243,7 +5274,7 @@ function cageBuild(){
   fans.sort((a,b)=>a.y-b.y);return fans}
 function cageReact(level){for(const f of CAGE.fans){if(REAL_RANDOM()>.35+level*.6)continue;f.delay=REAL_RANDOM()*20*(1.4-level);f.next=REAL_RANDOM()<.5+level*.3?'cheer':'jump';f.hold=90+level*150+REAL_RANDOM()*80}CAGE.hype=Math.min(1,CAGE.hype+level*.6)}
 /* each crowd character's idle and win frames, drawn once into small canvases so the crowd never touches the big sheets again */
-function cageCacheOne(c){const SH=sheetOf(c);if(!SH||!SH.ok){if(c.sheet&&!c.custom&&!c._cw){c._cw=1;ensureSheet(c.sheet,true).then(x=>{c._cw=0;if(x&&!CAGE.cache.has(c.id)){cageCacheOne(c);if(!sheetPinned().has(c.sheet)&&!(SHEET_USE[c.sheet]>0))sheetDrop(c.sheet)}})}return}const CH=SH.meta.chars[c.sprite],sc=CH.scale*charSize(c)*.55*R,out={};
+function cageCacheOne(c){const SH=sheetOf(c);if(!SH||!SH.ok){if(c.sheet&&!c.custom&&!c._cw){if(crowdHold()){if(!CAGE.queue.includes(c))CAGE.queue.push(c);return}c._cw=1;CROWD_LOADS++;ensureSheet(c.sheet,true).then(x=>{c._cw=0;CROWD_LOADS--;if(x&&!CAGE.cache.has(c.id)){cageCacheOne(c);if(!sheetPinned().has(c.sheet)&&!(SHEET_USE[c.sheet]>0))sheetDrop(c.sheet)}})}return}const CH=SH.meta.chars[c.sprite],sc=CH.scale*charSize(c)*.55*R,out={};
   for(const an of['idle','win']){const L=(CH.anims[an]&&CH.anims[an].length?CH.anims[an]:CH.anims.idle);out[an]=L.map(k=>{const fr=SH.meta.frames[k],w=Math.max(1,Math.ceil(fr[2]*sc)),h=Math.max(1,Math.ceil(fr[3]*sc)),cv=document.createElement('canvas');cv.width=w;cv.height=h;
     cv.getContext('2d').drawImage(SH.img,fr[0],fr[1],fr[2],fr[3],0,0,w,h);return{cv,ax:fr[4]*sc,ay:fr[5]*sc}})}
   CAGE.cache.set(c.id,out)}
@@ -5993,7 +6024,7 @@ function showStageSelect(){
   // background state: the stage on show, what it replaced (fades out), and when it changed
   const B={k:-2,pic:null,acc:'255,90,40',t0:0,prev:dmCv(8,8),pa:0,ft:0,rnd:false,rk:0,rnext:0,embers:[]};
   for(let i=0;i<46;i++)B.embers.push({x:Math.random(),y:Math.random(),v:.0006+Math.random()*.0016,r:1+Math.random()*2.6,ph:Math.random()*6.3});
-  const setStage=(k,quiet,spin)=>{const now=performance.now();B.spin=!!spin;
+  const setStage=(k,quiet,spin)=>{const now=performance.now();B.spin=!!spin;stageNeed(k);
     if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1}
     B.pic=picOf(k);B.acc=accOf(k);B.t0=now;B.k2=k;root.style.setProperty('--acc',B.acc);if(!quiet&&SFX.navtick)try{SFX.navtick()}catch(e){}};
   const RSPIN=2600,RHOLD=1500;
@@ -6018,7 +6049,7 @@ function showStageSelect(){
     const cov=Math.max(W2/iw,H2/ih),punch=1+(B.spin?.05:.14)*Math.exp(-age/170),z=cov*(1.07+.05*Math.sin(now/4300))*punch,dw=iw*z,dh=ih*z;
     const u=.5+.5*Math.sin(now/5200+B.k2),v=.5+.4*Math.sin(now/6300+B.k2*1.7),x=-(dw-W2)*u,y=-(dh-H2)*v;
     g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle='#000';g.fillRect(0,0,W2,H2);g.imageSmoothingQuality='high';g.drawImage(im,x,y,dw,dh);
-    if(P.live&&ALIVE[P.id]&&S.fx!==false){g.save();try{aliveDraw(ALIVE[P.id],g,{x,y,k:z,im,w:dw,h:dh,p:1,noCrowd:1},ft)}catch(e){}g.restore();g.globalCompositeOperation='source-over';g.globalAlpha=1}
+    if(P.live&&ALIVE[P.id]&&S.fx!==false){g.save();CROWD_PREVIEW=true;try{aliveDraw(ALIVE[P.id],g,{x,y,k:z,im,w:dw,h:dh,p:1,noCrowd:1},ft)}catch(e){}CROWD_PREVIEW=false;g.restore();g.globalCompositeOperation='source-over';g.globalAlpha=1}
     // the old stage melts away behind a light sweep
     if(B.pa>0){B.pa=Math.max(0,1-age/(B.spin?120:280));g.globalAlpha=B.pa;const sc=1+(1-B.pa)*.06;g.drawImage(B.prev,-(W2*sc-W2)/2,-(H2*sc-H2)/2,W2*sc,H2*sc);g.globalAlpha=1}
     g.globalCompositeOperation='lighter';
@@ -6031,7 +6062,8 @@ function showStageSelect(){
   [-1,...STAGES.map((_,k)=>k)].forEach(k=>{
     const b=document.createElement('button');b.type='button';b.className='scard';b.dataset.act='stagepick';b.dataset.k=k;
     if(k<0){const q=document.createElement('span');q.className='ss-q sm ss2-rand';q.textContent='?';b.appendChild(q)}
-    else{const t=stageThumb(k,240),c=document.createElement('canvas');c.width=t.width;c.height=t.height;c.getContext('2d').drawImage(t,0,0);b.appendChild(c);b.style.setProperty('--acc',accOf(k))}
+    else{const t=stageThumb(k,240),c=document.createElement('canvas');c.width=t.width;c.height=t.height;c.getContext('2d').drawImage(t,0,0);b.appendChild(c);b.style.setProperty('--acc',accOf(k));
+      const stg=STAGES[k],im=stg.full&&STIMG[stg.img];if(im&&!im.ok){stageNeed(k);im.addEventListener('load',()=>{const t2=stageThumb(k,240);if(c.isConnected)c.getContext('2d').drawImage(t2,0,0)},{once:true})}}
     const n=document.createElement('span');n.className='nm';n.textContent=k<0?'Random':STAGES[k].name;b.appendChild(n);
     b.setAttribute('aria-label',k<0?'Random stage':STAGES[k].name);
     b.addEventListener('mouseenter',()=>{show(k);if(document.activeElement!==b)b.focus({preventScroll:true})});b.addEventListener('focus',()=>show(k));strip.appendChild(b);
