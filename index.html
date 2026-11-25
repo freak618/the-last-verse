@@ -1643,6 +1643,14 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
+{ id:'mirrors',name:'The Hall of Mirrors',img:'mirrors',ww:1234,zoom:1.12,full:{scale:0.6*2096/2720,feet:1245/1536,p:1,rigid:true},indoor:true,dry:true,wet:true,reflA:.18,ambient:[120,88,60],grade:'#5a2a12',rim:'rgba(255,190,110,.38)',farTone:'none',shadowL:[{x:1360,y:-300,a:.28}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'riddlebox',name:'The Riddle Box',img:'riddlebox',extra:['riddlebox_parts'],ww:1226,zoom:1.12,full:{scale:1250/1672,feet:740/941,p:1,rigid:true},indoor:false,dry:true,wet:false,ambient:[130,100,125],grade:'#4a2a48',rim:'rgba(255,190,120,.36)',farTone:'none',shadowL:[{x:1500,y:-260,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
  /* ---- New Update stages ---- */
  { id:'nu_ring',name:'The Backyard Ring',img:'nu_ring',ww:1204,wall:[193,1014],zoom:1.12,full:{scale:1204/1672,feet:688/941,p:1,rigid:true,front:'nu_ring_front'},indoor:false,dry:true,wet:false,ambient:[140,130,150],grade:'#5a3a5a',rim:'rgba(255,200,150,.36)',farTone:'none',shadowL:[{x:1500,y:-260,a:.32}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
@@ -1962,10 +1970,10 @@ function stageStart(im,hi){if(im._go)return;im._go=1;try{im.fetchPriority=hi?'hi
   if(!hi){stqBusy++;const done=()=>{stqBusy--;setTimeout(stagePump,60)};im.addEventListener('load',done,{once:true});im.addEventListener('error',done,{once:true})}im.src=im._src}
 function stagePump(){while(stqBusy<2&&STQ.length&&!(typeof fighterSheetsPending==='function'&&fighterSheetsPending())){const im=STQ.shift();if(!im._go)stageStart(im,false)}
   if(STQ.length&&stqBusy<2)setTimeout(stagePump,500)}
-function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true)}
+function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true);if(stg&&stg.extra)for(const e of stg.extra){const x=STIMG[e];if(x&&!x._go)stageStart(x,true)}}
 for(const k in ASSET.stages)stagePic(k,ASSET.stages[k]);
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 /* these four stages used to be painted in code every time the game opened (several seconds on a phone);
    the same pictures now ship as files, and the painting code only runs if a file can't load */
 for(const[k,f,paint]of[['slaughter','p_slaughter',()=>paintSlaughterhouse()],['sewer','p_sewer',()=>paintSewer()],['cage','p_cage',()=>paintCage()],['club','p_club',()=>paintClub()]]){
@@ -2484,6 +2492,16 @@ const ALIVE_FX={
 };
 /* Dead Mall: lit signs, working arcade cabinets, lightning in the skylight, running fountain water, zombies upstairs, wet-floor reflections.
    DMS carries this frame's light levels from the signs, screens and lightning to the floor reflections and the zombies' rim light. */
+/* Halls of Illusions: a faint figure that drifts across one mirror every so often */
+function mirrorGhost(g,rc,t,o){const G2=o.ghost;if(!G2)return;const per=G2.every||600,c=Math.floor(t/per),u=(t%per)/per;
+  if(aH(c*1.7)>(G2.chance||.6)||u>.3)return;const m=o.m[Math.floor(aH(c*3.3)*Math.min(7,o.m.length))],P=m.p,k=rc.k,p=u/.3;
+  const x0=Math.min(P[0][0],P[3][0]),x1=Math.max(P[1][0],P[2][0]),y0=Math.min(P[0][1],P[1][1]),y1=Math.max(P[2][1],P[3][1]),dir=aH(c*5.1)<.5?1:-1;
+  const gx=dir>0?x0-30+(x1-x0+60)*p:x1+30-(x1-x0+60)*p,h=(y1-y0)*.55,fy=y1-(y1-y0)*.06,a=Math.sin(p*Math.PI)*.2;
+  g.save();g.beginPath();for(let j=0;j<4;j++)g[j?'lineTo':'moveTo'](rc.x+P[j][0]*k,rc.y+P[j][1]*k);g.closePath();g.clip();
+  g.globalCompositeOperation='lighter';glow(g,rc.x+gx*k,rc.y+(fy-h*.55)*k,h*.7*k,'120,170,255',a*.5);
+  g.fillStyle=`rgba(150,195,255,${a})`;g.beginPath();g.ellipse(rc.x+gx*k,rc.y+(fy-h*.88)*k,h*.1*k,h*.12*k,0,0,6.283);g.fill();
+  g.beginPath();g.moveTo(rc.x+(gx-h*.16)*k,rc.y+fy*k);g.quadraticCurveTo(rc.x+(gx-h*.2)*k,rc.y+(fy-h*.7)*k,rc.x+gx*k,rc.y+(fy-h*.76)*k);g.quadraticCurveTo(rc.x+(gx+h*.2)*k,rc.y+(fy-h*.7)*k,rc.x+(gx+h*.16)*k,rc.y+fy*k);g.closePath();g.fill();
+  g.restore()}
 const DMS={flash:0};
 const dmCv=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.ceil(w));c.height=Math.max(1,Math.ceil(h));return c};
 const dmReady=im=>im&&(im.naturalWidth||im.width);
@@ -2492,7 +2510,7 @@ Object.assign(ALIVE_FX,{
   // and every so often stutter on and off or die for a moment before catching again
   litsign(g,rc,t,o){const im=rc.im,k=rc.k,E=envK();if(!dmReady(im))return;
     if(!o._c){o._c=o.parts.map(p=>{const[x0,y0,x1,y1]=p.r,w=x1-x0,h=y1-y0,pad=p.pad||24;
-      const lit=dmCv(w,h),lg=lit.getContext('2d');lg.filter=`brightness(${p.lo||.7}) contrast(${p.ct||2.6}) saturate(1.6)`;lg.drawImage(im,x0,y0,w,h,0,0,w,h);
+      const lit=dmCv(w,h),lg=lit.getContext('2d');lg.filter=`brightness(${p.lo||.7}) contrast(${p.ct||2.6}) saturate(${p.sat||1.6})`;lg.drawImage(im,x0,y0,w,h,0,0,w,h);
       const halo=dmCv(w+pad*2,h+pad*2),hg=halo.getContext('2d');hg.filter=`blur(${pad/3}px)`;hg.drawImage(lit,pad,pad);hg.filter=`blur(${pad/7}px)`;hg.drawImage(lit,pad,pad);
       const off=dmCv(w,h),og=off.getContext('2d');og.filter='grayscale(1) brightness(2.6) invert(1)';og.drawImage(lit,0,0);return{lit,halo,off,pad}})}
     g.save();o.parts.forEach((p,i)=>{const C=o._c[i],[x0,y0,x1,y1]=p.r,sd=(p.seed||0)+i*13.7,per=p.every||o.every||420,
@@ -2644,6 +2662,73 @@ Object.assign(ALIVE_FX,{
       g.fillStyle=`rgba(200,135,85,${.35+r.c*.3})`;g.beginPath();g.ellipse(-L*.05,-W*.18,L*.26,W*.12,0,0,6.283);g.fill();
       g.strokeStyle='rgba(20,10,5,.6)';g.lineWidth=Math.max(.35,L*.04);g.beginPath();g.moveTo(L*.2,0);g.lineTo(-L*.5,0);g.stroke();
       g.restore()}
+    g.restore()},
+  // funhouse mirrors: each glass shows both fighters (their real current pose, flipped like a mirror), tinted cold and warped
+  // a different way per mirror; now and then a ghost glides across one of them
+  mirrorfx(g,rc,t,o){const k=rc.k;if(rc.noCrowd&&!o.preview)return mirrorGhost(g,rc,t,o);
+    if(!o._b){o._b=[dmCv(380,230),dmCv(380,230)]}
+    const fs=[G.f1,G.f2].filter(f=>f&&f.c&&typeof f.x==='number'&&!f.dead_hidden);
+    fs.forEach((f,i)=>{const B=o._b[i],bg=B.getContext('2d');bg.setTransform(1,0,0,1,0,0);bg.globalCompositeOperation='source-over';bg.clearRect(0,0,380,230);
+      bg.setTransform(-.5,0,0,.5,380,0);bg.translate(BX-f.x,BY-f.y);try{drawFighter(bg,f,stateOf(f))}catch(e){}
+      bg.setTransform(1,0,0,1,0,0);bg.globalCompositeOperation='source-atop';bg.fillStyle='rgba(70,110,190,.45)';bg.fillRect(0,0,380,230)});
+    const N=16,sh=230/N;
+    o.m.forEach((m,mi)=>{const P=m.p,x0=Math.min(P[0][0],P[3][0]),x1=Math.max(P[1][0],P[2][0]),y0=Math.min(P[0][1],P[1][1]),y1=Math.max(P[2][1],P[3][1]),mc=(x0+x1)/2,H=(y1-y0)*m.h,foot=y1-(y1-y0)*.05;
+      g.save();g.beginPath();g.moveTo(rc.x+P[0][0]*k,rc.y+P[0][1]*k);if(m.arch)g.quadraticCurveTo(rc.x+m.arch[0]*k,rc.y+(m.arch[1]-40)*k,rc.x+P[1][0]*k,rc.y+P[1][1]*k);
+      for(let j=1;j<4;j++)g.lineTo(rc.x+P[j][0]*k,rc.y+P[j][1]*k);g.closePath();g.clip();
+      fs.forEach((f,i)=>{const px=(f.x-rc.x)/k,cx=mc+(px-mc)*m.track,d=H*k/205,vy=m.mode==='tall'?1.22+.06*Math.sin(t*.03+mi):m.mode==='wide'?.78+.05*Math.sin(t*.025+mi):1;
+        g.globalAlpha=.5;
+        for(let r=0;r<N;r++){const sy=r*sh,yy=sy/230,wf=m.mode==='tall'?.62+.08*Math.sin(yy*6+t*.04):m.mode==='wide'?1.25+.35*(1-Math.pow((yy-.55)/.55,2)):1+.22*Math.sin(yy*9+t*.06+mi),
+            sx=m.mode==='wave'?Math.sin(yy*7+t*.05+mi)*12*d:0,dw=380*wf*d,dh=sh*vy*d+.6;
+          g.drawImage(o._b[i],0,sy,380,sh,rc.x+cx*k-dw/2+sx,rc.y+foot*k-(205-sy)*vy*d,dw,dh)}
+        g.globalAlpha=1});
+      g.restore()});
+    mirrorGhost(g,rc,t,o)},
+  // The Riddle Box: the prize wheel gets spun now and then and coasts to a stop, the plush prizes rock on their shelf and hop when it lands,
+  // the lantern swings, the crank on the box keeps turning and winds up faster until a clown on a spring pops out of the box
+  riddlefx(g,rc,t,o){const P=STIMG.riddlebox_parts;if(!P||!P.ok){if(P&&!P._go)stageStart(P,true);return}
+    const k=rc.k,M=o.M,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,S=o.S||(o.S={wa:0,wv:0,ca:0,lt:t,cy:-1,hop:-999});
+    let dt=t-S.lt;if(dt<0||dt>30)dt=1;S.lt=t;
+    const patch=n=>{const m=M[n];g.drawImage(P,m[0],m[1],m[2],m[3],X(m[4]),Y(m[5]),m[2]*k,m[3]*k)};
+    g.save();g.imageSmoothingEnabled=true;
+    // prize wheel: kicked every so often, then coasts down with friction
+    const per=o.spin||780,cy=Math.floor(t/per);if(cy!==S.cy){if(S.cy>=0&&aH(cy*3.13)<.8)S.wv=.24+aH(cy*1.71)*.22;S.cy=cy}
+    const was=S.wv;S.wa+=S.wv*dt;S.wv=Math.max(0,S.wv-(.0011+S.wv*.009)*dt);if(was>0&&S.wv===0)S.hop=t;
+    patch('pA');{const m=M.wheel,[cx,cy2]=o.wheel;g.save();g.translate(X(cx),Y(cy2));g.rotate(S.wa);g.drawImage(P,m[0],m[1],m[2],m[3],(m[4]-cx)*k,(m[5]-cy2)*k,m[2]*k,m[3]*k);g.restore()}
+    // the plush prizes rock a little, rattle while the wheel spins, and hop when it stops
+    o.toys.forEach((n,i)=>{const m=M[n],bx=m[4]+m[2]/2,by=m[5]+m[3],h=t-S.hop-i*5;
+      let a=.014*Math.sin(t*.021+i*1.9)+.006*Math.sin(t*.053+i)+Math.min(.04,S.wv*.12)*Math.sin(t*.9+i*2.1),dy=0;
+      if(h>0&&h<70){dy=-9*Math.abs(Math.sin(h*.16))*Math.exp(-h/22);a+=.05*Math.sin(h*.3)*Math.exp(-h/18)}
+      g.save();g.translate(X(bx),Y(by+dy));g.rotate(a);g.drawImage(P,m[0],m[1],m[2],m[3],-m[2]/2*k,-m[3]*k,m[2]*k,m[3]*k);g.restore()});
+    // lantern swinging on its hook, flame flickering
+    patch('pL');{const m=M.lant,[hx,hy]=o.lant,a=.055*Math.sin(t*.028)+.02*Math.sin(t*.067+1),fl=.75+.15*Math.sin(t*.31)+.1*Math.sin(t*.83+aH(Math.floor(t/5)));
+      g.save();g.translate(X(hx),Y(hy));g.rotate(a);g.drawImage(P,m[0],m[1],m[2],m[3],(m[4]-hx)*k,(m[5]-hy)*k,m[2]*k,m[3]*k);
+      g.globalCompositeOperation='lighter';glow(g,0,150*k,26*k,'255,170,70',.5*fl);glow(g,0,150*k,90*k,'255,150,60',.13*fl);g.restore()}
+    // jack-in-the-box timing: the crank winds faster, then POP
+    const pp=o.pop||690,u=(t+137)%pp,W=110,B=o.box;let f=0,tau=u-W;
+    if(u>=W&&u<W+240)f=1-Math.exp(-tau/7)*Math.cos(tau*.32);else if(u>=W+240&&u<W+285){const r=(u-W-240)/45;f=1-r*r}
+    if(tau===0||(tau>0&&tau<=dt&&S.popc!==Math.floor((t+137)/pp))){S.popc=Math.floor((t+137)/pp);S.hop=t}
+    const cs=u<W?.05+.2*Math.pow(u/W,2):u<W+20?.25*(1-tau/20)+.035:.035;S.ca+=cs*dt;
+    patch('pC');{const m=M.arm,[px,py]=o.arm;let c=Math.cos(S.ca);if(Math.abs(c)<.12)c=c<0?-.12:.12;
+      g.save();g.translate(X(px),Y(py));g.scale(1,c);g.drawImage(P,m[0],m[1],m[2],m[3],(m[4]-px)*k,(m[5]-py)*k,m[2]*k,m[3]*k);g.restore()}
+    if(f>0){const m=M.clown,hw=m[2]*.68,hh=m[3]*.68,wob=tau>=0&&u<W+240?Math.sin(tau*.21)*.32*Math.exp(-tau/55)+.05*Math.sin(t*.06):0,
+        hb=B.low+hh-f*(B.low+hh-B.top-hh),hx=B.x+wob*30,base=B.low+60;
+      g.save();g.beginPath();B.clip.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.clip();
+      // spring
+      const n=9,sw=22;for(const[lw,col]of[[6,'rgba(20,12,10,.9)'],[3,'#b9b2a2']]){g.lineWidth=lw*k;g.strokeStyle=col;g.lineJoin='round';g.beginPath();
+        for(let j=0;j<=n*2;j++){const q=j/(n*2),x=B.x+(hx-B.x)*q+(j%2?sw:-sw)*(j&&j<n*2?1:0),y=base+(hb+6-base)*q;j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y))}g.stroke()}
+      // ruffled collar and head
+      g.save();g.translate(X(hx),Y(hb+4));g.rotate(wob);
+      for(let j=0;j<12;j++){const a0=j/12*Math.PI*2;g.fillStyle=j%2?'#e8dcc0':'#a3161d';g.beginPath();g.moveTo(0,0);g.ellipse(0,0,29*k,8*k,0,a0,a0+Math.PI/6+.05);g.closePath();g.fill()}
+      g.strokeStyle='rgba(20,10,10,.8)';g.lineWidth=2*k;g.beginPath();g.ellipse(0,0,29*k,8*k,0,0,7);g.stroke();
+      g.drawImage(P,m[0],m[1],m[2],m[3],-hw/2*k,-(hh+2)*k,hw*k,hh*k);
+      g.globalCompositeOperation='lighter';glow(g,0,-hh/2*k,70*k,'255,210,150',.1*f+(tau>=0&&tau<26?.35*(1-tau/26):0))
+      g.restore();g.restore()}
+    // confetti burst from the box on the pop
+    if(tau>=0&&tau<90&&f>0){for(let j=0;j<16;j++){const vx=(aH(j*1.3)-.5)*3.2,vy=2.2+aH(j*2.7)*2.6,x=B.x+vx*tau,y=B.top+40-vy*tau+.055*tau*tau,al=1-tau/90;
+      g.fillStyle=`rgba(${j%3?'235,200,60':'200,30,40'},${al})`;g.save();g.translate(X(x),Y(y));g.rotate(tau*.2+j);g.fillRect(-3*k,-1.5*k,6*k,3*k);g.restore()}}
+    // the clown masks on the posts: now and then their eyes light up red
+    {const ep=520,ec=Math.floor(t/ep),eu=t%ep;if(aH(ec*4.7)<.6&&eu<80){const side=aH(ec*2.2)<.5?0:2,lv=Math.sin(eu/80*Math.PI)*(aH(Math.floor(t/3)+ec)<.85?1:.3);
+      g.globalCompositeOperation='lighter';for(const[x,y]of o.eyes.slice(side,side+2)){glow(g,X(x),Y(y),9*k,'255,40,30',.9*lv);glow(g,X(x),Y(y),26*k,'255,30,20',.3*lv)}}}
     g.restore()},
   // wet floor: shimmering columns of reflected light under each glowing thing, rising and falling with that light
   floorglow(g,rc,t,o){const k=rc.k;g.save();g.globalCompositeOperation='lighter';
@@ -3024,6 +3109,54 @@ Object.assign(ALIVE_FX,{
 Object.assign(ALIVE,{
   sewer:[['sewer',{}],['fogband',{y0:1140,y1:1500,ym:1290,a:.94,rgb:'52,96,34',floor:.5}],['fogsheet',{y0:1180,y1:1400,n:24,a:.55,rgb:'90,150,60',sp:.35,ry:60,rx:480}],['fogsheet',{y0:1150,y1:1330,n:16,a:.4,rgb:'40,80,30',sp:-.25,ry:50,rx:420}]],
   cage:[['cage',{}]],
+  mirrors:[
+    ['litsign',{every:420,parts:[
+      {r:[545,13,597,87],rgb:'255,214,150',key:'b0',pad:18,flick:0.25,die:0.10,seed:5,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:380},
+      {r:[894,201,946,275],rgb:'255,214,150',key:'b1',pad:18,flick:0.33,die:0.16,seed:16,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:433},
+      {r:[1241,248,1293,322],rgb:'255,214,150',key:'b2',pad:18,flick:0.41,die:0.22,seed:27,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:486},
+      {r:[812,378,864,452],rgb:'255,214,150',key:'b3',pad:18,flick:0.49,die:0.10,seed:38,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:539},
+      {r:[950,463,1002,537],rgb:'255,214,150',key:'b4',pad:18,flick:0.25,die:0.16,seed:49,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:592},
+      {r:[1123,511,1175,585],rgb:'255,214,150',key:'b5',pad:18,flick:0.33,die:0.22,seed:60,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:385},
+      {r:[1209,401,1261,475],rgb:'255,214,150',key:'b6',pad:18,flick:0.41,die:0.10,seed:71,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:438},
+      {r:[2146,13,2198,87],rgb:'255,214,150',key:'b7',pad:18,flick:0.49,die:0.16,seed:82,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:491},
+      {r:[1854,221,1906,295],rgb:'255,214,150',key:'b8',pad:18,flick:0.25,die:0.22,seed:93,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:544},
+      {r:[1565,292,1617,366],rgb:'255,214,150',key:'b9',pad:18,flick:0.33,die:0.10,seed:104,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:597},
+      {r:[1496,401,1548,475],rgb:'255,214,150',key:'b10',pad:18,flick:0.41,die:0.16,seed:115,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:390},
+      {r:[1508,511,1560,585],rgb:'255,214,150',key:'b11',pad:18,flick:0.49,die:0.22,seed:126,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:443},
+      {r:[1630,464,1682,538],rgb:'255,214,150',key:'b12',pad:18,flick:0.25,die:0.10,seed:137,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:496},
+      {r:[1706,464,1758,538],rgb:'255,214,150',key:'b13',pad:18,flick:0.33,die:0.16,seed:148,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:549},
+      {r:[1854,378,1906,452],rgb:'255,214,150',key:'b14',pad:18,flick:0.41,die:0.22,seed:159,a:.3,ha:.5,wall:.08,lo:1,ct:1.05,sat:.85,every:602}]}],
+    ['mirrorfx',{m:[
+      {p:[[1262,600],[1438,600],[1438,928],[1262,928]],arch:[1350,560],track:.12,h:.62,mode:'wave'},
+      {p:[[1039,630],[1121,630],[1121,936],[1039,936]],track:.1,h:.6,mode:'tall'},
+      {p:[[1579,630],[1661,630],[1661,936],[1579,936]],track:.1,h:.6,mode:'tall'},
+      {p:[[866,556],[914,562],[914,938],[866,944]],track:.08,h:.58,mode:'wide'},
+      {p:[[1802,562],[1850,556],[1850,944],[1802,938]],track:.08,h:.58,mode:'wide'},
+      {p:[[652,372],[752,410],[752,958],[652,972]],track:.2,h:.62,mode:'wave'},
+      {p:[[1960,410],[2068,372],[2068,972],[1960,958]],track:.2,h:.62,mode:'wave'},
+      {p:[[152,92],[408,208],[410,962],[150,990]],track:.3,h:.66,mode:'tall'},
+      {p:[[2312,208],[2570,92],[2572,990],[2310,962]],track:.3,h:.66,mode:'tall'}],
+      ghost:{every:640,chance:.6}}],
+    ['floorglow',{at:[[1350,980,240,140,'255,190,110',.05],[860,1000,200,60,'255,180,100',.04],[1840,1000,200,60,'255,180,100',.04]]}]],
+  riddlebox:[
+    ['riddlefx',{M:{"pA":[0,0,738,441,760,93],"wheel":[0,443,358,361,783,167],"pL":[360,443,112,232,1556,52],"t5":[474,443,87,223,1393,228],"t2":[563,443,132,203,1201,227],"lant":[697,443,64,197,1579,69],"pC":[763,443,140,187,97,360],"t3":[0,806,128,170,1085,319],"clown":[130,806,94,168,1509,355],"arm":[226,806,128,164,107,372],"t1":[356,806,119,163,1073,117],"t4":[477,806,110,141,1295,324]},wheel:[962,347.5],arm:[218,450],lant:[1611,69],
+      toys:['t1','t2','t3','t4','t5'],eyes:[[12,410],[53,410],[1533,434],[1575,434]],
+      box:{x:455,clip:[[252,0],[678,0],[678,338],[252,322]],top:188,low:350},spin:780,pop:690}],
+    ['litsign',{every:420,parts:[
+      {r:[21,95,51,131],rgb:'255,200,130',pad:14,flick:0.20,die:0.08,seed:3,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:360},
+      {r:[131,98,161,134],rgb:'255,200,130',pad:14,flick:0.28,die:0.13,seed:14,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:401},
+      {r:[255,73,285,109],rgb:'255,200,130',pad:14,flick:0.36,die:0.18,seed:25,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:442},
+      {r:[338,94,368,130],rgb:'255,200,130',pad:14,flick:0.44,die:0.08,seed:36,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:483},
+      {r:[508,100,538,136],rgb:'255,200,130',pad:14,flick:0.20,die:0.13,seed:47,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:524},
+      {r:[642,59,672,95],rgb:'255,200,130',pad:14,flick:0.28,die:0.18,seed:58,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:565},
+      {r:[703,18,733,54],rgb:'255,200,130',pad:14,flick:0.36,die:0.08,seed:69,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:606},
+      {r:[752,41,782,77],rgb:'255,200,130',pad:14,flick:0.44,die:0.13,seed:80,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:647},
+      {r:[1130,123,1160,159],rgb:'255,200,130',pad:14,flick:0.20,die:0.18,seed:91,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:688},
+      {r:[1266,152,1296,188],rgb:'255,200,130',pad:14,flick:0.28,die:0.08,seed:102,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:729},
+      {r:[1386,153,1416,189],rgb:'255,200,130',pad:14,flick:0.36,die:0.13,seed:113,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:770},
+      {r:[1496,127,1526,163],rgb:'255,200,130',pad:14,flick:0.44,die:0.18,seed:124,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:811},
+      {r:[1329,287,1353,313],rgb:'255,190,110',pad:12,flick:.3,die:.12,seed:211,a:.3,ha:.5,wall:.08,lo:1,ct:1.1,sat:.9,every:470}]}],
+    ['floorglow',{at:[[1611,330,160,70,'255,170,90',.05],[455,700,200,160,'255,190,120',.03]]}]],
   deadmall:[
     ['neon',{at:[[88,458,95,30,'255,90,200'],[88,500,130,90,'255,60,170'],[537,545,50,18,'255,200,190'],[537,575,80,70,'255,90,80'],[1607,528,40,16,'235,235,255'],[1607,560,70,60,'210,215,255'],[1945,458,60,18,'240,235,230'],[1945,495,95,70,'230,225,220'],[1925,528,45,16,'240,235,230'],[1925,560,80,60,'230,225,220']],a:.5,every:900,dead:0,burst:0,seed:7}],
     ['neon',{at:[[175,262,120,60,'255,40,140'],[1890,280,140,70,'60,255,120'],[1680,90,70,60,'210,220,255']],a:.12,every:300,dead:.05,burst:.15}],
@@ -4847,7 +4980,7 @@ const ENV_STAGE={
   mansion:['cemetery',{fog:.5,lightning:0,bats:0}], hellpit:['hell',{bats:0,skyBats:1}], overpass:['city',{sparks:.35,ripples:.6}],
   alley:['city',{ripples:.5,drips:.5,bats:4}], hauntedhouse:['cemetery',{bats:4,fog:1.6}], neontunnel:['neon',{sparks:1.4,power:1.2,lights:1.8}], midway:['carnival',{ripples:.4}],
   warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0,embers:0}],
-  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
+  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], riddlebox:['quiet',{dust:.45,mist:.3,lights:.35,lightCol:['255,190,110','255,150,80'],power:.5}],mirrors:['quiet',{dust:.55,mist:.25,lights:.45,lightCol:['255,200,120','255,170,90'],power:.5}],deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
 };
 function envConfig(stg){const e=ENV_STAGE[stg.id]||[stg.indoor?'quiet':'city'],c={...ENV_PRESET[e[0]],...(e[1]||{})};
   if(stg.indoor){c.fireworks=0;c.shooting=0;c.lightning=0;c.bats=c.bats?c.bats*.4:0;c.flashes=0}
