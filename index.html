@@ -2754,6 +2754,27 @@ Object.assign(ALIVE_FX,{
     // the clown masks on the posts: now and then their eyes light up red
     {const ep=520,ec=Math.floor(t/ep),eu=t%ep;if(aH(ec*4.7)<.6&&eu<80){const side=aH(ec*2.2)<.5?0:2,lv=Math.sin(eu/80*Math.PI)*(aH(Math.floor(t/3)+ec)<.85?1:.3);
       g.globalCompositeOperation='lighter';for(const[x,y]of o.eyes.slice(side,side+2)){glow(g,X(x),Y(y),9*k,'255,40,30',.9*lv);glow(g,X(x),Y(y),26*k,'255,30,20',.3*lv)}}}
+    // LED lights: a ring around the prize wheel (races while it spins), a marquee border on the toy box, glowing question marks,
+    // a blinking clown nose, a rainbow strip along the booth counter and red noses on the masks
+    {g.globalCompositeOperation='lighter';const L=o.led,step=Math.floor(t/6),pop=f>0&&tau>=0&&tau<120,
+      led=(x,y,rgb,lv,sz=1)=>{if(lv<=.03)return;glow(g,X(x),Y(y),17*k*sz,rgb,.5*lv);glow(g,X(x),Y(y),7*k*sz,rgb,.95*lv);glow(g,X(x),Y(y),4*k*sz,'255,252,240',1*lv)},
+      hsl=h=>{const a=h*6,i=Math.floor(a)%6,q=a-Math.floor(a),v=[[1,q,0],[1-q,1,0],[0,1,q],[0,1-q,1],[q,0,1],[1,0,1-q]][i];return v.map(c=>Math.round(70+185*c)).join(',')};
+      // wheel ring
+      {const[cx,cy]=L.wheel,n=L.wn,r=L.wr,fast=S.wv>.02,cols=['255,60,50','255,210,70','255,250,235'];
+        for(let j=0;j<n;j++){const a=j/n*Math.PI*2;let lv;if(fast){const head=(t*S.wv*1.4*n/6.28)%n;const d=((j-head)%n+n)%n;lv=Math.max(.4,1-d/7)}else lv=(j+step)%3===0?1:.35;
+          if(pop)lv=(step+j)%2?1:.2;led(cx+Math.cos(a)*r,cy+Math.sin(a)*r,cols[j%3],lv,1.15)}}
+      // toy box marquee border
+      {const[x0,y0,x1,y1]=L.box,pts=[];const sp=L.bsp;for(let x=x0;x<x1;x+=sp)pts.push([x,y0]);for(let y=y0;y<y1;y+=sp)pts.push([x1,y]);for(let x=x1;x>x0;x-=sp)pts.push([x,y1]);for(let y=y1;y>y0;y-=sp)pts.push([x0,y]);
+        const mode=Math.floor(t/480)%3;pts.forEach(([x,y],j)=>{let lv;if(pop)lv=step%2?1:.15;else if(mode===0)lv=(j+step)%4===0?1:.3;else if(mode===1)lv=.55+.45*Math.sin(t*.1-j*.35);else lv=(j%2)===(step%2)?1:.3;
+          led(x,y,mode===2?'120,220,255':'255,200,90',lv)})}
+      // question marks pulse yellow, alternating; strobe on the pop
+      L.q.forEach(([x,y],j)=>{const lv=pop?(step%2?1:.3):.45+.4*Math.max(0,Math.sin(t*.05+j*Math.PI));glow(g,X(x),Y(y),58*k,'255,215,60',.22*lv);glow(g,X(x),Y(y),26*k,'255,235,120',.18*lv)});
+      // clown nose on the box blinks red
+      {const[x,y]=L.nose,lv=pop?1:(Math.floor(t/22)%3===0?1:.25);glow(g,X(x),Y(y),22*k,'255,40,40',.55*lv);glow(g,X(x),Y(y),9*k,'255,140,130',.6*lv)}
+      // rainbow LED strip along the counter
+      {const[x0,x1,y]=L.strip,n=L.sn;for(let j=0;j<n;j++){const x=x0+(x1-x0)*j/(n-1),h=((j/n)-t*.004)%1;led(x,y,hsl((h+1)%1),.85)}}
+      // mask noses
+      L.masks.forEach(([x,y],j)=>{const lv=.55+.45*Math.sin(t*.07+j*2);glow(g,X(x),Y(y),16*k,'255,40,40',.5*lv);glow(g,X(x),Y(y),6*k,'255,160,150',.6*lv)})}
     g.restore()},
   // Vacancy Motel: the VACANCY tubes buzz and drop out letter by letter, the dead NO sometimes stutters on, room 13's TV static flickers,
   // somebody crosses the open doorway now and then, a shadow moves behind the curtains, the lamp cuts out, and cop lights sweep past
@@ -3363,7 +3384,7 @@ Object.assign(ALIVE,{
   riddlebox:[
     ['riddlefx',{M:{"pA":[0,0,738,441,760,93],"wheel":[0,443,358,361,783,167],"pL":[360,443,112,232,1556,52],"t5":[474,443,87,223,1393,228],"t2":[563,443,132,203,1201,227],"lant":[697,443,64,197,1579,69],"pC":[763,443,140,187,97,360],"t3":[0,806,128,170,1085,319],"clown":[130,806,94,168,1509,355],"arm":[226,806,128,164,107,372],"t1":[356,806,119,163,1073,117],"t4":[477,806,110,141,1295,324]},wheel:[962,347.5],arm:[218,450],lant:[1611,69],
       toys:['t1','t2','t3','t4','t5'],eyes:[[12,410],[53,410],[1533,434],[1575,434]],
-      box:{x:455,clip:[[252,0],[678,0],[678,338],[252,322]],top:188,low:350},spin:780,pop:690}],
+      led:{wheel:[962,347],wr:176,wn:32,box:[300,340,677,618],bsp:23,q:[[374,471],[641,479]],nose:[506,468],strip:[770,1405,528],sn:28,masks:[[33,429],[1553,453]]},box:{x:455,clip:[[252,0],[678,0],[678,338],[252,322]],top:188,low:350},spin:780,pop:690}],
     ['litsign',{every:420,parts:[
       {r:[21,95,51,131],rgb:'255,200,130',pad:14,flick:0.20,die:0.08,seed:3,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:360},
       {r:[131,98,161,134],rgb:'255,200,130',pad:14,flick:0.28,die:0.13,seed:14,a:.35,ha:.55,wall:.1,lo:1,ct:1.1,sat:.9,every:401},
