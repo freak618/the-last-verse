@@ -3432,6 +3432,25 @@ Object.assign(ALIVE_FX,{
     {const[x,y]=o.fire,l=.78+.16*Math.sin(t*.21)+.08*rnd(Math.floor(t/3),3);glow(g,X(x),Y(y),50*k,'255,190,90',.4*l);glow(g,X(x),Y(y+40),200*k,'255,140,60',.12*l);
       for(let i=0;i<16;i++){const u=((t*(.003+aH(i*1.7)*.003))+aH(i*3.3))%1,ex=x+(aH(i*5.1)-.5)*60+Math.sin(t*.05+i)*14*u,ey=y-10-u*260,al=Math.sin(u*Math.PI)*.85;g.fillStyle=`rgba(255,${140+aH(i)*90|0},60,${al})`;g.fillRect(X(ex),Y(ey),2.2*k,2.2*k)}}
     g.restore()},
+  // meat hooks on chains hanging from a beam: they sway on their own and rock harder when big hits land
+  meathooks(g,rc,t,o){const k=rc.k,E=envK(),kick=E.kick||0,P=(x,y)=>[rc.x+x*k,rc.y+y*k],lit=o.lit||.8,hl=o.hl||'255,215,170',S=o.s||1.4;g.save();
+    const sw=(i,amp)=>Math.sin(t*(.02+aH(i+7)*.012)+aH(i+.4)*9)*amp+Math.sin(t*.13+i)*kick*.14;
+    const steel=(x0,x1)=>{const gr=g.createLinearGradient(x0*k,0,x1*k,0);gr.addColorStop(0,'#241f1c');gr.addColorStop(.35,`rgb(${Math.round(120+70*lit)},${Math.round(110+60*lit)},${Math.round(100+50*lit)})`);gr.addColorStop(.6,'#57504a');gr.addColorStop(1,'#1a1715');return gr};
+    const hookPath=()=>{g.beginPath();g.moveTo(0,10*k);g.lineTo(0,34*k);g.arc(-11*k,34*k,11*k,0,Math.PI,false);g.lineTo(-22*k,26*k)};
+    const links=len=>{for(let y=0,n=0;y<len;y+=8,n++){if(n%2){g.beginPath();g.ellipse(0,(y+4)*k,2.8*k,5*k,0,0,7);g.stroke()}else{g.beginPath();g.moveTo(0,y*k);g.lineTo(0,(y+9)*k);g.stroke()}}};
+    g.globalCompositeOperation='source-over';g.lineCap='round';g.lineJoin='round';
+    o.hooks.forEach(([x,len,bl],i)=>{const a=sw(i,.05),[px,py]=P(x,o.top);g.save();g.translate(px,py);g.rotate(-a);
+      g.save();g.translate(8*k,5*k);g.globalAlpha=.25;g.strokeStyle='#000';g.lineWidth=4.5*k;links(len);g.translate(0,len*k);g.scale(S,S);g.lineWidth=8*k;g.beginPath();g.ellipse(0,5*k,4.5*k,6*k,0,0,7);g.stroke();hookPath();g.stroke();g.restore();
+      g.strokeStyle='#0a0908';g.lineWidth=4*k;links(len);g.strokeStyle=steel(-4,4);g.lineWidth=2.2*k;links(len);g.strokeStyle=`rgba(${hl},${.4*lit})`;g.lineWidth=.8*k;g.save();g.translate(-1*k,0);links(len);g.restore();
+      g.translate(0,len*k);g.scale(S,S);
+      g.strokeStyle='#080706';g.lineWidth=8*k;g.beginPath();g.ellipse(0,5*k,4.5*k,6*k,0,0,7);g.stroke();hookPath();g.stroke();
+      g.strokeStyle=steel(-24,6);g.lineWidth=5*k;g.beginPath();g.ellipse(0,5*k,4.5*k,6*k,0,0,7);g.stroke();hookPath();g.stroke();
+      g.strokeStyle=`rgba(${hl},${.55*lit})`;g.lineWidth=1.1*k;g.beginPath();g.moveTo(-1.6*k,12*k);g.lineTo(-1.6*k,33*k);g.arc(-11*k,34*k,9.4*k,0,.9);g.stroke();
+      g.fillStyle='#16130f';g.beginPath();g.moveTo(-25*k,27*k);g.lineTo(-22*k,17*k);g.lineTo(-19*k,27*k);g.closePath();g.fill();
+      g.fillStyle='rgba(110,50,25,.6)';for(let r=0;r<6;r++){g.beginPath();g.arc((aH(i+r)*-4+.5)*k,(14+aH(i*2+r)*18)*k,(.8+aH(r+i)*1.2)*k,0,7);g.fill()}
+      if(bl){g.strokeStyle='rgba(70,4,6,.9)';g.lineWidth=3.6*k;g.beginPath();g.arc(-11*k,34*k,11*k,.6,2.4);g.stroke();g.strokeStyle='rgba(90,8,10,.75)';g.lineWidth=1.8*k;g.beginPath();g.moveTo(0,22*k);g.lineTo(0,40*k);g.stroke()}
+      g.restore()});
+    g.restore()},
   // The Barn: the corn sways in the wind, the blood moon pulses, the candles in the ritual circle flicker and the pentagram glows,
   // the lantern in the barn door flickers, and now and then red eyes open inside the scarecrow's hood (and the goat skull's sockets answer)
   barnfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
@@ -4082,6 +4101,7 @@ Object.assign(ALIVE,{
       puddles:[[505,575,95,13],[820,612,125,15],[1120,575,85,11],[285,655,115,15],[980,690,150,18],[640,720,110,14]]}],
     ['moths',{at:[[470,312],[632,310],[300,420],[1072,330]],n:6}]],
   cabin:[
+    ['meathooks',{top:206,s:1.15,hooks:[[392,118,1],[468,72,0],[887,96,1]],hl:'255,205,150',lit:.8}],
     ['rainpane',{at:[742,318,160,186],n:26}],
     ['rainpane',{at:[1258,284,80,244],n:16}],
     ['cabinfx',{stove:[1023,550],fireWin:[992,528,1058,574],lamp:[520,275],eyes:[[[262,295],[293,295]],[[1145,281]]],photos:[335,300,690,475],
