@@ -1707,7 +1707,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'drivein',name:"The Drive-In",img:'drivein',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:478/559,p:1,rigid:true},indoor:false,dry:true,ambient:[100, 110, 150],grade:'#141a30',rim:'rgba(170,210,255,.32)',farTone:'none',shadowL:[{x:510,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'drivein',name:"The Drive-In",img:'drivein',extra:['drivein_sky'],ww:1226,zoom:1.12,full:{scale:1250/1024,feet:478/559,p:1,rigid:true},indoor:false,dry:true,ambient:[128, 112, 138],grade:'#3e2438',rim:'rgba(255,214,180,.3)',farTone:'none',shadowL:[{x:510,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -2053,7 +2053,7 @@ function stagePump(){while(stqBusy<2&&STQ.length&&!(typeof fighterSheetsPending=
 function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true);if(stg&&stg.extra)for(const e of stg.extra){const x=STIMG[e];if(x&&!x._go)stageStart(x,true)}}
 for(const k in ASSET.stages)stagePic(k,ASSET.stages[k]);
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel',cabin:'cabin',backwoods:'backwoods',jeckel:'jeckel',hallowicked:'hallowicked',morgue:'morgue',rooftop:'rooftop',killerbasement:'killerbasement',swamp:'swamp',drivein:'drivein',asylum:'asylum',junkyard:'junkyard',junkyard_parts:'junkyard_parts',subway:'subway',cemetery:'cemetery',trailerpark:'trailerpark',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel',cabin:'cabin',backwoods:'backwoods',jeckel:'jeckel',hallowicked:'hallowicked',morgue:'morgue',rooftop:'rooftop',killerbasement:'killerbasement',swamp:'swamp',drivein:'drivein_alive',drivein_sky:'drivein_sky',asylum:'asylum',junkyard:'junkyard',junkyard_parts:'junkyard_parts',subway:'subway',cemetery:'cemetery',trailerpark:'trailerpark',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 /* these four stages used to be painted in code every time the game opened (several seconds on a phone);
    the same pictures now ship as files, and the painting code only runs if a file can't load */
 for(const[k,f,paint]of[['slaughter','p_slaughter',()=>paintSlaughterhouse()],['sewer','p_sewer',()=>paintSewer()],['cage','p_cage',()=>paintCage()],['club','p_club',()=>paintClub()]]){
@@ -2598,6 +2598,31 @@ function fxBolt(g,rc,seed,x,y0,y1,lv){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,n
       if(d<2&&aH(seed*5+i*11+d*3)<.25){g.stroke();seg(x,y,3,aH(seed+i)<.5?-1:1,w*.55,d+1);g.lineWidth=w*k;g.beginPath();g.moveTo(X(x),Y(y))}}g.stroke()};
   g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(235,230,255,${.95*lv})`;g.shadowColor='rgba(190,170,255,.9)';g.shadowBlur=14*k;g.lineJoin='round';seg(x,y0,n,0,2.4,0);g.restore()}
 function fxLightning(t,per,off,seed,chance){const c=Math.floor((t+off)/per),u=(t+off)%per;if(aH(c*seed)>=chance||u>=28)return [0,c];return [u<3?1:u<6?.25:u<9?.85:Math.exp(-(u-9)/6),c]}
+// Drive-In summer sky: soft clouds drift across the sky (masked so they never cover the screen, signs or trees),
+// warm haze glows along the treeline, and the moon dims when a cloud passes over it
+let ND_SK=null,ND_CL=null;function ndCloud(seed){const c=document.createElement('canvas');c.width=200;c.height=70;const x=c.getContext('2d');
+  for(let i=0;i<26;i++){const u=aH(seed*7+i*1.3),px=18+u*164,py=40-Math.sin(u*Math.PI)*16+(aH(seed+i*2.7)-.5)*14,r=10+aH(seed*3+i)*16*Math.sin(u*Math.PI+.3);
+    const gr=x.createRadialGradient(px,py,0,px,py,r);gr.addColorStop(0,'rgba(58,56,84,.34)');gr.addColorStop(1,'rgba(58,56,84,0)');x.fillStyle=gr;x.fillRect(px-r,py-r,r*2,r*2);
+    const gl=x.createRadialGradient(px,py-r*.45,0,px,py-r*.45,r*.7);gl.addColorStop(0,'rgba(190,175,200,.13)');gl.addColorStop(1,'rgba(190,175,200,0)');x.fillStyle=gl;x.fillRect(px-r,py-r*1.2,r*2,r*1.6)}return c}
+function ndSky(g,rc,t,moon){const M=STIMG.drivein_sky;if(!M||!M.ok)return 0;const k=rc.k;
+  if(!ND_SK){ND_SK=document.createElement('canvas');ND_SK.width=512;ND_SK.height=130;ND_CL=[0,1,2,3].map(ndCloud)}
+  const x=ND_SK.getContext('2d');x.globalCompositeOperation='source-over';x.clearRect(0,0,512,130);
+  const hz=x.createLinearGradient(0,62,0,130);hz.addColorStop(0,'rgba(255,150,120,0)');hz.addColorStop(.7,'rgba(255,140,110,.16)');hz.addColorStop(1,'rgba(255,170,120,.26)');x.fillStyle=hz;x.fillRect(0,62,512,68);
+  let cov=0;const mx=moon[0]/2,my=moon[1]/2;
+  for(let i=0;i<7;i++){const sp=.045+aH(i*4.1)*.05,w=150+aH(i*2.3)*110,h=w*.35,cx=((aH(i*9.7)*(512+w)+t*sp)%(512+w))-w,cy=6+aH(i*5.3)*68;
+    x.globalAlpha=.75+.25*aH(i*1.9);x.drawImage(ND_CL[i%4],cx,cy,w,h);
+    const dx=(cx+w/2-mx)/(w*.45),dy=(cy+h*.55-my)/(h*.5),d=dx*dx+dy*dy;if(d<1)cov=Math.max(cov,(1-d)*.85);
+    const lit=Math.max(0,1-Math.hypot(cx+w/2-mx,cy+h/2-my)/120);if(lit>0){x.globalAlpha=lit*.5;x.globalCompositeOperation='lighter';x.drawImage(ND_CL[(i+1)%4],cx,cy-2,w,h);x.globalCompositeOperation='source-over'}}
+  x.globalAlpha=1;x.globalCompositeOperation='destination-in';x.drawImage(M,0,0,512,130);x.globalCompositeOperation='source-over';
+  g.save();g.globalCompositeOperation='source-over';g.drawImage(ND_SK,rc.x,rc.y,1024*k,260*k);g.restore();return cov}
+// Night of the Living Dead on the Drive-In screen: one muted looping video, played only while the Drive-In is drawn
+let NDV=null,NDV_T=0;const ND_TONE={l:.5,c:'200,210,220'};
+function ndVid(){NDV_T=performance.now();if(!NDV){try{NDV=document.createElement('video');NDV.muted=true;NDV.defaultMuted=true;NDV.loop=true;NDV.playsInline=true;NDV.setAttribute('playsinline','');NDV.setAttribute('muted','');NDV.preload='auto';NDV.src='media/nightdead.mp4';
+  setInterval(()=>{if(NDV&&!NDV.paused&&performance.now()-NDV_T>600)NDV.pause()},500)}catch(e){NDV=null;return null}}
+  if(NDV.paused&&!NDV._pp){NDV._pp=1;const p=NDV.play();if(p&&p.then)p.then(()=>NDV._pp=0,()=>setTimeout(()=>NDV._pp=0,1500));else NDV._pp=0}return NDV}
+let ND_CV=null;function ndTone(v){try{if(!ND_CV){ND_CV=document.createElement('canvas');ND_CV.width=ND_CV.height=4}const c=ND_CV.getContext('2d',{willReadFrequently:true});c.drawImage(v,0,0,4,4);
+  const d=c.getImageData(0,0,4,4).data;let r=0,g=0,b=0;for(let i=0;i<64;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2]}r/=16;g/=16;b/=16;const m=Math.max(r,g,b,1);
+  ND_TONE.l=(r+g+b)/765;ND_TONE.c=`${(r/m*230)|0},${(g/m*230)|0},${(b/m*235)|0}`}catch(e){}}
 function fxCrow(g,x,y,s,flap){g.beginPath();g.moveTo(x-12*s,y-4*s+flap*7*s);g.quadraticCurveTo(x-5*s,y-6*s,x,y);g.quadraticCurveTo(x+5*s,y-6*s,x+12*s,y-4*s+flap*7*s);g.quadraticCurveTo(x+5*s,y-2*s,x,y+2*s);g.quadraticCurveTo(x-5*s,y-2*s,x-12*s,y-4*s+flap*7*s);g.fill()}
 function mirrorGhost(g,rc,t,o){const G2=o.ghost;if(!G2)return;const per=G2.every||600,c=Math.floor(t/per),u=(t%per)/per;
   if(aH(c*1.7)>(G2.chance||.6)||u>.3)return;const m=o.m[Math.floor(aH(c*3.3)*Math.min(7,o.m.length))],P=m.p,k=rc.k,p=u/.3;
@@ -3156,15 +3181,22 @@ Object.assign(ALIVE_FX,{
   // The Drive-In: the screen flickers with static (and something with a mask sometimes stands in it, staring out), the neon signs buzz and
   // drop out, the speaker poles crackle, an old car's headlight sputters, and the clown statue's eyes light up red
   driveinfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const mcov=ndSky(g,rc,t,o.moon);
     const sb=.75+.25*rnd(Math.floor(t/3),1),[cx,cy]=o.sc;
     g.save();g.beginPath();o.screen.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.clip();
-    g.globalCompositeOperation='source-over';const ts=Math.floor(t/2);for(let i=0;i<70;i++){const x=368+rnd(ts,i)*284,y=88+rnd(ts,i+90)*158,w=6+rnd(ts,i+200)*26,v=rnd(ts,i+300);
-      g.fillStyle=v<.5?`rgba(20,30,40,${.25+v*.4})`:`rgba(230,245,255,${(v-.5)*.6})`;g.fillRect(X(x),Y(y),w*k,1.6*k)}
-    {const fc=Math.floor((t+400)/1100),fu=(t+400)%1100;if(aH(fc*4.3)<.8&&fu<170){const lv=Math.min(1,fu/20,(170-fu)/20)*(rnd(Math.floor(t/3),fc)<.85?1:.3);
-      g.globalAlpha=lv;motelSil(g,X(cx),Y(cy+80),150*k,'rgba(8,10,14,.92)',0);g.fillStyle='rgba(235,235,230,.9)';g.beginPath();g.ellipse(X(cx),Y(cy-46),10*k,13*k,0,0,7);g.fill();
-      g.fillStyle='rgba(8,10,14,.95)';g.beginPath();g.ellipse(X(cx-4),Y(cy-48),2.2*k,2.8*k,0,0,7);g.ellipse(X(cx+4),Y(cy-48),2.2*k,2.8*k,0,0,7);g.fill();g.globalAlpha=1}}
-    g.globalCompositeOperation='lighter';g.fillStyle=`rgba(170,210,255,${.06*sb})`;g.fillRect(X(360),Y(80),300*k,170*k);g.restore();
-    g.globalCompositeOperation='lighter';glow(g,X(cx),Y(cy),240*k,'170,210,255',.07*sb);glow(g,X(cx),Y(400),330*k,'170,210,255',.05*sb);glow(g,X(o.moon[0]),Y(o.moon[1]),70*k,'220,235,255',.07);
+    const v=ndVid();let film=v&&v.readyState>=2;
+    if(film){const fl=rnd(Math.floor(t/2),7);g.globalCompositeOperation='source-over';g.globalAlpha=.9+.1*fl;
+      try{g.drawImage(v,X(368),Y(88),284*k,158*k)}catch(e){film=false}g.globalAlpha=1;
+      if(film){if((Math.floor(t)%15)===0)ndTone(v);const lum=ND_TONE.l;
+        g.globalCompositeOperation='multiply';const vg=g.createRadialGradient(X(cx),Y(cy),20*k,X(cx),Y(cy),170*k);vg.addColorStop(0,'rgb(255,255,255)');vg.addColorStop(1,'rgb(120,125,135)');g.fillStyle=vg;g.fillRect(X(360),Y(80),300*k,170*k);
+        g.globalCompositeOperation='source-over';if(rnd(Math.floor(t/3),11)<.35){const sx=368+rnd(Math.floor(t/3),12)*284;g.fillStyle='rgba(230,230,220,.25)';g.fillRect(X(sx),Y(88),.8*k,158*k)}
+        for(let i=0;i<14;i++){const ts=Math.floor(t/2),x=368+rnd(ts,i)*284,y=88+rnd(ts,i+90)*158;g.fillStyle=rnd(ts,i+300)<.5?'rgba(10,10,10,.35)':'rgba(240,240,230,.3)';g.fillRect(X(x),Y(y),(1+rnd(ts,i+200)*2)*k,(1+rnd(ts,i+400)*2)*k)}}}
+    if(!film){g.globalCompositeOperation='source-over';const ts=Math.floor(t/2);for(let i=0;i<70;i++){const x=368+rnd(ts,i)*284,y=88+rnd(ts,i+90)*158,w=6+rnd(ts,i+200)*26,v=rnd(ts,i+300);
+      g.fillStyle=v<.5?`rgba(20,30,40,${.25+v*.4})`:`rgba(230,245,255,${(v-.5)*.6})`;g.fillRect(X(x),Y(y),w*k,1.6*k)}}
+    const tc=film?ND_TONE.c:'170,210,255',tb=film?.6+.9*ND_TONE.l:sb;
+    if(!film){g.globalCompositeOperation='lighter';g.fillStyle=`rgba(170,210,255,${.06*sb})`;g.fillRect(X(360),Y(80),300*k,170*k)}g.restore();
+    g.globalCompositeOperation='lighter';glow(g,X(cx),Y(cy),240*k,tc,.07*tb);glow(g,X(cx),Y(400),330*k,tc,.05*tb);
+    fxFireflies(g,rc,t,12,[[300,268,660,372],[200,330,440,400],[620,300,860,372],[230,236,360,290],[660,236,880,286]]);g.globalCompositeOperation='lighter';glow(g,X(o.moon[0]),Y(o.moon[1]),70*k,'255,240,215',.1*(1-mcov));glow(g,X(o.moon[0]),Y(o.moon[1]),180*k,'255,225,200',.05*(1-.7*mcov));glow(g,X(510),Y(300),520*k,'255,170,120',.045);
     const neon=(r,rgb,seed)=>{const c=Math.floor((t+seed*97)/(420+seed*60)),u=(t+seed*97)%(420+seed*60);let on=1;if(aH(c*2.7+seed)<.6&&u<50)on=rnd(Math.floor(t/3),c+seed)<.5?0:1;
       const[a,b,c2,d]=r;if(!on){g.globalCompositeOperation='multiply';g.fillStyle='rgba(70,70,90,.85)';g.fillRect(X(a),Y(b),(c2-a)*k,(d-b)*k);g.globalCompositeOperation='lighter'}
       else glow(g,X((a+c2)/2),Y((b+d)/2),(c2-a)*.7*k,rgb,.16+.04*Math.sin(t*.5))};
@@ -3172,6 +3204,10 @@ Object.assign(ALIVE_FX,{
     {const ec=Math.floor(t/900),eu=t%900;if(aH(ec*3.9)<.6&&eu<90){const lv=Math.sin(eu/90*Math.PI);o.clown.forEach(([x,y])=>{glow(g,X(x),Y(y),4*k,'255,40,30',lv);glow(g,X(x),Y(y),14*k,'255,30,20',.35*lv)})}}
     {const hc=Math.floor(t/700),hu=t%700;let lv=.8;if(aH(hc*5.1)<.6&&hu<60)lv=rnd(Math.floor(t/3),hc)<.5?.1:.8;glow(g,X(o.car[0]),Y(o.car[1]),10*k,'255,240,200',.7*lv);glow(g,X(o.car[0]-60),Y(o.car[1]+10),90*k,'255,235,190',.1*lv)}
     o.speakers.forEach(([x,y],j)=>{if(rnd(Math.floor(t/5),j)<.03)glow(g,X(x),Y(y),6*k,'200,230,255',.8)});
+    {const fl=.92+.05*Math.sin(t*.07)+.03*rnd(Math.floor(t/4),31);g.globalCompositeOperation='lighter';
+      glow(g,X(138),Y(240),70*k,'255,190,110',.12*fl);glow(g,X(40),Y(245),45*k,'255,190,110',.08*fl);glow(g,X(138),Y(330),110*k,'255,170,90',.07*fl);
+      glow(g,X(936),Y(252),80*k,'255,200,120',.13*fl);glow(g,X(936),Y(330),130*k,'255,170,90',.07*fl);
+      g.fillStyle=`rgba(255,200,130,${.05*fl})`;g.fillRect(X(101),Y(188),75*k,110*k);g.fillRect(X(19),Y(194),41*k,106*k);g.fillRect(X(884),Y(215),104*k,77*k)}
     g.restore()},
   // The Asylum: the hallway light stutters and the ward drops into darkness, lightning cracks outside the broken window,
   // eyes appear in the padded door's grate, and a figure crosses the far end of the hall
