@@ -823,19 +823,40 @@ let R=1;
 const RES_STEPS=[2,1.5,1,.75];let LITE=false;
 /* lowest step (Lite, for the weakest phones): draws at 0.75x and keeps stage particle effects at Low, without touching saved settings */
 function envqNow(){return LITE?'low':(S.envq||'medium')}
-const AUTO_RES={lvl:0,off:false,ws:0,wn:0,wt:0,hold:0,lastNow:0,banned:{},prevMode:''};
+const AUTO_RES={lvl:0,off:false,ws:0,wn:0,wt:0,hold:0,lastNow:0,banned:{},fails:{},prevMode:''};
 try{const[v,t]=String(localStorage.getItem('lv_autores')||'0').split('@').map(Number);if(v>=1&&v<=3)AUTO_RES.lvl=Date.now()-(t||0)>3*864e5?v-1:v}catch(e){}
+// startup check: as soon as the game loads it reads the device (memory, cores, screen) and times a burst of stage-like drawing at Sharp
+// resolution, then picks the starting quality: Sharp (2x), 1.5x, Normal (1x) or Low-end (0.75x). The in-fight failsafe keeps adjusting after that.
+function autoResProbe(){try{if(S.lite)return;let saved=null;try{const[v,t]=String(localStorage.getItem('lv_autores')||'').split('@').map(Number);if(t&&Date.now()-t<3*864e5&&v>=0&&v<=3)saved=v}catch(e){}
+    const N=navigator,mem=N.deviceMemory||8,cores=N.hardwareConcurrency||8,px=(screen.width*screen.height)*(devicePixelRatio||1)**2;
+    const c=document.createElement('canvas');c.width=2560;c.height=1440;const g=c.getContext('2d');
+    const tile=document.createElement('canvas');tile.width=256;tile.height=256;const tg=tile.getContext('2d');for(let i=0;i<40;i++){tg.fillStyle=`hsl(${i*9},60%,${30+i}%)`;tg.fillRect((i*37)%256,(i*53)%256,60,40)}
+    const once=(fr)=>{for(let i=0;i<4;i++)g.drawImage(tile,0,0,2560,1440);g.globalCompositeOperation='lighter';
+      for(let i=0;i<50;i++){const x=(i*197+fr*13)%2560,y=(i*121)%1440,r=80+i%5*60,gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(255,200,120,.3)');gr.addColorStop(1,'rgba(255,200,120,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2)}
+      g.globalCompositeOperation='source-over'};
+    once(0);g.getImageData(0,0,1,1);  // warm-up
+    const t0=performance.now();let fr=0;while(performance.now()-t0<180){once(++fr);if(fr%3===0)g.getImageData(0,0,1,1)}g.getImageData(0,0,1,1);
+    const ms=(performance.now()-t0)/fr;
+    let L=ms<7?0:ms<12?1:ms<22?2:3;
+    if(mem<=1||cores<=2)L=Math.max(L,3);else if(mem<=2||cores<=3)L=Math.max(L,2);else if(mem<=3)L=Math.max(L,1);
+    if(px>8e6&&L<1)L=1;
+    // a level learned from real fights on this device in the last few days wins over the quick check
+    const pick=saved!=null?saved:L;
+    AUTO_RES.lvl=pick;AUTO_RES.banned={};AUTO_RES.fails={};AUTO_RES.probe={ms:+ms.toFixed(1),mem,cores,probe:L,saved,pick};autoResSave()}catch(e){}}
 function autoResSave(){try{localStorage.setItem('lv_autores',AUTO_RES.lvl+'@'+Date.now())}catch(e){}}
-function autoResManual(){AUTO_RES.lvl=0;AUTO_RES.off=true;AUTO_RES.banned={};autoResSave();applyRes()}
+function autoResManual(){AUTO_RES.lvl=0;AUTO_RES.off=true;AUTO_RES.banned={};AUTO_RES.fails={};autoResSave();applyRes()}
 function autoResTick(now){const A=AUTO_RES,dt=now-A.lastNow;A.lastNow=now;
-  const live=G.mode==='fight'&&!G.paused&&!document.hidden&&!S.lite&&!A.off&&!menuCovers(),base=S.sharp===false?2:0;
+  // runs the whole time the game is open (menus, select screens, fights), not only during fights; menus use a looser lag line
+  const live=!G.paused&&!document.hidden&&!S.lite&&!A.off,base=S.sharp===false?2:0,low=G.mode==='fight'?48:40;
   if(A.lvl<base)A.lvl=base;
   if(!live||G.mode!==A.prevMode){A.prevMode=G.mode;A.ws=0;A.wn=0;A.wt=0;A.hold=now+2000;return}
   if(now<A.hold||!(dt>0)||dt>250)return;
   A.ws+=dt;A.wn++;
   const avg=1000/(A.ws/A.wn);
-  if(A.ws>=2500&&avg<48&&A.lvl<RES_STEPS.length-1){A.banned[A.lvl]=1;A.lvl++;autoResSave();applyRes();A.ws=0;A.wn=0;A.hold=now+2000;return}
-  if(A.ws>=12000){if(avg>=57&&A.lvl>base&&!A.banned[A.lvl-1]){A.lvl--;autoResSave();applyRes();A.hold=now+2000}A.ws=0;A.wn=0}}
+  // lagging: drop a step, and keep that level off-limits for a while (longer each time it fails: 15s, 30s, 1 min, up to 4 min)
+  if(A.ws>=2500&&avg<low&&A.lvl<RES_STEPS.length-1){const f=A.fails[A.lvl]=(A.fails[A.lvl]||0)+1;A.banned[A.lvl]=now+Math.min(240000,15000*2**(f-1));A.lvl++;autoResSave();applyRes();A.ws=0;A.wn=0;A.hold=now+2000;return}
+  // running smoothly again: step back up after 6 seconds of steady frames, as long as that level isn't still in its cool-down
+  if(A.ws>=6000){if(avg>=56&&A.lvl>base&&!((A.banned[A.lvl-1]||0)>now)){A.lvl--;autoResSave();applyRes();A.hold=now+2000}A.ws=0;A.wn=0}}
 function applyRes(){const L=S.lite?3:Math.max(S.sharp===false?2:0,AUTO_RES.lvl),wasLite=LITE;R=RES_STEPS[L]||2;LITE=L===3;
   if(wasLite!==LITE&&typeof ENV!=='undefined'&&G.env&&STAGES[G.stage])try{ENV.reset(STAGES[G.stage])}catch(e){}if(cv.width!==W*R){cv.width=W*R;cv.height=H*R}
   if(typeof buf!=='undefined'&&buf.width!==BW*R){buf.width=BW*R;buf.height=BH*R}
@@ -6934,7 +6955,7 @@ function renderGL(){}
 const TEST_API=window.__TEST__={ready:false,
   get renderer(){return GL.on?'webgl':'canvas'},
   get fps(){return fps},
-  get autoRes(){return {lvl:AUTO_RES.lvl,R,off:AUTO_RES.off,lite:LITE}},
+  get autoRes(){return {lvl:AUTO_RES.lvl,R,off:AUTO_RES.off,lite:LITE,probe:AUTO_RES.probe}},
   state(){const f=x=>x&&{id:x.c.id,x:Math.round(x.x),y:Math.round(x.y),hp:Math.round(x.hp*10)/10,meter:Math.round(x.meter),state:stateOf(x),ko:x.ko};
     return{mode:G.mode,type:G.type,stage:STAGES[G.stage].id,round:G.round,wins:G.wins.slice(),timer:Math.ceil(G.timer/60),p1:f(G.f1),p2:f(G.f2),
       props:G.env?G.env.props.map(p=>({type:p.type,x:p.x,hp:p.hp,broken:p.broken})):[],lights:LIGHTS.length,cam:{x:Math.round(cam.x),z:Math.round(cam.z*100)/100}}},
@@ -6984,6 +7005,7 @@ const TEST_API=window.__TEST__={ready:false,
         out.push({id:c.id,name:c.name,frames:new Set(seq).size,ticksPerFrame:runs.slice(1,-1),cycle:Math.round(walkCycle(f)),sink:+sink.toFixed(2),fwd:seq.slice(0,40).join(','),back:back.slice(0,40).join(','),err})}
       return out},
     editor(o={}){feStageEditor();Object.assign(ED,o);edPanel();return true},
+    arSim(steps){const A=AUTO_RES,sv=A.lastNow;let t=(A.simT||performance.now());const log=[];for(const[fps,secs]of steps){const dt=1000/fps;for(let x=0;x<secs*1000;x+=dt){t+=dt;autoResTick(t)}log.push(A.lvl)}A.simT=t;return log},
     launch(id){feLaunch(id)},
     coopFight(i1,i2,i3,type='cpu',stage=1){hideOv();G.type=type;G.coop=true;G.coopMate=CHARS[i2];G.pick=[CHARS[i1],CHARS[i3]];startMatch(CHARS[i1],CHARS[i3],{stage,ai2:type==='training'?null:new AI(.6)});G.mode='fight';G.lock=0;G.banner=null;return{team:G.team.map(t=>t.map(c=>c.id)),own:G.own,act:G.act,tag:tagOn()}},
     coopInfo(){return{team:G.team&&G.team.map(t=>t.map(c=>c.id)),coop:G.coop,type:G.type,act:G.act,own:G.own,live:[G.f1.c.id,G.f2.c.id],hp:G.teamHP,owner:sideOwner(0),wins:G.wins,round:G.round,mode:G.mode}},
@@ -7240,7 +7262,7 @@ function showMoves(ci){
 function showSettingsOld(){
   const tg=(key,label)=>`<button class="btn ${S[key]?'on':''}" data-act="toggle" data-s="${key}">${label}: ${S[key]?'On':'Off'}</button>`;
   showOv(`<h2 class="ov-h">Settings</h2>
-    <div class="toggles">${tg('sharp','Sharp graphics')}${tg('shadows','Floor shadows')}${tg('blood','Blood')}${tg('finishers','Finisher cinematics')}${tg('fx','Flashes and shake')}</div>
+    <div class="toggles">${tg('sharp','Sharp graphics'+(S.lite?'':' · auto: '+['Sharp','High','Normal','Low-end'][Math.max(S.sharp===false?2:0,AUTO_RES.lvl)]))}${tg('shadows','Floor shadows')}${tg('blood','Blood')}${tg('finishers','Finisher cinematics')}${tg('fx','Flashes and shake')}</div>
     <div class="tbl"><table><thead><tr><th>Action</th><th>Player One</th><th>Player Two</th></tr></thead><tbody>
     ${ACTS.map(a=>`<tr><td>${ACT_LABEL[a]}</td><td><button class="key" data-act="bind" data-p="p1" data-a="${a}">${keyLabel(S.binds.p1[a])}</button></td><td><button class="key" data-act="bind" data-p="p2" data-a="${a}">${keyLabel(S.binds.p2[a])}</button></td></tr>`).join('')}
     </tbody></table></div>
@@ -9668,7 +9690,7 @@ const OPTS={
   musicVol:{l:'Music',get:()=>Math.round(S.musicVol*10),set:v=>{S.musicVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:7},
   rainVol:{l:'Rain',get:()=>Math.round(S.rainVol*10),set:v=>{S.rainVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:10},
   annVol:{l:'Announcer',get:()=>Math.round(S.annVol*10),set:v=>{S.annVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:9,test:1},
-  sharp:{l:'Sharp graphics',bool:1,def:true,after:()=>{if(S.sharp)autoResManual();else applyRes()}},
+  sharp:{get l(){return 'Sharp graphics'+(S.lite?'':' · auto: '+['Sharp','High','Normal','Low-end'][Math.max(S.sharp===false?2:0,AUTO_RES.lvl)])},bool:1,def:true,after:()=>{if(S.sharp)autoResManual();else applyRes()}},
   lite:{l:'Low-end phone mode',bool:1,def:false,after:()=>{if(!S.lite){AUTO_RES.lvl=0;AUTO_RES.banned={};autoResSave()}applyRes()}},
   shadows:{l:'Floor shadows',bool:1,def:true},
   selCase:{l:'Fighter select: CD cases',bool:1,def:true},
@@ -9774,6 +9796,7 @@ function step(now){
   if(TEST_API&&!TEST_API.ready&&SPR.ok&&(GL.on||!wantGL()||GL.failed))TEST_API.ready=true;
 }
 function frame(now){if(!GL.on)step(now);requestAnimationFrame(frame)}
+autoResProbe();
 applyRes();
 renderHow();
 /* ---------- Sprite checker (dev mode) ----------
