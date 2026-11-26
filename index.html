@@ -817,7 +817,23 @@ const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv=document.getElementById('game'),hudx=cv.getContext('2d');let ctx=hudx;
 /* render scale: the game is laid out in 960x540 units and drawn at R times that many pixels */
 let R=1;
-function applyRes(){R=S.sharp===false?1:2;if(cv.width!==W*R){cv.width=W*R;cv.height=H*R}
+/* resolution failsafe: Sharp graphics stays the default, but if this device can't hold a smooth frame rate during a fight
+   the game steps the resolution down (2x -> 1.5x -> 1x). The step is remembered on this device, and it climbs back up
+   on its own when there is headroom. Choosing Sharp graphics by hand in Settings turns the failsafe off for the visit. */
+const RES_STEPS=[2,1.5,1];
+const AUTO_RES={lvl:0,off:false,ws:0,wn:0,wt:0,hold:0,lastNow:0,banned:{},prevMode:''};
+try{const[v,t]=String(localStorage.getItem('lv_autores')||'0').split('@').map(Number);if(v>=1&&v<=2)AUTO_RES.lvl=Date.now()-(t||0)>3*864e5?v-1:v}catch(e){}
+function autoResSave(){try{localStorage.setItem('lv_autores',AUTO_RES.lvl+'@'+Date.now())}catch(e){}}
+function autoResManual(){AUTO_RES.lvl=0;AUTO_RES.off=true;AUTO_RES.banned={};autoResSave();applyRes()}
+function autoResTick(now){const A=AUTO_RES,dt=now-A.lastNow;A.lastNow=now;
+  const live=G.mode==='fight'&&!G.paused&&!document.hidden&&S.sharp!==false&&!A.off&&!menuCovers();
+  if(!live||G.mode!==A.prevMode){A.prevMode=G.mode;A.ws=0;A.wn=0;A.wt=0;A.hold=now+2000;return}
+  if(now<A.hold||!(dt>0)||dt>250)return;
+  A.ws+=dt;A.wn++;
+  const avg=1000/(A.ws/A.wn);
+  if(A.ws>=2500&&avg<48&&A.lvl<RES_STEPS.length-1){A.banned[A.lvl]=1;A.lvl++;autoResSave();applyRes();A.ws=0;A.wn=0;A.hold=now+2000;return}
+  if(A.ws>=12000){if(avg>=57&&A.lvl>0&&!A.banned[A.lvl-1]){A.lvl--;autoResSave();applyRes();A.hold=now+2000}A.ws=0;A.wn=0}}
+function applyRes(){R=S.sharp===false?1:RES_STEPS[AUTO_RES.lvl]||2;if(cv.width!==W*R){cv.width=W*R;cv.height=H*R}
   if(typeof buf!=='undefined'&&buf.width!==BW*R){buf.width=BW*R;buf.height=BH*R}
   if(typeof STAGES!=='undefined')for(const st of STAGES){delete st._mid;delete st._fg;if(st.layers)for(const L of st.layers)delete L._cv}}
 const ov=document.getElementById('ov'),chEl=document.getElementById('ch');
@@ -5945,6 +5961,7 @@ function renderGL(){}
 const TEST_API=window.__TEST__={ready:false,
   get renderer(){return GL.on?'webgl':'canvas'},
   get fps(){return fps},
+  get autoRes(){return {lvl:AUTO_RES.lvl,R,off:AUTO_RES.off}},
   state(){const f=x=>x&&{id:x.c.id,x:Math.round(x.x),y:Math.round(x.y),hp:Math.round(x.hp*10)/10,meter:Math.round(x.meter),state:stateOf(x),ko:x.ko};
     return{mode:G.mode,type:G.type,stage:STAGES[G.stage].id,round:G.round,wins:G.wins.slice(),timer:Math.ceil(G.timer/60),p1:f(G.f1),p2:f(G.f2),
       props:G.env?G.env.props.map(p=>({type:p.type,x:p.x,hp:p.hp,broken:p.broken})):[],lights:LIGHTS.length,cam:{x:Math.round(cam.x),z:Math.round(cam.z*100)/100}}},
@@ -6508,7 +6525,7 @@ Object.assign(ACT,{
   moves(d){showMoves(d.c)},
   settings(){showSettings()},
   goback(){if(G.mode==='fight'&&G.paused)showPause();else if(G.mode==='select')showSelect();else if(G.mode==='story')showLadderCard();else showTitle()},
-  toggle(d){S[d.s]=!S[d.s];saveS();if(d.s==='hq')setRenderer();if(d.s==='sharp')applyRes();showSettings();const b=ov.querySelector(`[data-s="${d.s}"]`);if(b)b.focus()},
+  toggle(d){S[d.s]=!S[d.s];saveS();if(d.s==='hq')setRenderer();if(d.s==='sharp'){if(S.sharp)autoResManual();else applyRes()}showSettings();const b=ov.querySelector(`[data-s="${d.s}"]`);if(b)b.focus()},
   bind(d,btn){capture={p:d.p,a:d.a};btn.textContent='Press a key';btn.classList.add('wait')},
   resetkeys(){S.binds=JSON.parse(JSON.stringify(DEF_BINDS));saveS();renderHow();showSettings()},
   padbind(d,btn){
@@ -8658,7 +8675,7 @@ const OPTS={
   musicVol:{l:'Music',get:()=>Math.round(S.musicVol*10),set:v=>{S.musicVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:7},
   rainVol:{l:'Rain',get:()=>Math.round(S.rainVol*10),set:v=>{S.rainVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:10},
   annVol:{l:'Announcer',get:()=>Math.round(S.annVol*10),set:v=>{S.annVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:9,test:1},
-  sharp:{l:'Sharp graphics',bool:1,def:true,after:()=>applyRes()},
+  sharp:{l:'Sharp graphics',bool:1,def:true,after:()=>{if(S.sharp)autoResManual();else applyRes()}},
   shadows:{l:'Floor shadows',bool:1,def:true},
   selCase:{l:'Fighter select: CD cases',bool:1,def:true},
   fx:{l:'Flashes and shake',bool:1,def:true},
@@ -8757,6 +8774,7 @@ function step(now){
   else if(N4.live){for(let i=0;i<NETQ.fast&&N4.live;i++)net4Step();while(acc>=1000/60&&N4.live){net4Step();acc-=1000/60}}
   else while(acc>=1000/60){tick++;update();acc-=1000/60}
   fpsN++;if(now-fpsT>=1000){fps=fpsN;fpsN=0;fpsT=now}
+  autoResTick(now);
   if(!menuCovers()){if(GL.on)renderGL();else{screenEl.classList.remove('webgl');ctx=hudx;render()}}
   feFrame();
   if(TEST_API&&!TEST_API.ready&&SPR.ok&&(GL.on||!wantGL()||GL.failed))TEST_API.ready=true;
