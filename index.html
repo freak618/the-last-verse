@@ -820,20 +820,24 @@ let R=1;
 /* resolution failsafe: Sharp graphics stays the default, but if this device can't hold a smooth frame rate during a fight
    the game steps the resolution down (2x -> 1.5x -> 1x). The step is remembered on this device, and it climbs back up
    on its own when there is headroom. Choosing Sharp graphics by hand in Settings turns the failsafe off for the visit. */
-const RES_STEPS=[2,1.5,1];
+const RES_STEPS=[2,1.5,1,.75];let LITE=false;
+/* lowest step (Lite, for the weakest phones): draws at 0.75x and keeps stage particle effects at Low, without touching saved settings */
+function envqNow(){return LITE?'low':(S.envq||'medium')}
 const AUTO_RES={lvl:0,off:false,ws:0,wn:0,wt:0,hold:0,lastNow:0,banned:{},prevMode:''};
-try{const[v,t]=String(localStorage.getItem('lv_autores')||'0').split('@').map(Number);if(v>=1&&v<=2)AUTO_RES.lvl=Date.now()-(t||0)>3*864e5?v-1:v}catch(e){}
+try{const[v,t]=String(localStorage.getItem('lv_autores')||'0').split('@').map(Number);if(v>=1&&v<=3)AUTO_RES.lvl=Date.now()-(t||0)>3*864e5?v-1:v}catch(e){}
 function autoResSave(){try{localStorage.setItem('lv_autores',AUTO_RES.lvl+'@'+Date.now())}catch(e){}}
 function autoResManual(){AUTO_RES.lvl=0;AUTO_RES.off=true;AUTO_RES.banned={};autoResSave();applyRes()}
 function autoResTick(now){const A=AUTO_RES,dt=now-A.lastNow;A.lastNow=now;
-  const live=G.mode==='fight'&&!G.paused&&!document.hidden&&S.sharp!==false&&!A.off&&!menuCovers();
+  const live=G.mode==='fight'&&!G.paused&&!document.hidden&&!S.lite&&!A.off&&!menuCovers(),base=S.sharp===false?2:0;
+  if(A.lvl<base)A.lvl=base;
   if(!live||G.mode!==A.prevMode){A.prevMode=G.mode;A.ws=0;A.wn=0;A.wt=0;A.hold=now+2000;return}
   if(now<A.hold||!(dt>0)||dt>250)return;
   A.ws+=dt;A.wn++;
   const avg=1000/(A.ws/A.wn);
   if(A.ws>=2500&&avg<48&&A.lvl<RES_STEPS.length-1){A.banned[A.lvl]=1;A.lvl++;autoResSave();applyRes();A.ws=0;A.wn=0;A.hold=now+2000;return}
-  if(A.ws>=12000){if(avg>=57&&A.lvl>0&&!A.banned[A.lvl-1]){A.lvl--;autoResSave();applyRes();A.hold=now+2000}A.ws=0;A.wn=0}}
-function applyRes(){R=S.sharp===false?1:RES_STEPS[AUTO_RES.lvl]||2;if(cv.width!==W*R){cv.width=W*R;cv.height=H*R}
+  if(A.ws>=12000){if(avg>=57&&A.lvl>base&&!A.banned[A.lvl-1]){A.lvl--;autoResSave();applyRes();A.hold=now+2000}A.ws=0;A.wn=0}}
+function applyRes(){const L=S.lite?3:Math.max(S.sharp===false?2:0,AUTO_RES.lvl),wasLite=LITE;R=RES_STEPS[L]||2;LITE=L===3;
+  if(wasLite!==LITE&&typeof ENV!=='undefined'&&G.env&&STAGES[G.stage])try{ENV.reset(STAGES[G.stage])}catch(e){}if(cv.width!==W*R){cv.width=W*R;cv.height=H*R}
   if(typeof buf!=='undefined'&&buf.width!==BW*R){buf.width=BW*R;buf.height=BH*R}
   if(typeof STAGES!=='undefined')for(const st of STAGES){delete st._mid;delete st._fg;if(st.layers)for(const L of st.layers)delete L._cv}}
 const ov=document.getElementById('ov'),chEl=document.getElementById('ch');
@@ -5293,7 +5297,7 @@ const ENVTX=(()=>{const mk=(w,h,fn)=>{const c=document.createElement('canvas');c
     g.filter='none';g.globalCompositeOperation='destination-in';const fx=g.createLinearGradient(0,0,512,0);fx.addColorStop(0,'rgba(0,0,0,0)');fx.addColorStop(.2,'#000');fx.addColorStop(.8,'#000');fx.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=fx;g.fillRect(0,0,512,96)});
   return{soft,puff,fog}})();
 const ENV={on:false,cfg:{},q:0,stg:null,P:[],free:[],bats:[],lights:[],spots:[],bursts:[],acc:{},t:0,last:0,dt:1,heat:0,power:1,powerT:0,flash:0,flashCol:'200,215,255',sky:0,skyX:0,bolt:null,flick:0,
-  reset(stg){this.stg=stg;this.cfg=envConfig(stg);const qn=S.envq||'medium';this.q=ENV_Q[qn]??.7;this.cap=ENV_CAP[qn]??240;this.on=this.q>0&&S.fx!==false;
+  reset(stg){this.stg=stg;this.cfg=envConfig(stg);const qn=envqNow();this.q=ENV_Q[qn]??.7;this.cap=ENV_CAP[qn]??240;this.on=this.q>0&&S.fx!==false;
     this.P.length=0;this.free.length=0;for(let i=0;i<this.cap;i++){const p={on:false};this.P.push(p);this.free.push(p)}
     this.bats=[];this.bursts=[];this.acc={};this.heat=0;this.power=1;this.powerT=0;this.flash=0;this.sky=0;this.bolt=null;this.flick=0;this.last=performance.now();
     const c=this.cfg,n=Math.round((c.lights||0)*4),cols=c.lightCol||['255,220,180'];this.lights=[];
@@ -5787,7 +5791,7 @@ function clubStep(dt){const r=REAL_RANDOM;CLUB.hype=Math.max(0,CLUB.hype-.0015*d
     else if((f.modeT-=dt)<=0){f.mode=r()<.45+CLUB.hype*.4?'cheer':r()<.6?'bounce':'idle';f.modeT=90+r()*240}
     if(f.mode==='jump'){f.vy+=.45*dt;f.jy+=f.vy*dt;if(f.jy>=0){f.jy=0;if(f.modeT>40)f.vy=-2.2-r()*1.2;else f.mode='cheer'}f.modeT-=dt}else f.jy=0}}
 /* the LED dance floor, in world space so it sits exactly under the fighters, their shadows and the blood */
-function clubFloor(g,t){const E=envK(),I={off:.35,low:.55,medium:.8,high:1}[S.envq||'medium'],sync=CLUB.sync>0,pulse=Math.pow(1-(t/60*2)%1,3),hue0=(t*.4)%360,pw=E.power;
+function clubFloor(g,t){const E=envK(),I={off:.35,low:.55,medium:.8,high:1}[envqNow()],sync=CLUB.sync>0,pulse=Math.pow(1-(t/60*2)%1,3),hue0=(t*.4)%360,pw=E.power;
   const y0=GROUND-62,y1=H+80,cols=Math.ceil(WW/110),rows=7,pat=sync?3:Math.floor(t/600)%3;g.save();g.fillStyle='#07050b';g.fillRect(-40,y0,WW+80,y1-y0);
   for(let r=0;r<rows;r++){const v0=r/rows,v1=(r+1)/rows,ya=y0+(y1-y0)*Math.pow(v0,1.5),yb=y0+(y1-y0)*Math.pow(v1,1.5);
     for(let c=0;c<cols;c++){let a,h;if(pat===0){a=.5+.5*Math.sin(t*.08-c*.5+r*.8);h=(hue0+c*8)%360}else if(pat===1){a=((c+r+Math.floor(t/15))%2)?.9:.15;h=(hue0+r*40)%360}else if(pat===2){const d=Math.hypot(c-cols/2,(r-1)*2);a=.5+.5*Math.sin(d*.8-t*.12);h=(hue0+d*20)%360}else{a=pulse;h=(hue0*4)%360}
@@ -5797,7 +5801,7 @@ ALIVE_FX.club=function(g,rc,t,o){
   const k=rc.k,E=envK(),P=(x,y)=>[rc.x+x*k,rc.y+y*k],key=(G.f1&&G.f1.c.id)+'|'+(G.f2&&G.f2.c.id)+'|'+(S.crowdDen||'medium');
   if(CLUB.key!==key||!CLUB.fans.length){CLUB.fans=clubBuild();CLUB.key=key;CLUB.lastT=t}
   let dt=t-CLUB.lastT;if(dt<0||dt>10)dt=1;CLUB.lastT=t;clubStep(dt);
-  const I={off:.35,low:.55,medium:.8,high:1}[S.envq||'medium'],sync=CLUB.sync>0,beat=(t/60*2)%1,pulse=Math.pow(1-beat,3),hue0=(t*.4)%360,pw=E.power;
+  const I={off:.35,low:.55,medium:.8,high:1}[envqNow()],sync=CLUB.sync>0,beat=(t/60*2)%1,pulse=Math.pow(1-beat,3),hue0=(t*.4)%360,pw=E.power;
   g.save();
   // --- ceiling spot fixtures throwing rotating beams across the room
   g.globalCompositeOperation='lighter';
@@ -5961,7 +5965,7 @@ function renderGL(){}
 const TEST_API=window.__TEST__={ready:false,
   get renderer(){return GL.on?'webgl':'canvas'},
   get fps(){return fps},
-  get autoRes(){return {lvl:AUTO_RES.lvl,R,off:AUTO_RES.off}},
+  get autoRes(){return {lvl:AUTO_RES.lvl,R,off:AUTO_RES.off,lite:LITE}},
   state(){const f=x=>x&&{id:x.c.id,x:Math.round(x.x),y:Math.round(x.y),hp:Math.round(x.hp*10)/10,meter:Math.round(x.meter),state:stateOf(x),ko:x.ko};
     return{mode:G.mode,type:G.type,stage:STAGES[G.stage].id,round:G.round,wins:G.wins.slice(),timer:Math.ceil(G.timer/60),p1:f(G.f1),p2:f(G.f2),
       props:G.env?G.env.props.map(p=>({type:p.type,x:p.x,hp:p.hp,broken:p.broken})):[],lights:LIGHTS.length,cam:{x:Math.round(cam.x),z:Math.round(cam.z*100)/100}}},
@@ -8676,6 +8680,7 @@ const OPTS={
   rainVol:{l:'Rain',get:()=>Math.round(S.rainVol*10),set:v=>{S.rainVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:10},
   annVol:{l:'Announcer',get:()=>Math.round(S.annVol*10),set:v=>{S.annVol=v/10;applyVol()},min:0,max:10,fmt:v=>v,def:9,test:1},
   sharp:{l:'Sharp graphics',bool:1,def:true,after:()=>{if(S.sharp)autoResManual();else applyRes()}},
+  lite:{l:'Low-end phone mode',bool:1,def:false,after:()=>{if(!S.lite){AUTO_RES.lvl=0;AUTO_RES.banned={};autoResSave()}applyRes()}},
   shadows:{l:'Floor shadows',bool:1,def:true},
   selCase:{l:'Fighter select: CD cases',bool:1,def:true},
   fx:{l:'Flashes and shake',bool:1,def:true},
@@ -8693,7 +8698,7 @@ const OPTS={
   tSize:{l:'Button size',choices:['small','medium','large'],fmt:v=>cap(v),def:'medium',after:()=>applyTouch()},
   cpu:{l:'CPU difficulty',choices:['easy','normal','hard'],fmt:v=>cap(v),def:'normal'},
 };
-const OPT_TABS=[['controls','Controls'],['touch','Touch',['tOn','tMenus','tSize']],['audio','Audio',ANNOUNCER_ON?['vol','sfxVol','musicVol','rainVol','announcer','annVol']:['vol','sfxVol','musicVol','rainVol','annVol']],['video','Video',['sharp','shadows','fx','envq','filmFx','crowdDen']],['game','Gameplay',['roundTime','need','cpu','blood','finishers']],['fighters','Fighters']];
+const OPT_TABS=[['controls','Controls'],['touch','Touch',['tOn','tMenus','tSize']],['audio','Audio',ANNOUNCER_ON?['vol','sfxVol','musicVol','rainVol','announcer','annVol']:['vol','sfxVol','musicVol','rainVol','annVol']],['video','Video',['sharp','lite','shadows','fx','envq','filmFx','crowdDen']],['game','Gameplay',['roundTime','need','cpu','blood','finishers']],['fighters','Fighters']];
 function optVal(k){const o=OPTS[k];if(o.get)return o.get();return S[k]}
 function optText(k){const o=OPTS[k],v=optVal(k);return o.bool?(v?'On':'Off'):o.fmt(v)}
 function optStep(k,d){
