@@ -2948,14 +2948,20 @@ Object.assign(ALIVE_FX,{
     o.porch.forEach(([x,y],j)=>{const lv=pl[j];g.globalCompositeOperation='source-over';g.strokeStyle='rgba(12,10,8,.9)';g.lineWidth=1.4*k;g.beginPath();g.moveTo(X(x),Y(y-14));g.lineTo(X(x),Y(y-3));g.stroke();
       g.fillStyle='rgba(30,26,20,.95)';g.fillRect(X(x-3),Y(y-4),6*k,3*k);g.fillStyle=`rgba(255,${200+40*lv|0},${120+60*lv|0},${.35+.65*lv})`;g.beginPath();g.ellipse(X(x),Y(y+2),3.6*k,4.8*k,0,0,7);g.fill();
       g.globalCompositeOperation='lighter';glow(g,X(x),Y(y+2),14*k,'255,235,170',.75*lv);glow(g,X(x),Y(y+30),120*k,'255,205,120',.16*lv);glow(g,X(x),Y(y+110),150*k,'255,190,110',.06*lv)});
-    // flames in the barrel
+    // flames in the barrel: curling tongues (outer orange, inner yellow core) plus loose flame licks that break off and rise
     {const[bx,by]=o.fire;g.globalCompositeOperation='lighter';
-      for(let j=0;j<9;j++){const ph=t*(.09+aH(j)*.07)+j*2.1,h=(48+aH(j+.4)*62)*(.75+.25*Math.sin(ph)+.12*Math.sin(ph*2.7)),w=(10+aH(j+.7)*9),ox=(j-4)*7.5+Math.sin(ph*.8)*5,
-          sway=Math.sin(t*.07+j)*10+Math.sin(t*.19+j*3)*5,x0=bx+ox,y0=by;
-        const gr=g.createLinearGradient(0,Y(y0),0,Y(y0-h));gr.addColorStop(0,'rgba(255,110,30,.55)');gr.addColorStop(.45,'rgba(255,170,50,.45)');gr.addColorStop(1,'rgba(255,230,140,0)');
-        g.fillStyle=gr;g.beginPath();g.moveTo(X(x0-w),Y(y0));g.bezierCurveTo(X(x0-w*.9),Y(y0-h*.45),X(x0+sway*.5-w*.3),Y(y0-h*.7),X(x0+sway),Y(y0-h));
-        g.bezierCurveTo(X(x0+sway*.5+w*.3),Y(y0-h*.7),X(x0+w*.9),Y(y0-h*.45),X(x0+w),Y(y0));g.closePath();g.fill()}
-      glow(g,X(bx),Y(by-18),34*k,'255,220,140',.35+.1*Math.sin(t*.3))}
+      const tongue=(x0,y0,w,h,ph,c0,c1,a)=>{const s1=Math.sin(ph*1.3)*w*.9,s2=Math.sin(ph*2.1+1)*w*.7,tip=Math.sin(ph*.9)*w*1.4;
+        const gr=g.createLinearGradient(0,Y(y0),0,Y(y0-h));gr.addColorStop(0,`rgba(${c0},${a})`);gr.addColorStop(.55,`rgba(${c1},${a*.8})`);gr.addColorStop(1,`rgba(${c1},0)`);g.fillStyle=gr;
+        g.beginPath();g.moveTo(X(x0-w),Y(y0+4));g.bezierCurveTo(X(x0-w*1.1+s2),Y(y0-h*.35),X(x0-w*.5+s1),Y(y0-h*.62),X(x0+tip*.6-w*.15),Y(y0-h*.8));
+        g.quadraticCurveTo(X(x0+tip),Y(y0-h*.95),X(x0+tip),Y(y0-h));g.quadraticCurveTo(X(x0+tip*.8+w*.25),Y(y0-h*.78),X(x0+w*.45+s1*.6),Y(y0-h*.55));
+        g.bezierCurveTo(X(x0+w*1.05+s2*.6),Y(y0-h*.35),X(x0+w*1.05),Y(y0-h*.1),X(x0+w),Y(y0+4));g.closePath();g.fill()};
+      for(let j=0;j<8;j++){const ph=t*(.07+aH(j)*.05)+j*2.3,h=(95+aH(j+.4)*80)*(1-Math.abs(j-3.5)*.08)*(.8+.2*Math.sin(ph*1.7)+.08*Math.sin(ph*4.1)),
+          w=16+aH(j+.7)*10,x0=bx+(j-3.5)*10+Math.sin(ph*.6)*4;tongue(x0,by,w,h,ph,'255,105,30','255,150,40',.5)}
+      for(let j=0;j<5;j++){const ph=t*(.11+aH(j+9)*.06)+j*1.7,h=(50+aH(j+3.1)*45)*(.8+.2*Math.sin(ph*2.3)),w=10+aH(j+5.2)*6,x0=bx+(j-2)*11+Math.sin(ph)*4;
+        tongue(x0,by,w,h,ph,'255,230,140','255,200,90',.45)}
+      for(let j=0;j<4;j++){const per=46+aH(j)*30,u=((t+aH(j+.3)*per)%per)/per,c=Math.floor((t+aH(j+.3)*per)/per),x0=bx+(aH(c*1.7+j)-.5)*60+Math.sin(t*.1+j)*6,y0=by-110-u*90,
+          s=(1-u);if(s>0)tongue(x0,y0,7*s+2,32*s+6,t*.2+j,'255,140,40','255,190,90',.45*s)}
+      glow(g,X(bx),Y(by-22),46*k,'255,220,140',.42+.1*Math.sin(t*.3));glow(g,X(bx),Y(by-80),100*k,'255,140,50',.14+.04*Math.sin(t*.21))}
     // puddles
     const fl=.8+.12*Math.sin(t*.17)+.08*Math.sin(t*.43+2);
     o.puddles.forEach(([px,py,rx,ry],j)=>{g.save();g.globalCompositeOperation='source-over';g.beginPath();g.ellipse(X(px),Y(py),rx*k,ry*k,0,0,7);g.fillStyle='rgba(16,22,40,.42)';g.fill();g.clip();
