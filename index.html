@@ -1671,7 +1671,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'motel',name:'Vacancy Motel',img:'motel',extra:['motel_parts'],ww:1234,zoom:1.12,full:{scale:0.6*2096/2720,feet:1040/1536,p:1,rigid:true},indoor:false,dry:false,wet:true,reflA:.22,ambient:[95,105,140],grade:'#16203a',rim:'rgba(255,70,60,.34)',farTone:'none',shadowL:[{x:2545,y:-260,a:.3}],crowd:{groups:[],front:0},
+ { id:'motel',name:'Vacancy Motel',img:'motel',extra:['motel_parts','motel_puddles','motel_ice'],ww:1234,zoom:1.12,full:{scale:0.6*2096/2720,feet:1040/1536,p:1,rigid:true},indoor:false,dry:false,wet:true,reflA:.34,ambient:[95,105,140],grade:'#16203a',rim:'rgba(255,70,60,.34)',farTone:'none',shadowL:[{x:2545,y:-260,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -1739,11 +1739,11 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'ritual',name:"The Ritual",img:'ritual',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1000/1143,p:1,rigid:true},indoor:false,dry:true,ambient:[150, 110, 100],grade:'#2a1414',rim:'rgba(255,130,80,.32)',farTone:'none',shadowL:[{x:1220,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'ritual',name:"The Ritual",img:'ritual',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1000/1143,p:1,rigid:true},indoor:false,dry:false,wet:true,reflA:.2,ambient:[150, 110, 100],grade:'#2a1414',rim:'rgba(255,130,80,.32)',farTone:'none',shadowL:[{x:1220,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'dungeon',name:"The Dungeon",img:'dungeon',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1127,p:1,rigid:true},indoor:true,dry:true,ambient:[150, 110, 140],grade:'#2a1428',rim:'rgba(255,140,90,.32)',farTone:'none',shadowL:[{x:1100,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'dungeon',name:"The Dungeon",img:'dungeon',extra:['dungeon_runes'],ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1127,p:1,rigid:true},indoor:true,dry:true,ambient:[150, 110, 140],grade:'#2a1428',rim:'rgba(255,140,90,.32)',farTone:'none',shadowL:[{x:1100,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -1751,7 +1751,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'studio',name:"The Studio",img:'studio',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1143,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 110, 170],grade:'#24123a',rim:'rgba(170,120,255,.34)',farTone:'none',shadowL:[{x:1030,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'studio',name:"The Hit Station",img:'studio',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1143,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 110, 170],grade:'#24123a',rim:'rgba(170,120,255,.34)',farTone:'none',shadowL:[{x:1030,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -2101,7 +2101,7 @@ function stagePump(){while(stqBusy<2&&STQ.length&&!(typeof fighterSheetsPending=
 function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true);if(stg&&stg.extra)for(const e of stg.extra){const x=STIMG[e];if(x&&!x._go)stageStart(x,true)}}
 for(const k in ASSET.stages)stagePic(k,ASSET.stages[k]);
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel',cabin:'cabin',backwoods:'backwoods',backwoods_win:'backwoods_win',jeckel:'jeckel',hallowicked:'hallowicked',hallowicked_win:'hallowicked_win',morgue:'morgue_v2',rooftop:'rooftop',killerbasement:'killerbasement',swamp:'swamp',drivein:'drivein_alive',drivein_sky:'drivein_sky',asylum:'asylum_v2',junkyard:'junkyard',junkyard_parts:'junkyard_parts',subway:'subway',cemetery:'cemetery_v2',cemetery_parts:'cemetery_parts',trailerpark:'trailerpark',barn:'barn',barn_corn:'barn_corn',church:'church',ritual:'ritual',dungeon:'dungeon',bowling:'bowling',studio:'studio',bodega:'bodega',lowrider:'lowrider',lowrider_parts:'lowrider_parts',block:'block',recordstore:'recordstore',court:'court',court_parts:'court_parts',attic:'attic',attic_parts:'attic_parts',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel_v2',cabin:'cabin',backwoods:'backwoods',backwoods_win:'backwoods_win',jeckel:'jeckel',hallowicked:'hallowicked',hallowicked_win:'hallowicked_win',morgue:'morgue_v2',rooftop:'rooftop',killerbasement:'killerbasement',swamp:'swamp',drivein:'drivein_alive',drivein_sky:'drivein_sky',asylum:'asylum_v2',junkyard:'junkyard',junkyard_parts:'junkyard_parts',subway:'subway',cemetery:'cemetery_v2',cemetery_parts:'cemetery_parts',trailerpark:'trailerpark',barn:'barn',barn_corn:'barn_corn',church:'church',ritual:'ritual',dungeon:'dungeon',dungeon_runes:'dungeon_runes',bowling:'bowling',studio:'studio',bodega:'bodega',lowrider:'lowrider',lowrider_parts:'lowrider_parts',block:'block',recordstore:'recordstore',court:'court',court_parts:'court_parts',attic:'attic',attic_parts:'attic_parts',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',motel_puddles:'motel_puddles',motel_ice:'motel_ice',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 /* these four stages used to be painted in code every time the game opened (several seconds on a phone);
    the same pictures now ship as files, and the painting code only runs if a file can't load */
 for(const[k,f,paint]of[['slaughter','p_slaughter',()=>paintSlaughterhouse()],['sewer','p_sewer',()=>paintSewer()],['cage','p_cage',()=>paintCage()],['club','p_club',()=>paintClub()]]){
@@ -2646,6 +2646,19 @@ function fxBolt(g,rc,seed,x,y0,y1,lv){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,n
       if(d<2&&aH(seed*5+i*11+d*3)<.25){g.stroke();seg(x,y,3,aH(seed+i)<.5?-1:1,w*.55,d+1);g.lineWidth=w*k;g.beginPath();g.moveTo(X(x),Y(y))}}g.stroke()};
   g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(235,230,255,${.95*lv})`;g.shadowColor='rgba(190,170,255,.9)';g.shadowBlur=14*k;g.lineJoin='round';seg(x,y0,n,0,2.4,0);g.restore()}
 function fxLightning(t,per,off,seed,chance){const c=Math.floor((t+off)/per),u=(t+off)%per;if(aH(c*seed)>=chance||u>=28)return [0,c];return [u<3?1:u<6?.25:u<9?.85:Math.exp(-(u-9)/6),c]}
+// a believable candle/lamp flame: smooth random flicker (height, lean, brightness), an occasional gutter when a draft hits,
+// a dark wick, a faint blue base, a hot white core and soft orange edges
+function realFlame(t,i){const n=(f,p)=>Math.sin(t*f+p+i*1.7),dr=Math.max(0,Math.sin(t*.013+i*2.3))**6;
+  const h=1+.12*n(.31,0)+.08*n(.83,1)+.05*n(1.9,2)-.35*dr,sw=(.9*n(.21,3)+.5*n(.67,4))*(1+3*dr),lv=Math.max(.35,.85+.08*n(.37,5)+.05*n(1.3,6)-.3*dr);return{h,sw,lv,gut:dr}}
+function drawRealFlame(g,x,y,H,l){const h=H*l.h,w=H*.3,tip=l.sw*H*.18,top=y-h;
+  g.fillStyle='rgba(20,12,8,.9)';g.fillRect(x-.35*H/10,y-H*.18,.7*H/10,H*.22);
+  let gr=g.createRadialGradient(x,y-h*.35,0,x,y-h*.35,h*.75);gr.addColorStop(0,'rgba(255,190,90,.35)');gr.addColorStop(1,'rgba(255,140,40,0)');g.fillStyle=gr;g.beginPath();g.ellipse(x+tip*.4,y-h*.4,w*1.6,h*.75,0,0,7);g.fill();
+  const shape=(sc)=>{g.beginPath();g.moveTo(x+tip*sc,y-h*sc);g.bezierCurveTo(x+w*sc*1.1+tip*.3,y-h*.55*sc,x+w*sc,y-h*.05,x,y+h*.05);g.bezierCurveTo(x-w*sc,y-h*.05,x-w*sc*1.1+tip*.3,y-h*.55*sc,x+tip*sc,y-h*sc)};
+  gr=g.createLinearGradient(0,top,0,y);gr.addColorStop(0,'rgba(255,120,30,0)');gr.addColorStop(.18,'rgba(255,140,40,.85)');gr.addColorStop(.55,'rgba(255,200,90,.98)');gr.addColorStop(.9,'rgba(255,215,140,.95)');gr.addColorStop(1,'rgba(120,150,255,.55)');
+  g.fillStyle=gr;shape(1);g.fill();
+  gr=g.createLinearGradient(0,y-h*.75,0,y);gr.addColorStop(0,'rgba(255,250,230,0)');gr.addColorStop(.35,`rgba(255,252,240,${.95*l.lv})`);gr.addColorStop(.85,'rgba(255,240,210,.9)');gr.addColorStop(1,'rgba(150,170,255,.5)');
+  g.fillStyle=gr;shape(.55);g.fill();
+  g.fillStyle='rgba(90,120,255,.35)';g.beginPath();g.ellipse(x,y-h*.02,w*.55,h*.07,0,0,7);g.fill()}
 // Drive-In summer sky: soft clouds drift across the sky (masked so they never cover the screen, signs or trees),
 // warm haze glows along the treeline, and the moon dims when a cloud passes over it
 let ND_SK=null,ND_CL=null;function ndCloud(seed){const c=document.createElement('canvas');c.width=200;c.height=70;const x=c.getContext('2d');
@@ -3386,7 +3399,7 @@ Object.assign(ALIVE_FX,{
     {const c=Math.floor(t/750),u=t%750;let lv=.92+.05*Math.sin(t*1.1);if(aH(c*3.9)<.45&&u<50)lv=rnd(Math.floor(t/3),c)<.45?.12:.95;const[x,y]=o.lamp;glow(g,X(x),Y(y),24*k,'255,230,170',.65*lv);glow(g,X(x),Y(y+50),140*k,'255,210,140',.12*lv);glow(g,X(x-40),Y(820),220*k,'255,200,130',.05*lv)}
     o.reds.forEach(([x,y],i)=>{if(((t+i*41)%120)<60){glow(g,X(x),Y(y),3*k,'255,60,50',.9);glow(g,X(x),Y(y),10*k,'255,40,30',.3)}});
     g.restore()},
-  // The Studio: the beat is playing, so the monitors pump, the console meters bounce, the MPC pads light up,
+  // The Hit Station: the beat is playing, so the monitors pump, the console meters bounce, the MPC pads light up,
   // the LED strips and the neon mic hum (the mic sign stutters now and then), the red booth lamp glows and gold records glint
   studiofx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
     const bp=(t%39)/39,kick=Math.exp(-bp*7),snare=Math.exp(-(((t+20)%39)/39)*9)*.6,beat=Math.max(kick,snare),bar=Math.floor(t/39);
@@ -3449,35 +3462,86 @@ Object.assign(ALIVE_FX,{
     g.restore()},
   // The Dungeon: torches flicker, the hellfire in the broken wall roars and spits embers, the runes on the wall breathe purple,
   // the summoning circle pulses, and the cauldron bubbles green over its fire
-  dungeonfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();g.globalCompositeOperation='lighter';
-    o.torches.forEach(([x,y],i)=>{const l=.75+.15*Math.sin(t*(.21+i*.03)+i)+.1*rnd(Math.floor(t/3),i);glow(g,X(x),Y(y),16*k,'255,220,140',.55*l);glow(g,X(x),Y(y+20),110*k,'255,150,60',.14*l)});
-    {const[a,b,c,d]=o.portal,cx=(a+c)/2,l=.8+.12*Math.sin(t*.13)+.08*rnd(Math.floor(t/3),9);glow(g,X(cx),Y(d-120),200*k,'255,110,40',.18*l);glow(g,X(cx),Y(d+80),360*k,'255,90,40',.08*l);
-      for(let i=0;i<24;i++){const u=((t*(.0025+aH(i*1.7)*.003))+aH(i*3.3))%1,x=a+30+aH(i*5.1)*(c-a-60)+Math.sin(t*.05+i)*12*u,y=d-20-u*(d-b+60),al=Math.sin(u*Math.PI)*.9;
+  dungeonfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    // runes on the wall glow: a slow purple pulse that ripples across the stones, some symbols flaring brighter
+    {const R=STIMG.dungeon_runes;if(R&&R.ok){g.globalCompositeOperation='lighter';const p=.55+.25*Math.sin(t*.025);g.globalAlpha=p;g.drawImage(R,X(634),Y(120),R.width*k,R.height*k);
+      const wx=634+((t*1.4)%1000);g.save();g.beginPath();g.rect(X(wx-90),Y(120),180*k,570*k);g.clip();g.globalAlpha=.6;g.drawImage(R,X(634),Y(120),R.width*k,R.height*k);g.restore();g.globalAlpha=1;
+      glow(g,X(860),Y(380),330*k,'190,110,255',.06+.03*Math.sin(t*.025));glow(g,X(1330),Y(380),200*k,'190,110,255',.05+.03*Math.sin(t*.025+1))}}
+    // torches: real flames with a glowing tip and a warm halo on the rock
+    g.globalCompositeOperation='lighter';o.torches.forEach(([x,y,sz],i)=>{const l=realFlame(t,i+90);glow(g,X(x+l.sw*.5),Y(y-sz*.7),sz*4.5*k,'255,160,60',.2*l.lv);glow(g,X(x),Y(y+20),sz*9*k,'255,140,50',.1*l.lv);
+      g.save();g.globalCompositeOperation='source-over';drawRealFlame(g,X(x),Y(y),sz*k,l);g.restore();g.globalCompositeOperation='lighter';
+      glow(g,X(x+l.sw*sz*.18),Y(y-sz*l.h*.85),sz*.6*k,'255,250,220',.8*l.lv);glow(g,X(x+l.sw*sz*.18),Y(y-sz*l.h*.85),sz*1.6*k,'255,200,120',.35*l.lv)});
+    // hellfire roaring in the broken wall, clipped to the hole
+    {const[a,b,c,d]=o.portal,l=.8+.12*Math.sin(t*.13)+.08*rnd(Math.floor(t/3),9);g.save();g.beginPath();o.hole.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.clip();
+      g.globalCompositeOperation='lighter';g.globalAlpha=.75;fxFire(g,rc,t,1100,d+12,2);fxFire(g,rc,t+41,1045,d+16,1.4);fxFire(g,rc,t+83,1155,d+16,1.4);g.globalAlpha=1;
+      glow(g,X(1100),Y(d-60),140*k,'255,130,40',.12*l);g.restore();
+      glow(g,X(1100),Y(d-120),220*k,'255,110,40',.1*l);glow(g,X(1100),Y(d+90),380*k,'255,90,40',.07*l);
+      for(let i=0;i<26;i++){const u=((t*(.0025+aH(i*1.7)*.003))+aH(i*3.3))%1,x=a+30+aH(i*5.1)*(c-a-60)+Math.sin(t*.05+i)*12*u,y=d-20-u*(d-b+60),al=Math.sin(u*Math.PI)*.9;
         g.fillStyle=`rgba(255,${150+aH(i)*80|0},60,${al})`;g.fillRect(X(x),Y(y),2.4*k,2.4*k)}}
-    {const[a,b,c,d]=o.runes,p=.5+.5*Math.sin(t*.025);glow(g,X((a+c)/2),Y((b+d)/2),(c-a)*.6*k,'180,110,255',.06+.06*p)}
     {const[x,y,rx,ry]=o.pent,p=.5+.5*Math.sin(t*.03);g.save();g.translate(X(x),Y(y));g.scale(1,ry/rx);glow(g,0,0,rx*1.05*k,'230,180,255',.06+.07*p);g.restore()}
-    {const[cx,cy]=o.caul;glow(g,X(cx),Y(cy),90*k,'140,255,110',.16+.04*Math.sin(t*.09));for(let i=0;i<6;i++){const c=Math.floor((t+i*29)/70),u=((t+i*29)%70)/70,bx=cx-70+rnd(c,i)*140,by=cy+4-u*10,r=(3+rnd(c,i+9)*7)*Math.sin(u*Math.PI);
-      g.strokeStyle=`rgba(200,255,170,${.7*(1-u)})`;g.lineWidth=1.4*k;g.beginPath();g.arc(X(bx),Y(by),Math.max(.5,r)*k,0,7);g.stroke()}}
-    {const[x,y]=o.cfire,l=.75+.2*Math.sin(t*.23)+.1*rnd(Math.floor(t/3),5);glow(g,X(x),Y(y),30*k,'255,190,90',.5*l);glow(g,X(x),Y(y+20),130*k,'255,140,50',.12*l)}
+    // eyes in the dark behind the cell bars: pairs open, blink and close, one at a time
+    o.eyes.forEach(([x,y,col],i)=>{const per=500+aH(i*3.1)*400,u=(t+aH(i*7.7)*per)%per,on=u<220;if(!on)return;const e=Math.min(1,u/25,(220-u)/25)*(((u+i*13)%100)<6?.1:1);
+      [-7,7].forEach(dx=>{glow(g,X(x+dx),Y(y),2.6*k,col,e);glow(g,X(x+dx),Y(y),10*k,col,.3*e)})});
+    // the fire under the cauldron: real flames licking up the pot, coals glowing
+    {const[x,y]=o.cfire,l=.78+.15*Math.sin(t*.23)+.08*rnd(Math.floor(t/3),5);g.save();g.beginPath();g.moveTo(X(x-120),Y(y+30));g.lineTo(X(x-120),Y(y-40));g.quadraticCurveTo(X(x),Y(y-70),X(x+120),Y(y-40));g.lineTo(X(x+120),Y(y+30));g.closePath();g.clip();g.globalAlpha=.8;
+      fxFire(g,rc,t,x,y+14,.95);fxFire(g,rc,t+29,x-40,y+16,.7);fxFire(g,rc,t+57,x+40,y+16,.7);g.globalAlpha=1;g.restore();
+      glow(g,X(x),Y(y-10),30*k,'255,190,90',.3*l);glow(g,X(x),Y(y+20),150*k,'255,140,50',.14*l);glow(g,X(x),Y(y-90),110*k,'255,130,50',.1*l)}
+    // the cauldron bubbles: green bubbles swell and pop on the surface, the brew glows and throws light up the steam
+    {const[cx,cy]=o.caul;g.globalCompositeOperation='lighter';glow(g,X(cx),Y(cy),110*k,'140,255,110',.18+.05*Math.sin(t*.09));glow(g,X(cx),Y(cy-200),220*k,'120,255,110',.06);
+      for(let i=0;i<12;i++){const c=Math.floor((t+i*17)/55),u=((t+i*17)%55)/55,bx=cx-80+rnd(c,i)*160,by=cy+6-u*14,r=(4+rnd(c,i+9)*10)*Math.sin(Math.min(1,u*1.2)*Math.PI*.9);
+        g.globalCompositeOperation='source-over';g.fillStyle=`rgba(150,230,110,${.55*(1-u)})`;g.beginPath();g.ellipse(X(bx),Y(by),Math.max(.5,r)*k,Math.max(.5,r*.8)*k,0,0,7);g.fill();
+        g.strokeStyle=`rgba(220,255,190,${.8*(1-u)})`;g.lineWidth=1.3*k;g.stroke();if(u>.85){g.globalCompositeOperation='lighter';glow(g,X(bx),Y(by),r*2*k,'200,255,160',.4)}}}
     g.restore()},
   // The Ritual: the bonfire roars and throws embers up toward the blood moon, the standing stones catch the firelight,
   // the black candles flicker, and the moon pulses red
   ritualfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();g.globalCompositeOperation='lighter';
+    // the storm: lightning forks across the sky behind the trees and floods the clearing with cold light
+    {const[F,fc]=fxLightning(t,300,120,5.9,.85);if(F>0){if(F>.5){g.save();g.beginPath();g.rect(X(0),Y(0),2048*k,560*k);g.clip();fxBolt(g,rc,fc,300+aH(fc)*1500,0,300+aH(fc*2)*80,F);g.restore()}
+      g.fillStyle=`rgba(190,200,255,${.16*F})`;g.fillRect(X(0),Y(0),2048*k,1143*k);glow(g,X(600+aH(fc)*900),Y(120),700*k,'200,210,255',.22*F)}}
     {const[mx,my]=o.moon,p=.5+.5*Math.sin(t*.015);glow(g,X(mx),Y(my),150*k,'255,60,50',.1+.05*p);glow(g,X(mx),Y(my),320*k,'200,40,40',.05+.02*p)}
-    {const[fx,fy,fb]=o.fire,l=.78+.14*Math.sin(t*.17)+.08*rnd(Math.floor(t/3),1);glow(g,X(fx),Y(fy+40),180*k,'255,170,70',.18*l);glow(g,X(fx),Y(fb+120),420*k,'255,130,60',.07*l);
-      for(let i=0;i<30;i++){const u=((t*(.0022+aH(i*1.7)*.0025))+aH(i*3.3))%1,x=fx+(aH(i*5.1)-.5)*120+Math.sin(t*.04+i*2)*30*u,y=fb-60-u*440,al=Math.sin(u*Math.PI)*.9;
-        g.fillStyle=`rgba(255,${130+aH(i)*100|0},50,${al})`;g.fillRect(X(x),Y(y),2.6*k,2.6*k)}}
-    o.cands.forEach(([x,y],i)=>{const l=.78+.14*Math.sin(t*(.19+i*.02)+i*2)+.08*rnd(Math.floor(t/2),i+10);glow(g,X(x),Y(y),8*k,'255,220,140',.6*l);glow(g,X(x),Y(y+10),45*k,'255,170,80',.16*l)});
+    // the bonfire: layered tongues of flame that lick and lean, a white-hot heart, heat glow pulsing on the stones,
+    // embers and sparks spiralling up toward the moon, and smoke curling off the top
+    {const[fx,fy,fb]=o.fire,l=.8+.1*Math.sin(t*.17)+.07*Math.sin(t*.53+1)+.05*rnd(Math.floor(t/2),1);
+      glow(g,X(fx),Y(fb-60),200*k,'255,150,60',.14*l);glow(g,X(fx),Y(fb+140),460*k,'255,120,50',.08*l);
+      [[1060,560],[1100,600],[1340,580],[1390,560]].forEach(([sx,sy],i)=>glow(g,X(sx),Y(sy),70*k,'255,160,70',(.06+.04*Math.sin(t*.2+i*2))*l));
+      fxFire(g,rc,t,fx,fb+4,2.1);fxFire(g,rc,t+37,fx-30,fb+8,1.4);fxFire(g,rc,t+71,fx+34,fb+8,1.3);
+      glow(g,X(fx),Y(fb-30),40*k,'255,220,150',.18*l);
+      for(let i=0;i<40;i++){const u=((t*(.0018+aH(i*1.7)*.0024))+aH(i*3.3))%1,sp=aH(i*9.1)*6.28,x=fx+(aH(i*5.1)-.5)*130+Math.sin(t*.035+sp)*(10+50*u),y=fb-40-u*520,al=Math.sin(u*Math.PI)*(.6+.4*Math.sin(t*.5+i))*(1-u*.4),sz=(1.4+aH(i*2.7)*2)*(1-u*.5);
+        g.fillStyle=`rgba(255,${110+aH(i)*120|0},${40+aH(i*4)*40|0},${al})`;g.fillRect(X(x),Y(y),sz*k,sz*k)}
+      g.globalCompositeOperation='source-over';for(let i=0;i<8;i++){const u=((t*(.0011+aH(i*2.3)*.0008))+aH(i*6.1))%1,x=fx+Math.sin(t*.012+i*2)*(20+90*u)+u*60,y=fb-260-u*320,r=(30+u*110)*k,a=.09*Math.sin(u*Math.PI);
+        const gr=g.createRadialGradient(X(x),Y(y),0,X(x),Y(y),r);gr.addColorStop(0,`rgba(40,30,36,${a})`);gr.addColorStop(1,'rgba(40,30,36,0)');g.fillStyle=gr;g.fillRect(X(x)-r,Y(y)-r,r*2,r*2)}
+      g.globalCompositeOperation='lighter'}
+    // black candles: real flames, each with its own flickering pool of light and a smoke wisp when a draft hits
+    o.cands.forEach(([x,y],i)=>{const l=realFlame(t,i+50);g.globalCompositeOperation='lighter';glow(g,X(x+l.sw*.4),Y(y-2),30*k,'255,160,70',.2*l.lv);glow(g,X(x),Y(y+30),70*k,'255,130,60',.08*l.lv);
+      g.save();g.globalCompositeOperation='source-over';drawRealFlame(g,X(x),Y(y+6),15*k,l);g.restore();
+      if(l.gut>.5&&rnd(Math.floor(t/2),i+60)<.5){g.save();g.strokeStyle='rgba(70,60,60,.3)';g.lineWidth=1.2*k;const sy=Y(y-12);g.beginPath();g.moveTo(X(x),sy);g.quadraticCurveTo(X(x+4+Math.sin(t*.2)*3),sy-10*k,X(x-3),sy-24*k);g.stroke();g.restore()}});
     g.restore()},
   // The Black Mass: candles flicker, the red rose window pulses, the goat idol's eyes smolder,
   // the pentagram on the floor glows and breathes, and the fire basket spits embers
-  churchfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();g.globalCompositeOperation='lighter';
-    {const[x,y]=o.rose,p=.5+.5*Math.sin(t*.02);glow(g,X(x),Y(y),110*k,'255,50,40',.16+.08*p);glow(g,X(x),Y(y+200),340*k,'255,40,40',.06+.03*p)}
+  churchfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const FL=o.cands.map((c,i)=>realFlame(t,i+30)),fire=.75+.15*Math.sin(t*.23)+.1*Math.sin(t*.61+1)+.08*rnd(Math.floor(t/2),3),rose=.5+.5*Math.sin(t*.02);
+    // dramatic darkness with a red cast: the nave sinks into blood-red shadow, lit only by the candles, the rose window and the fire basket
+    {const cv=g.canvas,W=Math.ceil(cv.width/4),H=Math.ceil(cv.height/4);let D=o._dk;if(!D||D.width!==W||D.height!==H){D=o._dk=document.createElement('canvas');D.width=W;D.height=H}
+      const d=D.getContext('2d');d.setTransform(1,0,0,1,0,0);d.globalCompositeOperation='source-over';d.clearRect(0,0,W,H);d.fillStyle='rgba(22,2,4,.78)';d.fillRect(0,0,W,H);
+      d.globalCompositeOperation='destination-out';{const m=g.getTransform();d.setTransform(m.a/4,m.b/4,m.c/4,m.d/4,m.e/4,m.f/4)}
+      const hole=(x,y,r,a)=>{const gr=d.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,`rgba(0,0,0,${a})`);gr.addColorStop(.5,`rgba(0,0,0,${a*.55})`);gr.addColorStop(1,'rgba(0,0,0,0)');d.fillStyle=gr;d.fillRect(x-r,y-r,r*2,r*2)};
+      o.cands.forEach(([x,y],i)=>hole(X(x),Y(y+10),(62+18*FL[i].h)*k,.62*FL[i].lv));
+      hole(X(1034),Y(470),330*k,.55);hole(X(o.rose[0]),Y(o.rose[1]+40),190*k,.5+.15*rose);hole(X(o.fire[0]),Y(o.fire[1]),230*k,.85*fire);hole(X(o.fire[0]-60),Y(900),260*k,.5*fire);
+      hole(X(o.pent[0]),Y(o.pent[1]),430*k,.32);hole(X(1024),Y(1080),700*k,.15);
+      g.save();g.globalCompositeOperation='source-over';g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=true;g.drawImage(D,0,0,cv.width,cv.height);g.restore()}
+    g.globalCompositeOperation='lighter';
+    {const[x,y]=o.rose;glow(g,X(x),Y(y),120*k,'255,40,30',.22+.1*rose);glow(g,X(x),Y(y+220),380*k,'255,30,30',.08+.04*rose);
+      const gr=g.createLinearGradient(X(x),Y(y),X(x),Y(800));gr.addColorStop(0,`rgba(255,40,30,${.1+.05*rose})`);gr.addColorStop(1,'rgba(255,40,30,0)');g.fillStyle=gr;g.beginPath();g.moveTo(X(x-70),Y(y+40));g.lineTo(X(x+70),Y(y+40));g.lineTo(X(x+300),Y(800));g.lineTo(X(x-300),Y(800));g.closePath();g.fill()}
     {const ec=Math.floor(t/900),eu=t%900,flare=aH(ec*3.3)<.6&&eu<120?Math.sin(eu/120*Math.PI):0,e=.35+.65*flare;o.eyes.forEach(([x,y])=>{glow(g,X(x),Y(y),4*k,'255,60,40',.9*e);glow(g,X(x),Y(y),16*k,'255,30,20',.35*e)})}
-    {const[x,y,rx,ry]=o.pent,p=.5+.5*Math.sin(t*.03);g.save();g.translate(X(x),Y(y));g.scale(1,ry/rx);glow(g,0,0,rx*1.05*k,'255,50,40',.07+.07*p);g.restore()}
-    o.cands.forEach(([x,y],i)=>{const l=.78+.14*Math.sin(t*(.19+i*.017)+i*2)+.08*rnd(Math.floor(t/2),i+10);glow(g,X(x),Y(y),7*k,'255,220,140',.55*l);glow(g,X(x),Y(y+10),45*k,'255,160,80',.13*l)});
-    {const[x,y]=o.fire,l=.78+.16*Math.sin(t*.21)+.08*rnd(Math.floor(t/3),3);glow(g,X(x),Y(y),50*k,'255,190,90',.4*l);glow(g,X(x),Y(y+40),200*k,'255,140,60',.12*l);
-      for(let i=0;i<16;i++){const u=((t*(.003+aH(i*1.7)*.003))+aH(i*3.3))%1,ex=x+(aH(i*5.1)-.5)*60+Math.sin(t*.05+i)*14*u,ey=y-10-u*260,al=Math.sin(u*Math.PI)*.85;g.fillStyle=`rgba(255,${140+aH(i)*90|0},60,${al})`;g.fillRect(X(ex),Y(ey),2.2*k,2.2*k)}}
+    {const[x,y,rx,ry]=o.pent,p=.5+.5*Math.sin(t*.03);g.save();g.translate(X(x),Y(y));g.scale(1,ry/rx);glow(g,0,0,rx*1.05*k,'255,40,30',.1+.09*p);g.restore()}
+    // candles: real flickering flames, each with its own warm pool of light
+    o.cands.forEach(([x,y],i)=>{const l=FL[i];g.globalCompositeOperation='lighter';glow(g,X(x+l.sw*.4),Y(y-2),36*k,'255,150,60',.2*l.lv);glow(g,X(x),Y(y+30),80*k,'255,120,50',.08*l.lv);
+      g.save();g.globalCompositeOperation='source-over';drawRealFlame(g,X(x),Y(y+5),13*k,l);g.restore();
+      if(l.gut>.5&&rnd(Math.floor(t/2),i+60)<.5){g.save();g.strokeStyle='rgba(70,55,50,.3)';g.lineWidth=1.2*k;const sy=Y(y-10);g.beginPath();g.moveTo(X(x),sy);g.quadraticCurveTo(X(x+4+Math.sin(t*.2)*3),sy-10*k,X(x-3),sy-22*k);g.stroke();g.restore()}});
+    // the fire basket: tall licking flames, a hot core, embers and sparks rising
+    g.globalCompositeOperation='lighter';{const[x,y]=o.fire;glow(g,X(x),Y(y),60*k,'255,190,90',.45*fire);glow(g,X(x),Y(y+40),230*k,'255,120,50',.16*fire);
+      fxFire(g,rc,t,x,y+28,1.5);
+      for(let i=0;i<26;i++){const u=((t*(.003+aH(i*1.7)*.004))+aH(i*3.3))%1,ex=x+(aH(i*5.1)-.5)*70+Math.sin(t*.05+i)*18*u,ey=y-10-u*320,al=Math.sin(u*Math.PI)*.9;g.fillStyle=`rgba(255,${120+aH(i)*110|0},50,${al})`;g.fillRect(X(ex),Y(ey),2.4*k,2.4*k)}}
     g.restore()},
   // meat hooks on chains hanging from a beam: they sway on their own and rock harder when big hits land
   meathooks(g,rc,t,o){const k=rc.k,E=envK(),kick=E.kick||0,P=(x,y)=>[rc.x+x*k,rc.y+y*k],lit=o.lit||.8,hl=o.hl||'255,215,170',S=o.s||1.4;g.save();
@@ -3547,6 +3611,22 @@ Object.assign(ALIVE_FX,{
         for(let j=0;j<3;j++){const per=40+aH(i*3+j)*35,c=Math.floor((t+aH(i*7+j)*per)/per),u=((t+aH(i*7+j)*per)%per)/per,a2=aH(c*1.3+i+j)*6.28,d=aH(c*2.7+j+i)*.7,cx=x+Math.cos(a2)*sx*d,cy=y+Math.sin(a2)*sy*d;
           g.strokeStyle=`rgba(210,220,240,${.45*(1-u)*fill})`;g.lineWidth=.8*k;g.beginPath();g.ellipse(X(cx),Y(cy),(1+u*8)*k,(1+u*8)*k*sy/sx,0,0,7);g.stroke()}})}
     g.restore()},
+  // mirror-like puddles: the scene above the curb flips into every puddle (built once from the painting), shimmering as rain hits
+  puddlemirror(g,rc,t,o){const im=rc.im,M=STIMG[o.mask];if(!im||!M||!M.ok)return;const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k;
+    if(!o._c){try{const sc=M.width/o.W,w=M.width,h=M.height,c=document.createElement('canvas');c.width=w;c.height=h;const q=c.getContext('2d'),ax=o.axis*sc,tp=o.top*sc;
+        q.save();q.translate(0,ax*2-tp);q.scale(1,-1);q.filter='blur(.6px) brightness(1.15) saturate(1.2)';q.drawImage(im,0,0,w,o.H*sc);q.restore();q.filter='none';
+        q.globalCompositeOperation='destination-in';q.drawImage(M,0,0);
+        q.globalCompositeOperation='destination-in';const gr=q.createLinearGradient(0,0,0,h);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,.7)');q.fillStyle=gr;q.fillRect(0,0,w,h);o._c=c;o._s=sc}catch(e){o._c=1}}
+    if(o._c===1)return;const c=o._c,sc=o._s;g.save();g.globalCompositeOperation='source-over';g.globalAlpha=o.a;
+    const step=6;for(let y=0;y<c.height;y+=step){const wy=o.top+y/sc,dx=Math.sin(t*.11+y*.7)*1.2+Math.sin(t*.043+y*.13)*1.6;g.drawImage(c,0,y,c.width,step,X(dx),Y(wy),o.W*k,step/sc*k+.5)}
+    g.globalAlpha=1;g.globalCompositeOperation='lighter';for(let i=0;i<16;i++){const per=36+aH(i)*30,cc=Math.floor((t+aH(i*7)*per)/per),u=((t+aH(i*7)*per)%per)/per,x=aH(cc*1.3+i)*o.W,y=o.top+20+aH(cc*2.1+i)*(o.H-o.top-40);
+      if(aH(cc*3.1+i)>.6)continue;g.strokeStyle=`rgba(200,215,245,${.4*(1-u)})`;g.lineWidth=1.2*k;g.beginPath();g.ellipse(X(x),Y(y),(2+u*22)*k,(1+u*6)*k,0,0,7);g.stroke()}
+    g.restore()},
+  // the ICE sign on top of the machine is lit from behind: a cold white panel that hums and now and then stutters
+  iceglow(g,rc,t,o){const P=STIMG.motel_ice;if(!P||!P.ok)return;const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,[x,y,w,h]=o.at;
+    const c=Math.floor(t/700),u=t%700;let lv=.92+.05*Math.sin(t*.9);if(aH(c*3.3)<.4&&u<40)lv=aH(Math.floor(t/3)+c)<.5?.3:1;
+    g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.75*lv;g.drawImage(P,X(x),Y(y),w*k,h*k);g.globalAlpha=1;
+    glow(g,X(x+w/2),Y(y+h/2),110*k,'200,225,255',.16*lv);glow(g,X(x+w/2),Y(y+h+60),170*k,'190,215,255',.06*lv);g.restore()},
   // The Barn: the corn sways in the wind, the blood moon pulses, the candles in the ritual circle flicker and the pentagram glows,
   // the lantern in the barn door flickers, and now and then red eyes open inside the scarecrow's hood (and the goat skull's sockets answer)
   barnfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
@@ -3555,12 +3635,16 @@ Object.assign(ALIVE_FX,{
         g.drawImage(P,0,y,P.width,4,X(cx0+dx),Y(cy0+y),P.width*k,4.1*k)}}}
     g.globalCompositeOperation='lighter';
     {const[mx,my]=o.moon,p=.5+.5*Math.sin(t*.02);glow(g,X(mx),Y(my),115*k,'255,60,45',.1+.05*p);glow(g,X(mx),Y(my),230*k,'190,30,30',.06+.02*p)}
-    {const l=.8+.12*Math.sin(t*.21)+.08*rnd(Math.floor(t/3),3),[lx,ly]=o.lantern;glow(g,X(lx),Y(ly),14*k,'255,220,150',.7*l);glow(g,X(lx),Y(ly),70*k,'255,180,90',.2*l);
-      glow(g,X(lx+10),Y(ly+90),150*k,'255,160,80',.08*l);glow(g,X(lx+60),Y(400),180*k,'255,150,70',.06*l)}
-    let avg=0;o.flames.forEach(([x,y],i)=>{const l=.78+.14*Math.sin(t*(.17+i*.013)+i*2)+.08*rnd(Math.floor(t/2),i+10);avg+=l/o.flames.length;const sw=Math.sin(t*.09+i*1.7)*.9+(rnd(Math.floor(t/3),i+40)-.5)*.6;
-      glow(g,X(x),Y(y-1),26*k,'255,170,80',.16*l);glow(g,X(x),Y(y),8*k,'255,220,140',.5*l);
-      g.globalCompositeOperation='source-over';const h=(7+1.5*l)*k,w=2.6*k,fx=X(x),fy=Y(y+2),gr=g.createLinearGradient(0,fy-h,0,fy+h*.3);gr.addColorStop(0,'rgba(255,170,60,.0)');gr.addColorStop(.25,'rgba(255,190,80,.95)');gr.addColorStop(.7,'rgba(255,245,200,1)');gr.addColorStop(1,'rgba(255,200,120,.6)');
-      g.fillStyle=gr;g.beginPath();g.moveTo(fx+sw*k,fy-h);g.quadraticCurveTo(fx+w,fy-h*.25,fx,fy+h*.3);g.quadraticCurveTo(fx-w,fy-h*.25,fx+sw*k,fy-h);g.fill();g.globalCompositeOperation='lighter'});
+    {const l=realFlame(t,77),[lx,ly]=o.lantern;
+      g.globalCompositeOperation='lighter';glow(g,X(lx),Y(ly+2),11*k,'255,200,120',.55*l.lv);glow(g,X(lx),Y(ly),46*k,'255,170,80',.22*l.lv);
+      g.save();g.globalCompositeOperation='source-over';drawRealFlame(g,X(lx),Y(ly+7),9*k,l);g.restore();g.globalCompositeOperation='lighter';
+      glow(g,X(lx+10),Y(ly+90),150*k,'255,160,80',.09*l.lv);glow(g,X(lx+60),Y(400),190*k,'255,150,70',.065*l.lv);glow(g,X(lx-18),Y(ly+20),40*k,'255,180,100',.12*l.lv);glow(g,X(lx+22),Y(ly+20),40*k,'255,180,100',.12*l.lv)}
+    let avg=0;o.flames.forEach(([x,y],i)=>{const l=realFlame(t,i);avg+=l.lv/o.flames.length;
+      g.globalCompositeOperation='lighter';glow(g,X(x+l.sw*.4),Y(y-3),30*k,'255,165,70',.15*l.lv);glow(g,X(x),Y(y+3),7*k,'255,200,130',.32*l.lv);
+      g.save();g.translate(X(x),Y(y+4));g.scale(1,.35);glow(g,0,0,10*k,'255,190,120',.4*l.lv);g.restore();
+      g.save();g.globalCompositeOperation='source-over';drawRealFlame(g,X(x),Y(y+3),10*k,l);g.restore();
+      if(l.gut>.5&&rnd(Math.floor(t/2),i+60)<.5){g.save();g.globalCompositeOperation='source-over';const sy=Y(y-10);g.strokeStyle='rgba(60,50,45,.25)';g.lineWidth=1*k;g.beginPath();g.moveTo(X(x),sy);g.quadraticCurveTo(X(x+3+Math.sin(t*.2)*3),sy-8*k,X(x-2),sy-16*k);g.stroke();g.restore()}});
+    g.globalCompositeOperation='lighter';
     {const[px,py]=o.pent;glow(g,X(px),Y(py+8),190*k,'255,140,60',.07*avg);g.save();g.translate(X(px),Y(py));g.scale(1,.22);glow(g,0,0,150*k,'255,40,20',.06+.03*Math.sin(t*.03));g.restore()}
     {const ec=Math.floor((t+600)/1300),eu=(t+600)%1300;if(aH(ec*3.7)<.65&&eu<220){const e=Math.min(1,eu/30,(220-eu)/30)*((eu%90)<5?.15:1);
       o.eyes.forEach(([x,y])=>{glow(g,X(x),Y(y),2.6*k,'255,40,30',e);glow(g,X(x),Y(y),10*k,'255,20,10',.4*e)});
@@ -4151,8 +4235,9 @@ Object.assign(ALIVE,{
   bowling:[
     ['bowlfx',{"neon":[[580,425,"190,110,255"],[800,425,"110,255,140"],[1035,425,"190,110,255"],[1255,425,"110,255,140"],[1460,425,"190,110,255"]],"reds":[[520,485],[535,485],[665,485],[700,485],[850,485],[865,485],[890,485],[1045,485],[1080,485],[1100,485],[1165,485],[1335,485],[1375,485],[1395,485],[1510,485],[1525,485]],"ball":[990,105,118],"tv":[[1423,119],[1892,12],[1940,199],[1471,262]],"sparks":[[1534,334],[1836,223]],"exit":[1695,385]}]],
   dungeon:[
-    ['dungeonfx',{"torches":[[190,200],[262,138],[372,178],[500,292]],"portal":[1000,300,1200,680],"runes":[640,140,1440,660],"pent":[1020,980,480,140],"caul":[1910,660],"cfire":[1900,820]}],
-    ['smoke',{x:1905,y:640,n:7,spread:120,rise:300,size:90,a:.08,rate:.0025,wind:.15,rgb:'150,230,130'}]],
+    ['dungeonfx',{"torches":[[203,236,26],[258,150,16],[373,192,20],[515,318,22]],"portal":[1000,300,1200,700],"hole":[[1010,705],[1000,560],[1015,440],[1065,318],[1150,318],[1185,440],[1198,560],[1190,705]],"pent":[1020,980,480,140],"caul":[1915,672],"cfire":[1905,848],
+      "eyes":[[1612,452,'255,60,40'],[1702,540,'255,200,60'],[1645,640,'255,60,40'],[1725,402,'160,255,120'],[1600,700,'255,200,60']]}],
+    ['smoke',{x:1905,y:650,n:10,spread:110,rise:380,size:100,a:.13,rate:.0035,wind:.15,rgb:'140,240,120'}]],
   ritual:[
     ['ritualfx',{"fire":[1220,470,560],"moon":[1232,152],"cands":[[1420,745],[1470,760],[1488,780],[1456,840],[1928,868],[1876,935]]}],
     ['fogsheet',{y0:700,y1:900,n:12,a:.08,rgb:'150,170,150',sp:.2,rx:700,ry:40}]],
@@ -4206,11 +4291,13 @@ Object.assign(ALIVE,{
     ['moths',{at:[[520,300]],n:5}],
     ['floorglow',{at:[[1023,628,150,90,'255,140,60',.05],[520,636,110,80,'255,200,120',.03]]}]],
   motel:[
+    ['puddlemirror',{mask:'motel_puddles',W:2720,H:1536,axis:930,top:930,a:.85}],
     ['ripple',{x0:1820,x1:2040,y0:920,y1:1340,amp:2,sp:.05,glints:0,rgb:'255,80,70'}],
     ['ripple',{x0:1270,x1:1440,y0:905,y1:1180,amp:2,sp:.05,glints:0,rgb:'150,180,255'}],
     ['motelfx',{no:[0,0,175,120,1940,65],letters:[[1862,1914],[1912,1966],[1964,2012],[2010,2066],[2064,2116],[2114,2160],[2158,2206]],sign:[2032,266],
       door:[1298,615,1400,885],win:[983,620,1190,790],winR:[2580,645,2720,790],lamp:[2545,148],nrefl:[1840,915,2030,1340],drefl:[1285,895,1425,1185]}],
-    ['moths',{at:[[2545,270],[2560,380],[2030,250]],n:7}],
+    ['moths',{at:[[2030,250]],n:4}],
+    ['iceglow',{at:[1606,638,142,64]}],
     ['drip',{at:[[260,530,885],[690,528,885],[1160,527,885],[1560,526,885],[1980,524,885],[2290,522,880]],every:64}]],
   riddlebox:[
     ['riddlefx',{M:{"pA":[0,0,738,441,760,93],"wheel":[0,443,358,361,783,167],"pL":[360,443,112,232,1556,52],"t5":[474,443,87,223,1393,228],"t2":[563,443,132,203,1201,227],"lant":[697,443,64,197,1579,69],"pC":[763,443,140,187,97,360],"t3":[0,806,128,170,1085,319],"clown":[130,806,94,168,1509,355],"arm":[226,806,128,164,107,372],"t1":[356,806,119,163,1073,117],"t4":[477,806,110,141,1295,324]},wheel:[962,347.5],arm:[218,450],lant:[1611,69],
@@ -6055,7 +6142,7 @@ const ENV_STAGE={
   mansion:['cemetery',{fog:.5,lightning:0,bats:0}], hellpit:['hell',{bats:0,skyBats:1}], overpass:['city',{sparks:.35,ripples:.6}],
   alley:['city',{ripples:.5,drips:.5,bats:4}], hauntedhouse:['cemetery',{bats:4,fog:1.6}], neontunnel:['neon',{sparks:1.4,power:1.2,lights:1.8}], midway:['carnival',{ripples:.4}],
   warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0,embers:0}],
-  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], swamp:['city',{spot:0,fireworks:0,storm:.3,flyers:0,debris:0,lightning:0,thunder:0,flashes:0,fog:.15,ripples:.35,bats:0,dust:0,lights:0,smoke:0,mist:.35}],drivein:['quiet',{dust:0,mist:0.2,lights:0,lightCol:['170,210,255', '255,120,120'],power:.5}],asylum:['quiet',{dust:0.35,mist:0,lights:0,lightCol:['200,235,225', '190,220,255'],power:.5}],junkyard:['city',{spot:0,fireworks:0,storm:1.2,flyers:0,debris:.8,lightning:1.3,thunder:1,flashes:0,fog:.15,ripples:.7,bats:0,dust:0,lights:0,smoke:0}],subway:['quiet',{dust:0.4,mist:0,lights:0,lightCol:['255,220,150', '255,200,120'],power:.5}],cemetery:['city',{spot:0,fireworks:0,storm:.7,flyers:0,debris:0,lightning:0,thunder:0,flashes:0,fog:.2,ripples:.6,bats:0,dust:0,lights:0,smoke:0,mist:.4}],attic:['quiet',{dust:0.3,mist:0.08,lights:0,lightCol:['200,220,255', '255,200,140'],power:.5}],court:['quiet',{dust:0.1,mist:0.08,lights:0,lightCol:['255,210,140', '255,120,100'],power:.5}],recordstore:['quiet',{dust:0.25,mist:0,lights:0,lightCol:['255,90,200', '90,220,255'],power:.5}],block:['quiet',{dust:0,mist:0.1,lights:0,lightCol:['255,210,140', '200,215,255'],power:.5}],lowrider:['quiet',{dust:0.15,mist:0,lights:0,lightCol:['255,170,100', '255,120,180'],power:.5}],bodega:['quiet',{dust:0,mist:0.08,lights:0,lightCol:['255,210,140', '120,255,170'],power:.5}],studio:['quiet',{dust:0.15,mist:0,lights:0,lightCol:['200,120,255', '90,200,255'],power:.5}],bowling:['quiet',{dust:0.25,mist:0,lights:0,lightCol:['190,110,255', '110,255,140'],power:.5}],dungeon:['quiet',{dust:0.2,mist:0.1,lights:0,lightCol:['255,140,70', '190,120,255'],power:.5}],ritual:['quiet',{dust:0,mist:0.25,lights:0,lightCol:['255,150,70', '255,60,60'],power:.5}],church:['quiet',{dust:0.2,mist:0.08,lights:0,lightCol:['255,80,60', '255,170,90'],power:.5}],barn:['quiet',{dust:0.15,mist:0.25,lights:0,lightCol:['255,120,90', '255,200,120'],power:.5}],trailerpark:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.9,lightning:1,thunder:1,flashes:0,fog:.1,ripples:.6,bats:0,dust:0}],killerbasement:['quiet',{dust:.5,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],rooftop:['quiet',{dust:0,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],morgue:['quiet',{dust:0,mist:0,lights:0,lightCol:['200,235,215','180,220,200'],power:.5}],hallowicked:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.6,lightning:1,thunder:1,flashes:0,fog:.15,ripples:.9,bats:0,dust:0}],jeckel:['quiet',{dust:0,mist:.12,lights:0,lightCol:['255,190,120','255,150,90'],power:.5}],backwoods:['quiet',{dust:0,mist:.3,lights:0,lightCol:['255,170,90','255,140,60'],power:.5}],cabin:['quiet',{dust:0,mist:.12,lights:.25,lightCol:['255,170,90','255,140,60'],power:.5}],motel:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.3,lightning:0,thunder:0,flashes:0,fog:.35,ripples:.9,bats:0,dust:0}],riddlebox:['quiet',{dust:.45,mist:.3,lights:.35,lightCol:['255,190,110','255,150,80'],power:.5}],mirrors:['quiet',{dust:.55,mist:.25,lights:.45,lightCol:['255,200,120','255,170,90'],power:.5}],deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
+  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], swamp:['city',{spot:0,fireworks:0,storm:.3,flyers:0,debris:0,lightning:0,thunder:0,flashes:0,fog:.15,ripples:.35,bats:0,dust:0,lights:0,smoke:0,mist:.35}],drivein:['quiet',{dust:0,mist:0.2,lights:0,lightCol:['170,210,255', '255,120,120'],power:.5}],asylum:['quiet',{dust:0.35,mist:0,lights:0,lightCol:['200,235,225', '190,220,255'],power:.5}],junkyard:['city',{spot:0,fireworks:0,storm:1.2,flyers:0,debris:.8,lightning:1.3,thunder:1,flashes:0,fog:.15,ripples:.7,bats:0,dust:0,lights:0,smoke:0}],subway:['quiet',{dust:0.4,mist:0,lights:0,lightCol:['255,220,150', '255,200,120'],power:.5}],cemetery:['city',{spot:0,fireworks:0,storm:.7,flyers:0,debris:0,lightning:0,thunder:0,flashes:0,fog:.2,ripples:.6,bats:0,dust:0,lights:0,smoke:0,mist:.4}],attic:['quiet',{dust:0.3,mist:0.08,lights:0,lightCol:['200,220,255', '255,200,140'],power:.5}],court:['quiet',{dust:0.1,mist:0.08,lights:0,lightCol:['255,210,140', '255,120,100'],power:.5}],recordstore:['quiet',{dust:0.25,mist:0,lights:0,lightCol:['255,90,200', '90,220,255'],power:.5}],block:['quiet',{dust:0,mist:0.1,lights:0,lightCol:['255,210,140', '200,215,255'],power:.5}],lowrider:['quiet',{dust:0.15,mist:0,lights:0,lightCol:['255,170,100', '255,120,180'],power:.5}],bodega:['quiet',{dust:0,mist:0.08,lights:0,lightCol:['255,210,140', '120,255,170'],power:.5}],studio:['quiet',{dust:0.15,mist:0,lights:0,lightCol:['200,120,255', '90,200,255'],power:.5}],bowling:['quiet',{dust:0.25,mist:0,lights:0,lightCol:['190,110,255', '110,255,140'],power:.5}],dungeon:['quiet',{dust:0.2,mist:0.1,lights:0,lightCol:['255,140,70', '190,120,255'],power:.5}],ritual:['city',{spot:0,fireworks:0,storm:1.4,flyers:0,debris:.6,lightning:1.4,thunder:1,flashes:0,fog:.3,ripples:.8,bats:0,dust:0,lights:0,smoke:0,mist:.25}],church:['quiet',{dust:0.2,mist:0.08,lights:0,lightCol:['255,80,60', '255,170,90'],power:.5}],barn:['quiet',{dust:0.15,mist:0.25,lights:0,lightCol:['255,120,90', '255,200,120'],power:.5}],trailerpark:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.9,lightning:1,thunder:1,flashes:0,fog:.1,ripples:.6,bats:0,dust:0}],killerbasement:['quiet',{dust:.5,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],rooftop:['quiet',{dust:0,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],morgue:['quiet',{dust:0,mist:0,lights:0,lightCol:['200,235,215','180,220,200'],power:.5}],hallowicked:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.6,lightning:1,thunder:1,flashes:0,fog:.15,ripples:.9,bats:0,dust:0}],jeckel:['quiet',{dust:0,mist:.12,lights:0,lightCol:['255,190,120','255,150,90'],power:.5}],backwoods:['quiet',{dust:0,mist:.3,lights:0,lightCol:['255,170,90','255,140,60'],power:.5}],cabin:['quiet',{dust:0,mist:.12,lights:.25,lightCol:['255,170,90','255,140,60'],power:.5}],motel:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.3,lightning:0,thunder:0,flashes:0,fog:.35,ripples:.9,bats:0,dust:0}],riddlebox:['quiet',{dust:.45,mist:.3,lights:.35,lightCol:['255,190,110','255,150,80'],power:.5}],mirrors:['quiet',{dust:.55,mist:.25,lights:.45,lightCol:['255,200,120','255,170,90'],power:.5}],deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
 };
 function envConfig(stg){const e=ENV_STAGE[stg.id]||[stg.indoor?'quiet':'city'],c={...ENV_PRESET[e[0]],...(e[1]||{})};
   if(stg.indoor){c.fireworks=0;c.shooting=0;c.lightning=0;c.bats=c.bats?c.bats*.4:0;c.flashes=0}
