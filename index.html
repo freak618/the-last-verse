@@ -1695,11 +1695,11 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'rooftop',name:'Detroit Rooftop',img:'rooftop',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:500/572,p:1,rigid:true},indoor:false,dry:true,ambient:[105,100,140],grade:'#181634',rim:'rgba(255,210,130,.32)',farTone:'none',shadowL:[{x:291,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'rooftop',name:'The Rooftop',img:'rooftop',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:500/572,p:1,rigid:true},indoor:false,dry:true,ambient:[105,100,140],grade:'#181634',rim:'rgba(255,210,130,.32)',farTone:'none',shadowL:[{x:291,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'killerbasement',name:"The Killer's Basement",img:'killerbasement',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:478/572,p:1,rigid:true},indoor:true,dry:true,ambient:[150,130,95],grade:'#1e1a10',rim:'rgba(255,200,120,.32)',farTone:'none',shadowL:[{x:617,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'killerbasement',name:"The Basement",img:'killerbasement',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:478/572,p:1,rigid:true},indoor:true,dry:true,ambient:[150,130,95],grade:'#1e1a10',rim:'rgba(255,200,120,.32)',farTone:'none',shadowL:[{x:617,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -3106,7 +3106,7 @@ Object.assign(ALIVE_FX,{
     // operating lamp hum
     g.globalCompositeOperation='lighter';glow(g,X(o.lamp[0]),Y(o.lamp[1]),34*k,'255,250,215',.22+.04*Math.sin(t*.9));
     g.restore()},
-  // Detroit Rooftop: skyline windows blink on and off, the bulb over the roof door buzzes and flickers, the AC fans spin,
+  // The Rooftop: skyline windows blink on and off, the bulb over the roof door buzzes and flickers, the AC fans spin,
   // a plane's lights blink across the sky now and then, and a police helicopter overhead (out of sight) follows the fighters with its searchlight
   rooffx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
     // skyline windows going dark and coming back
@@ -3139,7 +3139,7 @@ Object.assign(ALIVE_FX,{
         g.save();g.translate(X(sx),Y(sy));g.scale(1,.32);glow(g,0,0,r*1.25*k,'235,240,255',(.42+jit)*fade);glow(g,0,0,r*.7*k,'250,252,255',.3*fade);g.restore();
         glow(g,X(sx),Y(sy-90),95*k,'230,236,255',.12*fade)}}
     g.restore()},
-  // The Killer's Basement: the bare bulb swings on its cord and the whole room's shadows swing with it, the furnace breathes,
+  // The Basement: the bare bulb swings on its cord and the whole room's shadows swing with it, the furnace breathes,
   // light flickers through the crack of the door at the top of the stairs (somebody moving up there), and the chain on the freezer rattles
   basementfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
     const th=.17*Math.sin(t*.034)+.04*Math.sin(t*.083+1),[px,py]=o.pivot,bx=px+Math.sin(th)*o.len,by=py+Math.cos(th)*o.len;
