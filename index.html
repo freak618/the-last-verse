@@ -319,7 +319,7 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 .fe-sh{text-align:center;display:flex;flex-direction:column;align-items:center}
 /* select: whole fighter, big, glowing in their own colour; plate in that colour */
 .fe-sel .fe-art{inset:.6cqw .4cqw 5.4cqw .4cqw}
-.fe-sel .fe-art canvas{object-fit:fill;filter:drop-shadow(0 0 1.3cqw rgba(var(--a),.8)) drop-shadow(0 .7cqw 1cqw rgba(0,0,0,.85))}
+.fe-sel .fe-art canvas{object-fit:fill;--glowdummy:drop-shadow(0 0 1.3cqw rgba(var(--a),.8)) drop-shadow(0 .7cqw 1cqw rgba(0,0,0,.85))}
 .fe-sel .fe-plate{padding:.5cqw 1cqw .5cqw;background:linear-gradient(90deg,rgba(var(--a),.92),rgba(var(--a),.5) 75%,rgba(var(--a),.15));transform:skewX(-8deg);transition:background .2s}
 .fe-sel .fe-side.r .fe-plate{background:linear-gradient(270deg,rgba(var(--a),.92),rgba(var(--a),.5) 75%,rgba(var(--a),.15))}
 .fe-sel .fe-plate>*{transform:skewX(8deg)}
@@ -7604,7 +7604,25 @@ function drawLiveFit(o){
     if(x1<0)return;const p=8;bb=[Math.max(0,x0-p),Math.max(0,y0-p),Math.min(480,x1+p)-Math.max(0,x0-p),Math.min(560,y1+p)-Math.max(0,y0-p)];
     const M=o.c.cut?CUT.ok:o.c.custom?(CUSTOM[o.c.id]&&CUSTOM[o.c.id].ok):SPR.ok;if(M&&o.t>3)FIT_BB[key]=bb}
   const sc=Math.min(W2/bb[2],H2/bb[3]),dw=bb[2]*sc,dh=bb[3]*sc;g.imageSmoothingQuality='high';
+  if(o._sel===undefined)o._sel=!!cv.closest('.fe-sel');
+  if(o._sel)fitGlow(o,g,W2,H2,bb,dw,dh,dpr);
   g.drawImage(o.src,bb[0],bb[1],bb[2],bb[3],(W2-dw)/2,H2-dh,dw,dh);
+}
+/* the aura and drop shadow behind the select-screen fighters. These used to be CSS drop-shadow filters, which the browser
+   re-blurs at full size every frame; here the silhouette is blurred at quarter size and scaled up, which looks the same
+   and costs a small fraction of the work. */
+function fitGlow(o,g,W2,H2,bb,dw,dh,dpr){
+  if(!o._gk||--o._gk<=0){o._gk=30;const cv=o.cv;try{o._ac=(getComputedStyle(cv).getPropertyValue('--a')||'').trim()||'232,32,42';
+    const p=document.createElement('div');p.style.cssText='position:absolute;width:1cqw;height:0;visibility:hidden';cv.parentElement.appendChild(p);o._cq=p.getBoundingClientRect().width||8;p.remove()}catch(e){o._ac='232,32,42';o._cq=8}}
+  const q=3,gw=Math.ceil(W2/q)+2,gh=Math.ceil(H2/q)+2;
+  if(!o._gl){o._gl=document.createElement('canvas');o._g2=document.createElement('canvas')}
+  const A=o._gl,B=o._g2;if(A.width!==gw||A.height!==gh){A.width=B.width=gw;A.height=B.height=gh}
+  const a=A.getContext('2d'),b=B.getContext('2d');a.globalCompositeOperation='source-over';a.clearRect(0,0,gw,gh);
+  a.drawImage(o.src,bb[0],bb[1],bb[2],bb[3],(W2-dw)/2/q+1,(H2-dh)/q+1,dw/q,dh/q);a.globalCompositeOperation='source-in';a.fillStyle='#fff';a.fillRect(0,0,gw,gh);
+  b.setTransform(1,0,0,1,0,0);b.clearRect(0,0,gw,gh);
+  const blur=(R,dy,col)=>{b.shadowColor=col;b.shadowBlur=R*o._cq*dpr/q;b.shadowOffsetX=gw*3;b.shadowOffsetY=dy*o._cq*dpr/q;b.drawImage(A,-gw*3,0)};
+  blur(1,.7,'rgba(0,0,0,.85)');blur(1.3,0,`rgba(${o._ac},.8)`);blur(.55,0,`rgba(${o._ac},.85)`);b.shadowColor='transparent';
+  g.imageSmoothingEnabled=true;g.drawImage(B,-q,-q,gw*q,gh*q);
 }
 function feFrame(){
   for(const o of FE.anim)drawLive(o);
