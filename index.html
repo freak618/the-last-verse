@@ -1699,6 +1699,38 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
+ { id:'killerbasement',name:"The Killer's Basement",img:'killerbasement',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:478/572,p:1,rigid:true},indoor:true,dry:true,ambient:[150,130,95],grade:'#1e1a10',rim:'rgba(255,200,120,.32)',farTone:'none',shadowL:[{x:617,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'swamp',name:"The Swamp Shack",img:'swamp',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:500/559,p:1,rigid:true},indoor:false,dry:true,ambient:[90, 120, 110],grade:'#122018',rim:'rgba(200,255,190,.3)',farTone:'none',shadowL:[{x:113,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'drivein',name:"The Drive-In",img:'drivein',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:478/559,p:1,rigid:true},indoor:false,dry:true,ambient:[100, 110, 150],grade:'#141a30',rim:'rgba(170,210,255,.32)',farTone:'none',shadowL:[{x:510,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'asylum',name:"The Asylum",img:'asylum',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:478/559,p:1,rigid:true},indoor:true,dry:true,ambient:[120, 140, 130],grade:'#16201c',rim:'rgba(200,235,225,.3)',farTone:'none',shadowL:[{x:498,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'junkyard',name:"The Junkyard",img:'junkyard',extra:['junkyard_parts'],ww:1226,zoom:1.12,full:{scale:1250/1024,feet:475/559,p:1,rigid:true},indoor:false,dry:true,ambient:[120, 110, 110],grade:'#1c1814',rim:'rgba(255,190,120,.32)',farTone:'none',shadowL:[{x:725,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'subway',name:"The Subway",img:'subway',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:470/559,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 130, 100],grade:'#1e1a10',rim:'rgba(255,220,150,.3)',farTone:'none',shadowL:[{x:597,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'cemetery',name:"The Cemetery",img:'cemetery',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:485/559,p:1,rigid:true},indoor:false,dry:true,ambient:[100, 115, 130],grade:'#141a22',rim:'rgba(190,220,255,.3)',farTone:'none',shadowL:[{x:948,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'trailerpark',name:"The Trailer Park",img:'trailerpark',ww:1226,zoom:1.12,full:{scale:1250/1024,feet:480/559,p:1,rigid:true},indoor:false,dry:false,wet:true,reflA:.12,ambient:[100, 130, 110],grade:'#16221a',rim:'rgba(190,255,200,.3)',farTone:'none',shadowL:[{x:953,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
  /* ---- New Update stages ---- */
  { id:'nu_ring',name:'The Backyard Ring',img:'nu_ring',ww:1204,wall:[193,1014],zoom:1.12,full:{scale:1204/1672,feet:688/941,p:1,rigid:true,front:'nu_ring_front'},indoor:false,dry:true,wet:false,ambient:[140,130,150],grade:'#5a3a5a',rim:'rgba(255,200,150,.36)',farTone:'none',shadowL:[{x:1500,y:-260,a:.32}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
@@ -2021,7 +2053,7 @@ function stagePump(){while(stqBusy<2&&STQ.length&&!(typeof fighterSheetsPending=
 function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true);if(stg&&stg.extra)for(const e of stg.extra){const x=STIMG[e];if(x&&!x._go)stageStart(x,true)}}
 for(const k in ASSET.stages)stagePic(k,ASSET.stages[k]);
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel',cabin:'cabin',backwoods:'backwoods',jeckel:'jeckel',hallowicked:'hallowicked',morgue:'morgue',rooftop:'rooftop',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel',cabin:'cabin',backwoods:'backwoods',jeckel:'jeckel',hallowicked:'hallowicked',morgue:'morgue',rooftop:'rooftop',killerbasement:'killerbasement',swamp:'swamp',drivein:'drivein',asylum:'asylum',junkyard:'junkyard',junkyard_parts:'junkyard_parts',subway:'subway',cemetery:'cemetery',trailerpark:'trailerpark',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 /* these four stages used to be painted in code every time the game opened (several seconds on a phone);
    the same pictures now ship as files, and the painting code only runs if a file can't load */
 for(const[k,f,paint]of[['slaughter','p_slaughter',()=>paintSlaughterhouse()],['sewer','p_sewer',()=>paintSewer()],['cage','p_cage',()=>paintCage()],['club','p_club',()=>paintClub()]]){
@@ -2546,6 +2578,27 @@ function motelSil(g,x,y,h,col,lean){g.save();g.translate(x,y);g.rotate(lean||0);
   g.ellipse(0,-h*.9,h*.065,h*.08,0,0,7);g.fill();g.beginPath();g.moveTo(-w*.22,-h*.81);g.quadraticCurveTo(-w*.62,-h*.79,-w*.6,-h*.66);
   g.lineTo(-w*.56,-h*.36);g.lineTo(-w*.5,-h*.34);g.lineTo(-w*.42,0);g.lineTo(-w*.06,0);g.lineTo(0,-h*.3);g.lineTo(w*.06,0);g.lineTo(w*.42,0);
   g.lineTo(w*.5,-h*.34);g.lineTo(w*.56,-h*.36);g.lineTo(w*.6,-h*.66);g.quadraticCurveTo(w*.62,-h*.79,w*.22,-h*.81);g.closePath();g.fill();g.restore()}
+// shared pieces for the stage effects below
+function fxFireflies(g,rc,t,n,zones){const k=rc.k;for(let j=0;j<n;j++){const cyc=200+aH(j*1.7)*160,ph=(t+aH(j)*cyc)%cyc,on=ph<40?Math.sin(ph/40*Math.PI):0;if(on<=0)continue;
+  const z=zones[j%zones.length],x=z[0]+aH(j*2.1)*(z[2]-z[0])+Math.sin(t*.013+j)*24,y=z[1]+aH(j*3.3)*(z[3]-z[1])+Math.sin(t*.017+j*2)*14;
+  glow(g,rc.x+x*k,rc.y+y*k,3*k,'230,255,140',.95*on);glow(g,rc.x+x*k,rc.y+y*k,12*k,'200,255,120',.3*on)}}
+function fxFire(g,rc,t,bx,by,s){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k;
+  const tongue=(x0,y0,w,h,ph,c0,c1,a)=>{const s1=Math.sin(ph*1.3)*w*.9,s2=Math.sin(ph*2.1+1)*w*.7,tip=Math.sin(ph*.9)*w*1.4;
+    const gr=g.createLinearGradient(0,Y(y0),0,Y(y0-h));gr.addColorStop(0,`rgba(${c0},${a})`);gr.addColorStop(.55,`rgba(${c1},${a*.8})`);gr.addColorStop(1,`rgba(${c1},0)`);g.fillStyle=gr;
+    g.beginPath();g.moveTo(X(x0-w),Y(y0+3));g.bezierCurveTo(X(x0-w*1.1+s2),Y(y0-h*.35),X(x0-w*.5+s1),Y(y0-h*.62),X(x0+tip*.6-w*.15),Y(y0-h*.8));
+    g.quadraticCurveTo(X(x0+tip),Y(y0-h*.95),X(x0+tip),Y(y0-h));g.quadraticCurveTo(X(x0+tip*.8+w*.25),Y(y0-h*.78),X(x0+w*.45+s1*.6),Y(y0-h*.55));
+    g.bezierCurveTo(X(x0+w*1.05+s2*.6),Y(y0-h*.35),X(x0+w*1.05),Y(y0-h*.1),X(x0+w),Y(y0+3));g.closePath();g.fill()};
+  for(let j=0;j<7;j++){const ph=t*(.07+aH(j)*.05)+j*2.3,h=(70+aH(j+.4)*60)*s*(1-Math.abs(j-3)*.08)*(.8+.2*Math.sin(ph*1.7)),w=(12+aH(j+.7)*8)*s;tongue(bx+(j-3)*8*s+Math.sin(ph*.6)*3,by,w,h,ph,'255,105,30','255,150,40',.5)}
+  for(let j=0;j<4;j++){const ph=t*(.11+aH(j+9)*.06)+j*1.7,h=(38+aH(j+3.1)*34)*s*(.8+.2*Math.sin(ph*2.3)),w=(8+aH(j+5.2)*5)*s;tongue(bx+(j-1.5)*9*s+Math.sin(ph)*3,by,w,h,ph,'255,230,140','255,200,90',.45)}
+  for(let j=0;j<10;j++){const u=((t*.006*(1+aH(j+.5)*.6)+aH(j)))%1;glow(g,X(bx+(aH(j+.2)-.5)*30*s+Math.sin(t*.05+j)*10*u),Y(by-60*s-u*170),2.6*k,'255,180,80',(1-u)*.9)}
+  glow(g,X(bx),Y(by-18*s),40*k*s,'255,210,130',.42+.1*Math.sin(t*.3));glow(g,X(bx),Y(by),260*k*s,'255,130,50',.08)}
+function fxBolt(g,rc,seed,x,y0,y1,lv){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,n=Math.max(4,Math.round((y1-y0)/22));
+  const seg=(x0,yy,len,dir,w,d)=>{let x=x0,y=yy;g.lineWidth=w*k;g.beginPath();g.moveTo(X(x),Y(y));
+    for(let i=0;i<len;i++){x+=(aH(seed*31+i*7+d*13)-.5)*28+dir*4;y+=(y1-y0)/n*(.8+aH(seed*17+i*3+d)*.4);g.lineTo(X(x),Y(y));
+      if(d<2&&aH(seed*5+i*11+d*3)<.25){g.stroke();seg(x,y,3,aH(seed+i)<.5?-1:1,w*.55,d+1);g.lineWidth=w*k;g.beginPath();g.moveTo(X(x),Y(y))}}g.stroke()};
+  g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(235,230,255,${.95*lv})`;g.shadowColor='rgba(190,170,255,.9)';g.shadowBlur=14*k;g.lineJoin='round';seg(x,y0,n,0,2.4,0);g.restore()}
+function fxLightning(t,per,off,seed,chance){const c=Math.floor((t+off)/per),u=(t+off)%per;if(aH(c*seed)>=chance||u>=28)return [0,c];return [u<3?1:u<6?.25:u<9?.85:Math.exp(-(u-9)/6),c]}
+function fxCrow(g,x,y,s,flap){g.beginPath();g.moveTo(x-12*s,y-4*s+flap*7*s);g.quadraticCurveTo(x-5*s,y-6*s,x,y);g.quadraticCurveTo(x+5*s,y-6*s,x+12*s,y-4*s+flap*7*s);g.quadraticCurveTo(x+5*s,y-2*s,x,y+2*s);g.quadraticCurveTo(x-5*s,y-2*s,x-12*s,y-4*s+flap*7*s);g.fill()}
 function mirrorGhost(g,rc,t,o){const G2=o.ghost;if(!G2)return;const per=G2.every||600,c=Math.floor(t/per),u=(t%per)/per;
   if(aH(c*1.7)>(G2.chance||.6)||u>.3)return;const m=o.m[Math.floor(aH(c*3.3)*Math.min(7,o.m.length))],P=m.p,k=rc.k,p=u/.3;
   const x0=Math.min(P[0][0],P[3][0]),x1=Math.max(P[1][0],P[2][0]),y0=Math.min(P[0][1],P[1][1]),y1=Math.max(P[2][1],P[3][1]),dir=aH(c*5.1)<.5?1:-1;
@@ -3061,6 +3114,138 @@ Object.assign(ALIVE_FX,{
         g.save();g.translate(X(sx),Y(sy));g.scale(1,.32);glow(g,0,0,r*1.25*k,'235,240,255',(.42+jit)*fade);glow(g,0,0,r*.7*k,'250,252,255',.3*fade);g.restore();
         glow(g,X(sx),Y(sy-90),95*k,'230,236,255',.12*fade)}}
     g.restore()},
+  // The Killer's Basement: the bare bulb swings on its cord and the whole room's shadows swing with it, the furnace breathes,
+  // light flickers through the crack of the door at the top of the stairs (somebody moving up there), and the chain on the freezer rattles
+  basementfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const th=.17*Math.sin(t*.034)+.04*Math.sin(t*.083+1),[px,py]=o.pivot,bx=px+Math.sin(th)*o.len,by=py+Math.cos(th)*o.len;
+    const bc=Math.floor(t/700),bu=t%700;let bl=.92+.05*Math.sin(t*.9)+.03*rnd(Math.floor(t/2),1);if(aH(bc*3.9)<.5&&bu<40)bl=rnd(Math.floor(t/3),bc)<.5?.25:.95;
+    const fl=.75+.15*Math.sin(t*.13)+.1*Math.sin(t*.41+2);
+    // the chain on the freezer rattles now and then
+    if(im){const cc=Math.floor((t+300)/820),cu=(t+300)%820;if(aH(cc*5.1)<.7&&cu<34){const[lx,ly,lw,lh]=o.lock,dx=(rnd(Math.floor(t/2),cc)-.5)*3,dy=(rnd(Math.floor(t/2),cc+7)-.5)*2;
+        g.globalCompositeOperation='source-over';g.save();g.beginPath();g.rect(X(lx),Y(ly),lw*k,lh*k);g.clip();g.drawImage(im,lx-4,ly-4,lw+8,lh+8,X(lx-4+dx),Y(ly-4+dy),(lw+8)*k,(lh+8)*k);g.restore()}}
+    // darkness that follows the swinging bulb
+    {const cv=g.canvas,W=Math.ceil(cv.width/4),H=Math.ceil(cv.height/4);let D=o._dk;if(!D||D.width!==W||D.height!==H){D=o._dk=document.createElement('canvas');D.width=W;D.height=H}
+      const d=D.getContext('2d');d.setTransform(1,0,0,1,0,0);d.globalCompositeOperation='source-over';d.clearRect(0,0,W,H);d.fillStyle=`rgba(8,6,3,${.42+.35*(1-bl)})`;d.fillRect(0,0,W,H);
+      d.globalCompositeOperation='destination-out';{const m=g.getTransform();d.setTransform(m.a/4,m.b/4,m.c/4,m.d/4,m.e/4,m.f/4)}
+      const hole=(x,y,r,a)=>{const gr=d.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,`rgba(0,0,0,${a})`);gr.addColorStop(.5,`rgba(0,0,0,${a*.6})`);gr.addColorStop(1,'rgba(0,0,0,0)');d.fillStyle=gr;d.fillRect(x-r,y-r,r*2,r*2)};
+      hole(X(bx),Y(by+90),380*k*bl,.95*bl);hole(X(bx+(bx-px)*2.2),Y(470),260*k*bl,.6*bl);hole(X(o.furnace[0]),Y(o.furnace[1]+30),200*k*fl,.8*fl);hole(X(226),Y(140),70*k,.5);hole(X(512),Y(540),520*k,.35);
+      g.save();g.globalCompositeOperation='source-over';g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=true;g.drawImage(D,0,0,cv.width,cv.height);g.restore()}
+    // furnace
+    g.globalCompositeOperation='lighter';{const[a,b,c2,d2]=o.grate;g.fillStyle=`rgba(255,120,30,${.16*fl})`;g.fillRect(X(a),Y(b),(c2-a)*k,(d2-b)*k);
+      glow(g,X(o.furnace[0]),Y(o.furnace[1]),60*k,'255,150,50',.35*fl);glow(g,X(o.floorGlow[0]),Y(o.floorGlow[1]),110*k,'255,130,40',.14*fl)}
+    // light through the door crack at the top of the stairs, with a shadow passing behind it
+    {const dc=Math.floor((t+500)/900),du=(t+500)%900;let dl=.7+.2*Math.sin(t*.05);if(aH(dc*2.7)<.65&&du<120){const u=du/120;dl*=1-.85*Math.max(0,1-Math.abs(u-.5)*3)}
+      g.fillStyle=`rgba(255,200,120,${.3*dl})`;g.beginPath();o.door.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.fill();glow(g,X(226),Y(140),60*k,'255,190,110',.18*dl)}
+    // the bulb on its cord
+    g.globalCompositeOperation='source-over';g.strokeStyle='#1a140c';g.lineWidth=1.8*k;g.beginPath();g.moveTo(X(px),Y(py));g.lineTo(X(bx-Math.sin(th)*14),Y(by-Math.cos(th)*14));g.stroke();
+    g.save();g.translate(X(bx),Y(by));g.rotate(-th);g.fillStyle='#3a3226';g.strokeStyle='#120d08';g.lineWidth=1.3*k;g.beginPath();g.rect(-4*k,-16*k,8*k,9*k);g.fill();g.stroke();
+    g.fillStyle=`rgba(255,${235+15*bl|0},${170+50*bl|0},${.55+.45*bl})`;g.beginPath();g.ellipse(0,0,9*k,11*k,0,0,7);g.fill();g.stroke();g.restore();
+    g.globalCompositeOperation='lighter';glow(g,X(bx),Y(by),18*k,'255,245,200',.8*bl);glow(g,X(bx),Y(by),90*k,'255,220,140',.22*bl);
+    g.restore()},
+  // The Swamp Shack: lantern on the porch flickers, fireflies drift over the water, gator eyes surface, blink and sink, the rowboat bobs
+  swampfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    if(im){const[bx,by,bw,bh]=o.boat,dy=Math.sin(t*.028)*1.6,rot=Math.sin(t*.021)*.006;g.globalCompositeOperation='source-over';g.save();g.beginPath();g.rect(X(bx),Y(by-4),bw*k,(bh+6)*k);g.clip();
+      g.translate(X(bx+bw/2),Y(by+bh/2+dy));g.rotate(rot);g.drawImage(im,bx,by-4,bw,bh+6,-bw/2*k,(-bh/2-4)*k,bw*k,(bh+6)*k);g.restore()}
+    g.globalCompositeOperation='lighter';glow(g,X(o.moon[0]),Y(o.moon[1]),90*k,'220,235,255',.08);
+    for(let j=0;j<5;j++){const u=((t*.002+j/5)%1),x=600+Math.sin(j*2.3+t*.01)*30,y=330+j*18;glow(g,X(x),Y(y),(30-j*3)*k,'200,220,230',.06*Math.sin(u*Math.PI))}
+    {const lv=.75+.15*Math.sin(t*.21)+.1*Math.sin(t*.67+1)+(rnd(Math.floor(t/4),2)<.05?-.4:0);glow(g,X(o.lantern[0]),Y(o.lantern[1]),20*k,'255,220,140',.7*lv);glow(g,X(o.lantern[0]),Y(o.lantern[1]+20),120*k,'255,190,100',.14*lv)}
+    fxFireflies(g,rc,t,34,[[0,280,420,440],[380,300,780,440],[700,250,1024,410],[260,150,1000,280]]);
+    o.eyes.forEach((pair,i)=>{const per=520+i*130,c=Math.floor((t+i*200)/per),u=(t+i*200)%per;if(aH(c*3.3+i)>=.75||u>=300)return;
+      let lv=Math.min(1,u/25,(300-u)/40);if(((u+i*7)%110)<7)lv*=.1;pair.forEach(([x,y])=>{glow(g,X(x),Y(y+Math.max(0,(u-260)/10)),3.2*k,'255,230,90',lv);glow(g,X(x),Y(y),10*k,'255,200,60',.35*lv)})});
+    g.restore()},
+  // The Drive-In: the screen flickers with static (and something with a mask sometimes stands in it, staring out), the neon signs buzz and
+  // drop out, the speaker poles crackle, an old car's headlight sputters, and the clown statue's eyes light up red
+  driveinfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const sb=.75+.25*rnd(Math.floor(t/3),1),[cx,cy]=o.sc;
+    g.save();g.beginPath();o.screen.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.clip();
+    g.globalCompositeOperation='source-over';const ts=Math.floor(t/2);for(let i=0;i<70;i++){const x=368+rnd(ts,i)*284,y=88+rnd(ts,i+90)*158,w=6+rnd(ts,i+200)*26,v=rnd(ts,i+300);
+      g.fillStyle=v<.5?`rgba(20,30,40,${.25+v*.4})`:`rgba(230,245,255,${(v-.5)*.6})`;g.fillRect(X(x),Y(y),w*k,1.6*k)}
+    {const fc=Math.floor((t+400)/1100),fu=(t+400)%1100;if(aH(fc*4.3)<.8&&fu<170){const lv=Math.min(1,fu/20,(170-fu)/20)*(rnd(Math.floor(t/3),fc)<.85?1:.3);
+      g.globalAlpha=lv;motelSil(g,X(cx),Y(cy+80),150*k,'rgba(8,10,14,.92)',0);g.fillStyle='rgba(235,235,230,.9)';g.beginPath();g.ellipse(X(cx),Y(cy-46),10*k,13*k,0,0,7);g.fill();
+      g.fillStyle='rgba(8,10,14,.95)';g.beginPath();g.ellipse(X(cx-4),Y(cy-48),2.2*k,2.8*k,0,0,7);g.ellipse(X(cx+4),Y(cy-48),2.2*k,2.8*k,0,0,7);g.fill();g.globalAlpha=1}}
+    g.globalCompositeOperation='lighter';g.fillStyle=`rgba(170,210,255,${.06*sb})`;g.fillRect(X(360),Y(80),300*k,170*k);g.restore();
+    g.globalCompositeOperation='lighter';glow(g,X(cx),Y(cy),240*k,'170,210,255',.07*sb);glow(g,X(cx),Y(400),330*k,'170,210,255',.05*sb);glow(g,X(o.moon[0]),Y(o.moon[1]),70*k,'220,235,255',.07);
+    const neon=(r,rgb,seed)=>{const c=Math.floor((t+seed*97)/(420+seed*60)),u=(t+seed*97)%(420+seed*60);let on=1;if(aH(c*2.7+seed)<.6&&u<50)on=rnd(Math.floor(t/3),c+seed)<.5?0:1;
+      const[a,b,c2,d]=r;if(!on){g.globalCompositeOperation='multiply';g.fillStyle='rgba(70,70,90,.85)';g.fillRect(X(a),Y(b),(c2-a)*k,(d-b)*k);g.globalCompositeOperation='lighter'}
+      else glow(g,X((a+c2)/2),Y((b+d)/2),(c2-a)*.7*k,rgb,.16+.04*Math.sin(t*.5))};
+    neon(o.tickets,'255,90,140',1);neon(o.popcorn,'255,60,60',2);
+    {const ec=Math.floor(t/900),eu=t%900;if(aH(ec*3.9)<.6&&eu<90){const lv=Math.sin(eu/90*Math.PI);o.clown.forEach(([x,y])=>{glow(g,X(x),Y(y),4*k,'255,40,30',lv);glow(g,X(x),Y(y),14*k,'255,30,20',.35*lv)})}}
+    {const hc=Math.floor(t/700),hu=t%700;let lv=.8;if(aH(hc*5.1)<.6&&hu<60)lv=rnd(Math.floor(t/3),hc)<.5?.1:.8;glow(g,X(o.car[0]),Y(o.car[1]),10*k,'255,240,200',.7*lv);glow(g,X(o.car[0]-60),Y(o.car[1]+10),90*k,'255,235,190',.1*lv)}
+    o.speakers.forEach(([x,y],j)=>{if(rnd(Math.floor(t/5),j)<.03)glow(g,X(x),Y(y),6*k,'200,230,255',.8)});
+    g.restore()},
+  // The Asylum: the hallway light stutters and the ward drops into darkness, lightning cracks outside the broken window,
+  // eyes appear in the padded door's grate, and a figure crosses the far end of the hall
+  asylumfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const c=Math.floor(t/600),u=t%600;let lv=.92+.05*Math.sin(t*2.7)+.03*rnd(Math.floor(t/2),1);if(aH(c*3.1)<.6&&u<80){const b=rnd(Math.floor(t/3),c);lv=b<.45?.05:b<.6?.5:1}
+    if(aH(c*4.9)<.2&&u>=80&&u<260)lv=u<230?.03:rnd(Math.floor(t/3),c)<.5?.05:1;
+    const[F,fc]=fxLightning(t,520,200,7.7,.75);
+    if(lv<.7){g.globalCompositeOperation='multiply';const d=(1-lv)*.75*(1-F);g.fillStyle=`rgb(${255-205*d|0},${255-200*d|0},${255-195*d|0})`;g.fillRect(X(0),Y(0),1024*k,559*k)}
+    g.globalCompositeOperation='lighter';if(lv>=.7){glow(g,X(o.tube[0]),Y(o.tube[1]),70*k,'210,255,235',.2*lv);glow(g,X(o.tube[0]),Y(o.tube[1]+180),300*k,'200,240,225',.05*lv)}
+    {const[a,b,c2,d2]=o.win;if(F>0){g.fillStyle=`rgba(200,210,255,${.5*F})`;g.fillRect(X(a+6),Y(b+6),(c2-a-12)*k,(d2-b-12)*k);
+      g.save();g.beginPath();g.rect(X(a),Y(b),(c2-a)*k,(d2-b)*k);g.clip();if(F>.5)fxBolt(g,rc,fc,a+30+aH(fc)*80,b,d2,F);g.restore();
+      glow(g,X((a+c2)/2),Y(300),520*k,'190,200,255',.18*F);g.fillStyle=`rgba(170,180,240,${.08*F})`;g.fillRect(X(0),Y(0),1024*k,559*k)}}
+    {const ec=Math.floor((t+300)/1000),eu=(t+300)%1000;if(aH(ec*2.3)<.7&&eu<160){const[a,b,c2,d2]=o.grate,e=Math.min(1,eu/20,(160-eu)/20)*((eu%70)<5?.1:1),ey=(b+d2)/2+4;
+      glow(g,X(a+22),Y(ey),3*k,'230,255,230',.9*e);glow(g,X(a+34),Y(ey),3*k,'230,255,230',.9*e);glow(g,X(a+28),Y(ey),14*k,'200,255,220',.2*e)}}
+    {const hc=Math.floor((t+700)/1300),hu=(t+700)%1300,D=260;if(aH(hc*5.7)<.7&&hu<D){const q=hu/D,dir=aH(hc)<.5?1:-1,x=o.hall[0]+(dir>0?q:1-q)*90;
+      g.globalCompositeOperation='source-over';motelSil(g,X(x),Y(o.hall[1]),70*k,`rgba(10,14,12,${.75*Math.sin(q*Math.PI)})`,0)}}
+    g.restore()},
+  // The Junkyard: the crane's load swings on its cable, the burn barrel roars, the truck's headlights sputter,
+  // a green light blinks on the crusher's panel, and something's eyes glow red inside the dog shack
+  junkfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233),P=STIMG.junkyard_parts;g.save();
+    if(P&&P.ok){const[lx,ly,lw,lh]=o.load,[px,py]=o.pivot,a=.07*Math.sin(t*.018)+.02*Math.sin(t*.047);g.globalCompositeOperation='source-over';
+      g.save();g.translate(X(px),Y(py));g.rotate(a);g.drawImage(P,0,0,lw,lh,(lx-px)*k,(ly-py)*k,lw*k,lh*k);g.restore()}else if(P&&!P._go)stageStart(P,true);
+    g.globalCompositeOperation='lighter';glow(g,X(o.moon[0]),Y(o.moon[1]),90*k,'220,235,255',.07);
+    fxFire(g,rc,t,o.fire[0],o.fire[1],.75);
+    {const hc=Math.floor(t/800),hu=t%800;let lv=.9+.05*Math.sin(t*.4);if(aH(hc*3.7)<.6&&hu<55)lv=rnd(Math.floor(t/3),hc)<.5?.1:.9;
+      o.lights.forEach(([x,y])=>{glow(g,X(x),Y(y),12*k,'255,245,210',.8*lv);glow(g,X(x),Y(y),50*k,'255,235,190',.2*lv)});
+      const gr=g.createLinearGradient(X(800),0,X(560),0);gr.addColorStop(0,`rgba(255,240,200,${.13*lv})`);gr.addColorStop(1,'rgba(255,240,200,0)');g.fillStyle=gr;
+      g.beginPath();g.moveTo(X(808),Y(368));g.lineTo(X(560),Y(380));g.lineTo(X(560),Y(470));g.lineTo(X(808),Y(386));g.closePath();g.fill()}
+    {const on=Math.floor(t/40)%2===0;glow(g,X(o.green[0]),Y(o.green[1]),5*k,'120,255,120',on?.9:.25);glow(g,X(o.green[0]),Y(o.green[1]),18*k,'100,255,100',on?.3:.08)}
+    {const dc=Math.floor((t+150)/720),du=(t+150)%720;if(aH(dc*4.1)<.75&&du<200){const lv=Math.min(1,du/30,(200-du)/30)*((du%90)<6?.1:1);o.dog.forEach(([x,y])=>{glow(g,X(x),Y(y),3*k,'255,50,30',lv);glow(g,X(x),Y(y),11*k,'255,40,20',.35*lv)})}}
+    g.restore()},
+  // The Subway: the clock's second hand ticks toward midnight, the street lamps buzz, the steam grate breathes,
+  // rats scurry along the wall, and every so often a train's headlights come roaring up out of the dark tunnel
+  subwayfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    {const[cx,cy,r]=o.clock,sec=Math.floor(t/60),a=sec*Math.PI/30-Math.PI/2+(t%60<4?Math.sin((t%60)*1.6)*.03:0);g.globalCompositeOperation='source-over';
+      g.strokeStyle='rgba(170,20,20,.95)';g.lineWidth=1.6*k;g.lineCap='round';g.beginPath();g.moveTo(X(cx-Math.cos(a)*r*.18),Y(cy-Math.sin(a)*r*.18));g.lineTo(X(cx+Math.cos(a)*r*.9),Y(cy+Math.sin(a)*r*.9));g.stroke();
+      g.fillStyle='#2a1a10';g.beginPath();g.arc(X(cx),Y(cy),2.4*k,0,7);g.fill()}
+    g.globalCompositeOperation='lighter';o.lamps.forEach(([x,y],j)=>{let lv=.85+.1*Math.sin(t*.7+j);if(rnd(Math.floor(t/3),j)<.04)lv=.2;glow(g,X(x),Y(y),16*k,'255,220,150',.6*lv);glow(g,X(x),Y(y+30),90*k,'255,210,140',.1*lv)});
+    {const tc=Math.floor((t+500)/1500),tu=(t+500)%1500,D=330;if(aH(tc*3.9)<.8&&tu<D){const q=tu/D;
+      if(q<.9){const s=.4+Math.pow(q/.9,2.2)*5;o.tunnel.forEach(([x,y],j)=>{const ox=(j?1:-1)*q*q*60;glow(g,X(x+ox),Y(y+q*q*30),4*s*k,'255,250,220',Math.min(1,.4+q));glow(g,X(x+ox),Y(y+q*q*30),14*s*k,'255,240,200',.25*q)});glow(g,X(542),Y(300),260*k,'255,240,210',.12*q)}
+      else{const w=1-(q-.9)/.1;g.fillStyle=`rgba(255,245,225,${.55*w})`;g.fillRect(X(0),Y(0),1024*k,559*k)}}}
+    {g.globalCompositeOperation='source-over';const[x0,x1,y0,y1]=o.rats;for(let i=0;i<2;i++){const per=520+i*210,c=Math.floor((t+i*260)/per),u=(t+i*260)%per,D=110;if(aH(c*2.9+i)>=.8||u>=D)continue;
+      const q=u/D,dir=aH(c*1.7+i)<.5?1:-1,x=dir>0?x0+(x1-x0)*q:x1-(x1-x0)*q,y=y0+aH(c+i*.3)*(y1-y0)+Math.sin(u*.9)*1.2;g.save();g.translate(X(x),Y(y));g.scale(dir*k,k);
+      g.fillStyle='#120e0a';g.beginPath();g.ellipse(0,0,11,4.6,0,0,7);g.fill();g.beginPath();g.ellipse(10,-1,5,3.4,-.2,0,7);g.fill();g.beginPath();g.ellipse(8,-4,1.8,1.8,0,0,7);g.fill();
+      g.strokeStyle='#120e0a';g.lineWidth=1.2;g.beginPath();g.moveTo(-10,0);g.quadraticCurveTo(-20,-4+Math.sin(u*.6)*3,-28,1);g.stroke();
+      const lg=Math.sin(u*1.4)*2.5;g.lineWidth=1.6;g.beginPath();g.moveTo(-5,3);g.lineTo(-5-lg,6);g.moveTo(5,3);g.lineTo(5+lg,6);g.stroke();g.restore()}}
+    g.restore()},
+  // The Cemetery: the lantern on the post flickers, a green glow breathes behind the mausoleum gate (and something drifts past it),
+  // the angel statue's eyes light up, and the crows on the tree burst into the sky now and then
+  cemeteryfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    g.globalCompositeOperation='lighter';glow(g,X(o.moon[0]),Y(o.moon[1]),110*k,'220,235,255',.08+.02*Math.sin(t*.01));
+    {const lv=.75+.15*Math.sin(t*.21)+.1*Math.sin(t*.67+1)+(rnd(Math.floor(t/4),2)<.05?-.4:0);glow(g,X(o.lantern[0]),Y(o.lantern[1]),20*k,'255,220,140',.75*lv);glow(g,X(o.lantern[0]),Y(o.lantern[1]+40),150*k,'255,190,100',.13*lv)}
+    {const[a,b,c2,d2]=o.gate,gl=.6+.3*Math.sin(t*.03)+.1*Math.sin(t*.11);g.fillStyle=`rgba(90,255,150,${.06*gl})`;g.fillRect(X(a),Y(b),(c2-a)*k,(d2-b)*k);glow(g,X((a+c2)/2),Y(d2+10),130*k,'100,255,150',.1*gl);
+      const hc=Math.floor((t+400)/1200),hu=(t+400)%1200,D=240;if(aH(hc*3.3)<.7&&hu<D){const q=hu/D;g.save();g.beginPath();g.rect(X(a),Y(b),(c2-a)*k,(d2-b)*k);g.clip();g.globalCompositeOperation='lighter';
+        motelSil(g,X(a-20+(c2-a+40)*q),Y(d2+5),140*k,`rgba(150,255,190,${.28*Math.sin(q*Math.PI)})`,0);g.restore()}}
+    {const ec=Math.floor(t/1000),eu=t%1000;if(aH(ec*2.9)<.6&&eu<120){const lv=Math.sin(eu/120*Math.PI);o.angel.forEach(([x,y])=>{glow(g,X(x),Y(y),3*k,'200,230,255',lv);glow(g,X(x),Y(y),10*k,'190,220,255',.35*lv)})}}
+    {g.globalCompositeOperation='source-over';g.fillStyle='rgba(10,10,14,.95)';const cc=Math.floor((t+200)/1100),cu=(t+200)%1100,D=220;
+      if(aH(cc*4.7)<.75&&cu<D){o.crows.forEach(([x,y],j)=>{if(aH(cc+j*.37)>.6)return;const q=Math.max(0,(cu-j*6)/D),dx=(aH(j+cc)-.3)*700*q,dy=-260*q*q-90*q;
+        fxCrow(g,X(x+dx),Y(y+dy),k*(1+q*.6),Math.sin(t*.6+j*2))})}}
+    g.restore()},
+  // The Trailer Park: the tornado churns on the horizon, lightning strikes behind it, the bug zapper crackles blue,
+  // the trailer's window flickers and junk blows across the yard in the wind
+  trailerfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    {g.save();g.beginPath();o.funnel.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.clip();g.globalCompositeOperation='source-over';
+      for(let j=0;j<14;j++){const y=168+j*10,w=(1-j/16)*60+8,ph=t*.12+j*.9;g.strokeStyle=`rgba(${j%2?'30,32,38':'120,125,135'},.35)`;g.lineWidth=2.2*k;g.beginPath();g.ellipse(X(628+Math.sin(j*.5+t*.02)*(4+j*.6)),Y(y),w*k,3.5*k,0,ph%(Math.PI*2),ph%(Math.PI*2)+2.4);g.stroke()}g.restore();
+      g.fillStyle='rgba(30,28,30,.8)';for(let j=0;j<14;j++){const a=t*.09+j*1.3,h=200+aH(j)*110,r=(1-(h-170)/160)*55+10;g.fillRect(X(628+Math.cos(a)*r),Y(h+Math.sin(a)*4),2.4*k,2.4*k)}}
+    g.globalCompositeOperation='lighter';
+    {const[F,fc]=fxLightning(t,420,100,5.3,.8);if(F>0){if(F>.5)fxBolt(g,rc,fc,380+aH(fc*1.7)*460,40,290,F);glow(g,X(600),Y(180),500*k,'190,230,200',.16*F)}}
+    {const c=Math.floor(t/260),u=t%260;let lv=.8+.1*Math.sin(t*.9);const zap=aH(c*2.2)<.7&&u<10;if(zap)lv=1.4;const[x,y]=o.zapper;
+      glow(g,X(x),Y(y),26*k,'90,170,255',.55*Math.min(1,lv));glow(g,X(x),Y(y+20),120*k,'80,160,255',.12*lv);if(zap){for(let j=0;j<4;j++)glow(g,X(x+(rnd(t,j)-.5)*18),Y(y+(rnd(t,j+5)-.5)*40),3*k,'230,245,255',1)}}
+    {const[a,b,c2,d2]=o.window,lv=.75+.25*rnd(Math.floor(t/6),3);g.fillStyle=`rgba(255,210,120,${.12*lv})`;g.fillRect(X(a),Y(b),(c2-a)*k,(d2-b)*k);glow(g,X((a+c2)/2),Y(d2+60),110*k,'255,200,110',.08*lv)}
+    g.globalCompositeOperation='source-over';for(let j=0;j<9;j++){const sp=4+aH(j)*4,x=1100-((aH(j+.1)*1300+t*sp)%1300),y=260+aH(j+.4)*220+Math.sin(t*.07+j)*20,r=t*.2+j;
+      g.save();g.translate(X(x),Y(y));g.rotate(r);g.fillStyle=['#7a6a48','#5a4a30','#c9c2b0','#8a2a20'][j%4];g.fillRect(-4*k,-2.5*k,8*k,5*k);g.restore()}
+    g.restore()},
   // wet floor: shimmering columns of reflected light under each glowing thing, rising and falling with that light
   floorglow(g,rc,t,o){const k=rc.k;g.save();g.globalCompositeOperation='lighter';
     o.at.forEach(([x,y,len,w,rgb,a,key],i)=>{let lv=key?(DMS[key]==null?1:DMS[key]):1;if(key&&key.startsWith('arc'))rgb=DMS['arcRGB'+key.slice(3)]||rgb;if(lv<.03)return;
@@ -3469,6 +3654,36 @@ Object.assign(ALIVE,{
       {p:[[2312,208],[2570,92],[2572,990],[2310,962]],track:.3,h:.66,mode:'tall'}],
       ghost:{every:640,chance:.6}}],
     ['floorglow',{at:[[1350,980,240,140,'255,190,110',.05],[860,1000,200,60,'255,180,100',.04],[1840,1000,200,60,'255,180,100',.04]]}]],
+  swamp:[
+    ['fogsheet',{y0:210,y1:330,n:12,a:.16,rgb:'150,175,170',sp:.2,rx:360,ry:34}],
+    ['smoke',{x:906,y:200,n:5,spread:8,rise:90,size:18,a:.12,rate:.004,wind:.2,rgb:'170,180,170'}],
+    ['swampfx',{lantern:[113,178],moon:[772,52],boat:[512,292,180,86],eyes:[[[452,407],[464,407]],[[677,360],[692,360]],[[163,364],[174,364]]]}],
+    ['fogsheet',{y0:420,y1:520,n:10,a:.1,rgb:'150,170,165',sp:.3,rx:420,ry:26}]],
+  drivein:[
+    ['driveinfx',{screen:[[368,88],[652,92],[650,246],[368,246]],sc:[510,170],tickets:[52,78,202,160],popcorn:[892,136,980,184],clown:[[238,199],[253,199]],
+      car:[662,343],speakers:[[323,288],[398,284],[432,285],[606,290],[578,286],[683,285],[352,286],[455,284]],moon:[706,62]}],
+    ['fogsheet',{y0:300,y1:400,n:10,a:.1,rgb:'140,150,190',sp:.2,rx:380,ry:28}]],
+  asylum:[
+    ['rainpane',{at:[866,34,132,240],n:20}],
+    ['asylumfx',{tube:[498,95],win:[862,30,1000,278],grate:[245,150,300,205],hall:[470,330]}],
+    ['drip',{at:[[620,8,370],[380,40,385]],every:120}]],
+  junkyard:[
+    ['smoke',{x:725,y:318,n:8,spread:12,rise:170,size:24,a:.16,rate:.004,wind:.3,rgb:'90,85,80'}],
+    ['junkfx',{load:[514, 18, 50, 129],pivot:[539,18],fire:[725,348],lights:[[808,375],[887,380]],green:[262,281],dog:[[788,318],[800,318]],moon:[710,72]}],
+    ['moths',{at:[[725,320],[848,378]],n:5}]],
+  subway:[
+    ['smoke',{x:668,y:398,n:9,spread:14,rise:140,size:22,a:.16,rate:.004,wind:.05,rgb:'200,195,185'}],
+    ['subwayfx',{clock:[597,68,40],lamps:[[205,22],[290,48]],tunnel:[[535,290],[550,290]],rats:[700,1000,440,505]}]],
+  cemetery:[
+    ['fogsheet',{y0:260,y1:380,n:14,a:.18,rgb:'170,185,205',sp:.18,rx:380,ry:36}],
+    ['cemeteryfx',{lantern:[948,222],gate:[150,190,232,345],moon:[585,72],angel:[[829,224],[839,224]],crows:[[470,42],[497,120],[620,40],[720,40],[742,92],[760,98],[805,128],[822,72]]}],
+    ['fogsheet',{y0:400,y1:520,n:12,a:.14,rgb:'170,185,205',sp:.28,rx:420,ry:30}]],
+  trailerpark:[
+    ['ripple',{x0:820,x1:970,y0:405,y1:440,amp:1.5,sp:.07,glints:0,rgb:'120,220,255'}],
+    ['trailerfx',{zapper:[953,190],window:[103,160,165,245],funnel:[[560,168],[690,168],[650,240],[633,305],[616,305],[606,240]],chimes:[878,150]}]],
+  killerbasement:[
+    ['drip',{at:[[718,96,470],[756,92,470],[903,104,460]],every:110}],
+    ['basementfx',{pivot:[617,66],len:78,furnace:[880,398],grate:[862,368,898,428],floorGlow:[838,482],door:[[219,30],[229,30],[229,250],[219,250]],lock:[296,330,90,92]}]],
   rooftop:[
     ['rooffx',{win:[[689,325,693,330],[479,307,480,310],[753,297,756,300],[447,323,448,324],[690,262,694,263],[493,333,497,336],[760,268,761,269],[326,261,328,263],[339,275,341,277],[572,334,575,336],[425,349,429,351],[580,290,583,293],[700,322,702,326],[490,328,493,330],[320,283,323,286],[584,256,585,257],[586,244,590,245],[707,331,708,333],[451,269,453,271],[400,301,401,303],[684,308,687,313],[356,248,361,250],[693,318,695,321],[390,308,392,311],[674,275,675,276],[471,301,472,303],[526,316,529,319],[576,253,578,254],[485,292,487,293],[455,269,461,271],[337,257,339,259],[439,288,441,291],[437,304,438,306],[684,317,687,322],[418,339,421,344],[700,284,703,285],[398,290,399,292],[591,244,592,245],[576,316,578,318],[473,322,474,324],[500,328,501,330],[445,288,447,289],[619,196,622,197],[484,322,486,325],[591,324,594,329],[405,290,411,292],[335,334,337,338],[491,310,492,311],[377,305,381,307],[466,297,467,301],[765,287,767,289],[539,328,542,330],[462,273,464,275],[352,257,353,258],[600,290,602,292],[730,266,732,268],[400,272,402,274],[705,339,707,342],[622,189,625,191],[766,264,770,266],[771,264,773,266],[624,260,625,261],[387,273,389,274],[588,270,590,271],[344,247,348,250],[330,247,332,250],[349,314,352,317],[394,240,396,242],[411,233,414,235],[371,310,372,311]],bulb:[291,262],moon:[671,90],fans:[[802,412,25],[927,447,31]]}],
     ['smoke',{x:795,y:248,n:8,spread:10,rise:170,size:26,a:.2,rate:.004,wind:.35,rgb:'70,68,78'}],
@@ -5356,7 +5571,7 @@ const ENV_STAGE={
   mansion:['cemetery',{fog:.5,lightning:0,bats:0}], hellpit:['hell',{bats:0,skyBats:1}], overpass:['city',{sparks:.35,ripples:.6}],
   alley:['city',{ripples:.5,drips:.5,bats:4}], hauntedhouse:['cemetery',{bats:4,fog:1.6}], neontunnel:['neon',{sparks:1.4,power:1.2,lights:1.8}], midway:['carnival',{ripples:.4}],
   warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0,embers:0}],
-  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], rooftop:['quiet',{dust:0,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],morgue:['quiet',{dust:0,mist:0,lights:0,lightCol:['200,235,215','180,220,200'],power:.5}],hallowicked:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.6,lightning:1,thunder:1,flashes:0,fog:.15,ripples:.9,bats:0,dust:0}],jeckel:['quiet',{dust:0,mist:.12,lights:0,lightCol:['255,190,120','255,150,90'],power:.5}],backwoods:['quiet',{dust:0,mist:.3,lights:0,lightCol:['255,170,90','255,140,60'],power:.5}],cabin:['quiet',{dust:0,mist:.12,lights:.25,lightCol:['255,170,90','255,140,60'],power:.5}],motel:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.3,lightning:0,thunder:0,flashes:0,fog:.35,ripples:.9,bats:0,dust:0}],riddlebox:['quiet',{dust:.45,mist:.3,lights:.35,lightCol:['255,190,110','255,150,80'],power:.5}],mirrors:['quiet',{dust:.55,mist:.25,lights:.45,lightCol:['255,200,120','255,170,90'],power:.5}],deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
+  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], swamp:['quiet',{dust:0,mist:0.35,lights:0,lightCol:['200,255,170', '255,220,140'],power:.5}],drivein:['quiet',{dust:0,mist:0.2,lights:0,lightCol:['170,210,255', '255,120,120'],power:.5}],asylum:['quiet',{dust:0.35,mist:0,lights:0,lightCol:['200,235,225', '190,220,255'],power:.5}],junkyard:['quiet',{dust:0.2,mist:0.1,lights:0,lightCol:['255,190,120', '150,255,150'],power:.5}],subway:['quiet',{dust:0.4,mist:0,lights:0,lightCol:['255,220,150', '255,200,120'],power:.5}],cemetery:['quiet',{dust:0,mist:0.4,lights:0,lightCol:['190,220,255', '255,200,120'],power:.5}],trailerpark:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.9,lightning:1,thunder:1,flashes:0,fog:.1,ripples:.6,bats:0,dust:0}],killerbasement:['quiet',{dust:.5,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],rooftop:['quiet',{dust:0,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],morgue:['quiet',{dust:0,mist:0,lights:0,lightCol:['200,235,215','180,220,200'],power:.5}],hallowicked:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.6,lightning:1,thunder:1,flashes:0,fog:.15,ripples:.9,bats:0,dust:0}],jeckel:['quiet',{dust:0,mist:.12,lights:0,lightCol:['255,190,120','255,150,90'],power:.5}],backwoods:['quiet',{dust:0,mist:.3,lights:0,lightCol:['255,170,90','255,140,60'],power:.5}],cabin:['quiet',{dust:0,mist:.12,lights:.25,lightCol:['255,170,90','255,140,60'],power:.5}],motel:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.3,lightning:0,thunder:0,flashes:0,fog:.35,ripples:.9,bats:0,dust:0}],riddlebox:['quiet',{dust:.45,mist:.3,lights:.35,lightCol:['255,190,110','255,150,80'],power:.5}],mirrors:['quiet',{dust:.55,mist:.25,lights:.45,lightCol:['255,200,120','255,170,90'],power:.5}],deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
 };
 function envConfig(stg){const e=ENV_STAGE[stg.id]||[stg.indoor?'quiet':'city'],c={...ENV_PRESET[e[0]],...(e[1]||{})};
   if(stg.indoor){c.fireworks=0;c.shooting=0;c.lightning=0;c.bats=c.bats?c.bats*.4:0;c.flashes=0}
