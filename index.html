@@ -8376,7 +8376,7 @@ function showSelect(){
   const label={features:['Player One','Player Two'],featcpu:['Player One','CPU team'],pvp:['Player One','Player Two'],cpu:['Player One','CPU'],story:['Player One','???'],tower:['Player One','???'],training:['Player One','Sparring partner'],online:['You','Opponent'],watch:['CPU One','CPU Two']}[t]||['Player One','Player Two'];
   if(G.coop&&!online)label[0]='Player One + Two';
   const title={story:'Tour',features:'Features',featcpu:'Features vs CPU',tower:'Book a Slot',pvp:'Local Versus',cpu:G.mirror?'Mirror Match':'Vs CPU',training:'Training',online:'Online Features',watch:'Spectate'}[t]||'';
-  feShow(`<div class="fe fe-sel"><video class="fe-bgvid" src="media/selectbg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="fe-bgtint"></div>
+  feShow(`<div class="fe fe-sel"><video class="fe-bgvid" src="media/selectbg.mp4" poster="media/selectbg_poster.webp" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video><div class="fe-bgtint"></div>
       <div class="fe-side l" id="side0"><div class="fe-art" id="art0"></div><div class="fe-plate"><span class="who">${label[0]}</span><b id="nm0">—</b><i id="tt0"></i><div class="fe-crew" id="cr0"></div></div></div>
       <div class="fe-gridwrap"><div class="fe-sh"><div class="fe-sellogo" aria-hidden="true">The Last Verse</div><span class="chip">${esc(title)}</span><h2>${t==='watch'?'Choose both fighters':G.coop?'Player One picks, then Player Two':isFeat(t)?'Choose two fighters':'Choose your fighter'}</h2></div>
         ${CASES?`<div class="fe-shelves ${two?'two':'one'}" id="feGrid"></div>`:`<div class="fe-grid" id="feGrid" style="--cols:${cols}"></div>`}<p class="fe-ginfo" id="gInfo"></p>
