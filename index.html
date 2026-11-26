@@ -1735,6 +1735,42 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
+ { id:'church',name:"The Black Mass",img:'church',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1143,p:1,rigid:true},indoor:true,dry:true,ambient:[150, 100, 100],grade:'#2a0e10',rim:'rgba(255,70,60,.32)',farTone:'none',shadowL:[{x:1024,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'ritual',name:"The Ritual",img:'ritual',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1000/1143,p:1,rigid:true},indoor:false,dry:true,ambient:[150, 110, 100],grade:'#2a1414',rim:'rgba(255,130,80,.32)',farTone:'none',shadowL:[{x:1220,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'dungeon',name:"The Dungeon",img:'dungeon',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1127,p:1,rigid:true},indoor:true,dry:true,ambient:[150, 110, 140],grade:'#2a1428',rim:'rgba(255,140,90,.32)',farTone:'none',shadowL:[{x:1100,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'bowling',name:"The Bowling Alley",img:'bowling',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1030/1157,p:1,rigid:true},indoor:true,dry:true,ambient:[120, 110, 150],grade:'#1a1030',rim:'rgba(180,110,255,.34)',farTone:'none',shadowL:[{x:1024,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'studio',name:"The Studio",img:'studio',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1143,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 110, 170],grade:'#24123a',rim:'rgba(170,120,255,.34)',farTone:'none',shadowL:[{x:1030,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'bodega',name:"The Bodega",img:'bodega',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1000/1143,p:1,rigid:true},indoor:false,dry:true,ambient:[130, 115, 130],grade:'#1c1830',rim:'rgba(255,200,130,.32)',farTone:'none',shadowL:[{x:1000,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'lowrider',name:"The Car Show",img:'lowrider',extra:['lowrider_parts'],ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1000/1143,p:1,rigid:true},indoor:false,dry:true,ambient:[160, 120, 110],grade:'#3a1a28',rim:'rgba(255,160,100,.32)',farTone:'none',shadowL:[{x:763,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'block',name:"The Block",img:'block',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1143,p:1,rigid:true},indoor:false,dry:true,ambient:[120, 120, 150],grade:'#141a34',rim:'rgba(255,210,140,.3)',farTone:'none',shadowL:[{x:966,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
+ { id:'recordstore',name:"The Record Store",img:'recordstore',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1000/1143,p:1,rigid:true},indoor:true,dry:true,ambient:[150, 115, 120],grade:'#2a1626',rim:'rgba(255,90,200,.3)',farTone:'none',shadowL:[{x:1036,y:-200,a:.3}],crowd:{groups:[],front:0},
+   setup(){return{props:[],pend:[],puddles:[],throws:[]}},
+   build(g){},fg(g){},lights(){},
+ },
  { id:'court',name:"The Court",img:'court',extra:['court_parts'],ww:1226,zoom:1.12,full:{scale:1250/1024,feet:470/572,p:1,rigid:true},indoor:false,dry:true,ambient:[135, 115, 100],grade:'#22180f',rim:'rgba(255,200,130,.32)',farTone:'none',shadowL:[{x:512,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
@@ -2065,7 +2101,7 @@ function stagePump(){while(stqBusy<2&&STQ.length&&!(typeof fighterSheetsPending=
 function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true);if(stg&&stg.extra)for(const e of stg.extra){const x=STIMG[e];if(x&&!x._go)stageStart(x,true)}}
 for(const k in ASSET.stages)stagePic(k,ASSET.stages[k]);
 /* newer stage paintings ship as files next to the page instead of inside it */
-const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel',cabin:'cabin',backwoods:'backwoods',jeckel:'jeckel',hallowicked:'hallowicked',morgue:'morgue',rooftop:'rooftop',killerbasement:'killerbasement',swamp:'swamp',drivein:'drivein_alive',drivein_sky:'drivein_sky',asylum:'asylum_v2',junkyard:'junkyard',junkyard_parts:'junkyard_parts',subway:'subway',cemetery:'cemetery',trailerpark:'trailerpark',barn:'barn',barn_corn:'barn_corn',court:'court',court_parts:'court_parts',attic:'attic',attic_parts:'attic_parts',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
+const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delray',campground:'jg_campground',mansion:'jg_mansion',hellpit:'jg_hellpit',alley:'alley',hauntedhouse:'hauntedhouse',neontunnel:'neontunnel',midway:'midway',warehouse:'warehouse',juggalette:'juggalette',deadmall:'deadmall',mirrors:'mirrors',riddlebox:'riddlebox',motel:'motel',cabin:'cabin',backwoods:'backwoods',jeckel:'jeckel',hallowicked:'hallowicked',morgue:'morgue',rooftop:'rooftop',killerbasement:'killerbasement',swamp:'swamp',drivein:'drivein_alive',drivein_sky:'drivein_sky',asylum:'asylum_v2',junkyard:'junkyard',junkyard_parts:'junkyard_parts',subway:'subway',cemetery:'cemetery',trailerpark:'trailerpark',barn:'barn',barn_corn:'barn_corn',church:'church',ritual:'ritual',dungeon:'dungeon',bowling:'bowling',studio:'studio',bodega:'bodega',lowrider:'lowrider',lowrider_parts:'lowrider_parts',block:'block',recordstore:'recordstore',court:'court',court_parts:'court_parts',attic:'attic',attic_parts:'attic_parts',jeckel_parts:'jeckel_parts',motel_parts:'motel_parts',riddlebox_parts:'riddlebox_parts',nu_ring:'ring_lv',nu_ring_front:'ring_lv_front',killroom:'killroom',killroom_wet:'killroom_wet',killroom_spec:'killroom_spec',killroom_blood:'killroom_blood',nu_bigtop:'nu_bigtop',nu_studio:'nu_studio',theater:'theater',theater_over:'theater_over'};
 /* these four stages used to be painted in code every time the game opened (several seconds on a phone);
    the same pictures now ship as files, and the painting code only runs if a file can't load */
 for(const[k,f,paint]of[['slaughter','p_slaughter',()=>paintSlaughterhouse()],['sewer','p_sewer',()=>paintSewer()],['cage','p_cage',()=>paintCage()],['club','p_club',()=>paintClub()]]){
@@ -3241,6 +3277,161 @@ Object.assign(ALIVE_FX,{
     if(im){const bp=(t%39)/39,kick=Math.exp(-bp*7),snare=Math.exp(-(((t+20)%39)/39)*9)*.5,pump=Math.max(kick,snare);g.globalCompositeOperation='source-over';
       for(const [x,y,r] of o.spk){const sc=1+.09*pump;g.save();g.beginPath();g.arc(X(x),Y(y),(r+1)*k,0,7);g.clip();g.drawImage(im,x-r-2,y-r-2,(r+2)*2,(r+2)*2,X(x-(r+2)*sc),Y(y-(r+2)*sc),(r+2)*2*sc*k,(r+2)*2*sc*k);g.restore()}}
     g.restore()},
+  // The Record Store: the Technics spin, the mixer lights bounce to the beat, the boomboxes pump, the VINYL JUNGLE neon hums
+  // and stutters, dust hangs in the ceiling spots, and headlights from passing cars sweep across the front window
+  recordfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const bp=(t%39)/39,kick=Math.exp(-bp*7),snare=Math.exp(-(((t+20)%39)/39)*9)*.6,beat=Math.max(kick,snare);
+    // turntables
+    g.globalCompositeOperation='lighter';o.tt.forEach(([x,y,rx,ry],i)=>{const a=t*.058*(i===1?1.02:1)+i*2;g.save();g.beginPath();g.ellipse(X(x),Y(y),rx*k,ry*k,0,0,7);g.clip();g.translate(X(x),Y(y));g.scale(1,ry/rx);
+      for(const off of [0,Math.PI]){g.rotate(off);const gr=g.createLinearGradient(0,0,Math.cos(a)*rx*k,Math.sin(a)*rx*k);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.6,'rgba(255,240,230,.14)');gr.addColorStop(1,'rgba(255,240,230,0)');
+        g.fillStyle=gr;g.beginPath();g.moveTo(0,0);g.arc(0,0,rx*k,a-.22,a+.22);g.closePath();g.fill()}
+      g.fillStyle='rgba(255,180,120,.35)';const lr=rx*.3*k;g.beginPath();g.arc(Math.cos(a*1.0)*lr*.55,Math.sin(a)*lr*.55,2.2*k,0,7);g.fill();g.restore()});
+    // mixer lights
+    o.mixer.forEach(([x,y],i)=>{const lv=Math.max(0,beat*(1-i*.08)-rnd(Math.floor(t/4),i)*.25);const col=i<4?'90,255,140':i<5?'255,220,80':'255,70,70';glow(g,X(x),Y(y+22),3*k,col,.9*lv);glow(g,X(x),Y(y+22),9*k,col,.25*lv)});
+    // ceiling spots and the dust in them
+    o.spots.forEach(([x,y],i)=>{const l=.9+.06*Math.sin(t*.05+i)+.04*rnd(Math.floor(t/3),i);glow(g,X(x),Y(y+12),30*k,'255,215,150',.35*l);glow(g,X(x),Y(y+110),170*k,'255,190,120',.06*l)});
+    for(let i=0;i<30;i++){const sp=o.spots[i%3],u=((t*(.0005+aH(i*1.7)*.0007))+aH(i*3.1))%1,x=sp[0]+(aH(i*4.3)-.5)*(30+260*u)+Math.sin(t*.012+i)*10,y=sp[1]+20+u*520,a=Math.sin(u*Math.PI)*.4;g.fillStyle=`rgba(255,230,190,${a})`;g.fillRect(X(x),Y(y),2*k,2*k)}
+    // neon sign
+    {const[a,b,c,d]=o.neon,nc=Math.floor(t/700),nu=t%700;let on=1;if(aH(nc*3.1)<.5&&nu<60)on=rnd(Math.floor(t/3),nc)<.45?0:1;const hum=.92+.05*Math.sin(t*.6)+.05*beat;
+      glow(g,X((a+c)/2),Y((b+d)/2-20),300*k,'255,60,200',.09*hum);glow(g,X((a+c)/2),Y(d-25),260*k,'60,220,255',.06*hum);
+      g.fillStyle=`rgba(255,90,210,${.05*hum})`;g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k);
+      if(!on){const[wa,wb,wc,wd]=o.word;g.globalCompositeOperation='multiply';g.fillStyle='rgb(120,90,120)';g.fillRect(X(wa),Y(wb),(wc-wa)*k,(wd-wb)*k);g.globalCompositeOperation='lighter'}}
+    // headlights sweeping across the front window
+    {const sc=Math.floor(t/620),su=t%620;if(aH(sc*2.7)<.7&&su<140){const u=su/140,dir=aH(sc*5.9)<.5?1:-1,xx=dir>0?1480+u*620:2100-u*620,a=Math.sin(u*Math.PI);
+      g.save();g.beginPath();o.win.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.clip();
+      const gr=g.createLinearGradient(X(xx-110),0,X(xx+110),0);gr.addColorStop(0,'rgba(255,240,210,0)');gr.addColorStop(.5,`rgba(255,240,210,${.22*a})`);gr.addColorStop(1,'rgba(255,240,210,0)');g.fillStyle=gr;g.fillRect(X(xx-110),Y(60),220*k,860*k);g.restore();
+      glow(g,X(xx-40),Y(980),220*k,'255,235,200',.05*a)}}
+    // boombox speakers pump
+    if(im){g.globalCompositeOperation='source-over';for(const [x,y,r] of o.spk){const sc=1+.08*beat;g.save();g.beginPath();g.arc(X(x),Y(y),(r+1)*k,0,7);g.clip();g.drawImage(im,x-r-2,y-r-2,(r+2)*2,(r+2)*2,X(x-(r+2)*sc),Y(y-(r+2)*sc),(r+2)*2*sc*k,(r+2)*2*sc*k);g.restore()}}
+    g.restore()},
+  // The Block: apartment windows go dark and light up (a few flicker TV blue), the streetlights buzz with moths around them,
+  // the laundry on the lines sways, the moon glows, antenna lights blink, and the raccoon in the dumpster sniffs and blinks
+  blockfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    if(im){g.globalCompositeOperation='source-over';const wind=.7+.3*Math.sin(t*.005)+.4*Math.max(0,Math.sin(t*.0021+1));
+      for(const L of [o.laundry,o.laundry2]){const[lx,ly,lw,lh]=L;for(let y=4;y<lh;y+=3){const f=y/lh,dx=(Math.sin(t*.03+y*.04)*1.4+Math.sin(t*.011)*1)*wind*f;if(Math.abs(dx)<.1)continue;
+        g.drawImage(im,lx,ly+y,lw,3,X(lx+dx),Y(ly+y),lw*k,3.1*k)}}
+      // raccoon: sniffs (bobs up a little) and blinks
+      {const[rx,ry,rw,rh]=o.rac,sn=Math.floor(t/500),su=t%500;let up=0;if(aH(sn*2.1)<.7&&su<80)up=Math.abs(Math.sin(su/80*Math.PI*3))*2.5;
+        if(up>.1){g.save();g.beginPath();g.rect(X(rx-6),Y(ry-10),(rw+12)*k,(o.rim-ry+10)*k);g.clip();g.drawImage(im,rx,ry,rw,o.rim-ry,X(rx),Y(ry-up),rw*k,(o.rim-ry)*k);g.restore()}
+        const bc=(t+90)%260;if(bc<8){o.eyes.forEach(([x,y])=>{g.fillStyle='#3a3230';g.beginPath();g.ellipse(X(x),Y(y-up),8*k,7*k,0,0,7);g.fill();g.strokeStyle='#111';g.lineWidth=1.4*k;g.beginPath();g.moveTo(X(x-7),Y(y-up+1));g.quadraticCurveTo(X(x),Y(y-up+4),X(x+7),Y(y-up+1));g.stroke()})}}}
+    o.wins.forEach(([a,b,c,d],i)=>{const per=900+aH(i*1.3)*1800,cy=Math.floor((t+aH(i*4.1)*per)/per),off=aH(cy*3.3+i*.7)<.25;
+      if(off){g.globalCompositeOperation='multiply';g.fillStyle='rgb(55,55,80)';g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k)}
+      else if(i%7===3){g.globalCompositeOperation='lighter';g.fillStyle=`rgba(90,130,255,${.15+.25*rnd(Math.floor(t/5),i)})`;g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k)}});
+    g.globalCompositeOperation='lighter';
+    o.lamps.forEach(([x,y],i)=>{const c=Math.floor((t+i*400)/900),u=(t+i*400)%900;let lv=.92+.05*Math.sin(t*1.3+i)+.03*rnd(Math.floor(t/2),i);if(aH(c*3.3+i)<.4&&u<50)lv=rnd(Math.floor(t/3),c+i)<.45?.15:.95;
+      glow(g,X(x),Y(y),20*k,'255,225,150',.65*lv);glow(g,X(x),Y(y+40),110*k,'255,200,120',.14*lv);glow(g,X(x-10),Y(y+300),200*k,'255,190,110',.07*lv)});
+    {const[mx,my]=o.moon,p=.5+.5*Math.sin(t*.01);glow(g,X(mx),Y(my),110*k,'200,220,255',.12+.04*p);glow(g,X(mx),Y(my),260*k,'150,180,255',.05)}
+    o.ant.forEach(([x,y],i)=>{const on=((t+i*37)%110)<55;if(on){glow(g,X(x),Y(y),3*k,'255,60,50',.9);glow(g,X(x),Y(y),10*k,'255,40,30',.3)}});
+    g.restore()},
+  // The Car Show: the lowrider hits its switches and hops on the hydraulics, the palms sway, the speakers pump,
+  // the photographer's flash pops, the sunset glows, trophies glint and the taco truck window glows
+  lowfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233),P=STIMG.lowrider_parts;g.save();
+    const bp=(t%39)/39,kick=Math.exp(-bp*7),snare=Math.exp(-(((t+20)%39)/39)*9)*.6,beat=Math.max(kick,snare);
+    g.globalCompositeOperation='lighter';{const[sx,sy]=o.sun,p=.5+.5*Math.sin(t*.012);glow(g,X(sx),Y(sy),180*k,'255,170,80',.12+.04*p);glow(g,X(sx),Y(sy),420*k,'255,120,90',.05)}
+    if(im){g.globalCompositeOperation='source-over';const[px,py,pw,ph]=o.palms,wind=.7+.3*Math.sin(t*.004)+.4*Math.max(0,Math.sin(t*.0017+1));
+      for(let y=0;y<ph;y+=3){const f=Math.pow(1-y/ph,1.3),dx=(Math.sin(t*.022+y*.012)*2.6+Math.sin(t*.051+y*.03)*.8)*wind*f;if(Math.abs(dx)<.1)continue;g.drawImage(im,px,py+y,pw,3,X(px+dx),Y(py+y),pw*k,3.1*k)}}
+    if(P&&P.ok){const[bx,by,bw,bh]=o.body,[qx,qy]=o.pivot,hc=Math.floor(t/420),hu=t%420;let lift=1.2*beat;
+      if(aH(hc*2.9)<.75&&hu<150){const u=hu/150;lift+=Math.abs(Math.sin(u*Math.PI*3))*(1-u*.5)*9}
+      const ang=-lift*.0016;g.globalCompositeOperation='source-over';g.save();g.translate(X(qx),Y(qy-lift*.25));g.rotate(ang);g.drawImage(P,(bx-qx)*k,(by-qy)*k,bw*k,bh*k);g.restore()}
+    if(im){g.globalCompositeOperation='source-over';for(const [x,y,r] of o.spk){const sc=1+.08*beat;g.save();g.beginPath();g.arc(X(x),Y(y),(r+1)*k,0,7);g.clip();g.drawImage(im,x-r-2,y-r-2,(r+2)*2,(r+2)*2,X(x-(r+2)*sc),Y(y-(r+2)*sc),(r+2)*2*sc*k,(r+2)*2*sc*k);g.restore()}}
+    g.globalCompositeOperation='lighter';
+    {const fc=Math.floor(t/500),fu=t%500;if(aH(fc*4.3)<.7&&fu<10){const a=1-fu/10;const[fx,fy]=o.flash;glow(g,X(fx),Y(fy),16*k,'255,255,255',a);glow(g,X(fx),Y(fy),140*k,'240,245,255',.25*a);
+      o.heads.forEach(([x,y])=>glow(g,X(x),Y(y),14*k,'255,255,240',.5*a))}}
+    {const[a,b,c,d]=o.truck;glow(g,X((a+c)/2),Y((b+d)/2),70*k,'255,210,140',.12+.03*Math.sin(t*.07))}
+    {const l=.6+.3*Math.sin(t*.01);glow(g,X(o.lamp[0]),Y(o.lamp[1]),12*k,'255,220,160',.45*l)}
+    o.trophies.forEach(([x,y],i)=>{const u=((t+i*113)%330)/30;if(u<1){const a=Math.sin(u*Math.PI);glow(g,X(x),Y(y),5*k,'255,255,230',.9*a);glow(g,X(x),Y(y),22*k,'255,230,150',.25*a)}});
+    g.restore()},
+  // The Bodega: Corona and Bud Light neon buzz and stutter, Luna the cat blinks, the subway globes glow green,
+  // the streetlamp flickers with moths, apartment windows go dark and light up, antenna lights blink, steam drifts up from the subway
+  bodegafx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    o.wins.forEach(([a,b,c,d],i)=>{const per=900+aH(i*1.3)*1800,cy=Math.floor((t+aH(i*4.1)*per)/per);if(aH(cy*3.3+i*.7)<.25){g.globalCompositeOperation='multiply';g.fillStyle='rgb(60,58,85)';g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k)}});
+    // Luna blinks (sometimes a slow happy blink)
+    {const bc=(t+50)%300,slow=aH(Math.floor((t+50)/300)*2.7)<.35,len=slow?40:8;if(bc<len){g.globalCompositeOperation='source-over';o.cat.forEach(([x,y])=>{g.fillStyle='rgb(222,140,78)';g.beginPath();g.ellipse(X(x),Y(y),5.5*k,4.6*k,0,0,7);g.fill();
+      g.strokeStyle='#2a160c';g.lineWidth=1.3*k;g.beginPath();g.moveTo(X(x-5),Y(y));g.quadraticCurveTo(X(x),Y(y+2.5),X(x+5),Y(y));g.stroke()})}}
+    g.globalCompositeOperation='lighter';
+    const neon=(r,rgb,seed)=>{const c=Math.floor((t+seed*131)/(520+seed*90)),u=(t+seed*131)%(520+seed*90);let on=1;if(aH(c*2.3+seed)<.55&&u<60)on=rnd(Math.floor(t/3),c+seed)<.45?0:1;const[a,b,c2,d]=r,cx=(a+c2)/2,cy=(b+d)/2;
+      if(on){glow(g,X(cx),Y(cy),(c2-a)*.75*k,rgb,.2+.04*Math.sin(t*.5+seed));g.fillStyle=`rgba(${rgb},.08)`;g.fillRect(X(a),Y(b),(c2-a)*k,(d-b)*k)}
+      else{g.globalCompositeOperation='multiply';g.fillStyle='rgb(170,150,150)';g.fillRect(X(a),Y(b),(c2-a)*k,(d-b)*k);g.globalCompositeOperation='lighter'}};
+    neon(o.corona,'90,170,255',1);neon(o.bud,'80,130,255',2);
+    glow(g,X(o.shop[0]),Y(o.shop[1]),240*k,'255,200,120',.07+.01*Math.sin(t*.04));glow(g,X(o.shop[0]),Y(820),320*k,'255,190,110',.05);
+    glow(g,X(o.awn[0]),Y(o.awn[1]),14*k,'255,230,170',.55);
+    o.globes.forEach(([x,y],i)=>{const l=.9+.08*Math.sin(t*.05+i*2);glow(g,X(x),Y(y),22*k,'120,255,170',.45*l);glow(g,X(x),Y(y+60),110*k,'100,255,160',.09*l)});
+    {const c=Math.floor(t/750),u=t%750;let lv=.92+.05*Math.sin(t*1.1);if(aH(c*3.9)<.45&&u<50)lv=rnd(Math.floor(t/3),c)<.45?.12:.95;const[x,y]=o.lamp;glow(g,X(x),Y(y),24*k,'255,230,170',.65*lv);glow(g,X(x),Y(y+50),140*k,'255,210,140',.12*lv);glow(g,X(x-40),Y(820),220*k,'255,200,130',.05*lv)}
+    o.reds.forEach(([x,y],i)=>{if(((t+i*41)%120)<60){glow(g,X(x),Y(y),3*k,'255,60,50',.9);glow(g,X(x),Y(y),10*k,'255,40,30',.3)}});
+    g.restore()},
+  // The Studio: the beat is playing, so the monitors pump, the console meters bounce, the MPC pads light up,
+  // the LED strips and the neon mic hum (the mic sign stutters now and then), the red booth lamp glows and gold records glint
+  studiofx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const bp=(t%39)/39,kick=Math.exp(-bp*7),snare=Math.exp(-(((t+20)%39)/39)*9)*.6,beat=Math.max(kick,snare),bar=Math.floor(t/39);
+    if(im){g.globalCompositeOperation='source-over';for(const [x,y,r] of o.spk){const sc=1+.08*beat;g.save();g.beginPath();g.arc(X(x),Y(y),(r+1)*k,0,7);g.clip();g.drawImage(im,x-r-2,y-r-2,(r+2)*2,(r+2)*2,X(x-(r+2)*sc),Y(y-(r+2)*sc),(r+2)*2*sc*k,(r+2)*2*sc*k);g.restore()}}
+    g.globalCompositeOperation='lighter';
+    o.strips.forEach(([a,b,c,d,col],i)=>{const l=.85+.08*Math.sin(t*.4+i)+.1*beat;glow(g,X((a+c)/2),Y((b+d)/2),(c-a)*.7*k,col,.1*l);if(d-b<30){g.fillStyle=`rgba(${col},${.12*l})`;g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k)}else for(let u=0;u<=1;u+=.25)glow(g,X(c-(c-a)*u),Y(b+(d-b)*u),40*k,col,.12*l)});
+    {const[a,b,c,d]=o.mic,mc=Math.floor(t/800),mu=t%800;let on=1;if(aH(mc*2.9)<.5&&mu<55)on=rnd(Math.floor(t/3),mc)<.45?0:1;
+      if(on){glow(g,X((a+c)/2),Y(b+150),180*k,'90,210,255',.13+.03*Math.sin(t*.3));glow(g,X((a+c)/2),Y(b+110),70*k,'200,240,255',.1)}
+      else{g.globalCompositeOperation='multiply';g.fillStyle='rgb(120,120,150)';g.beginPath();g.ellipse(X((a+c)/2),Y(b+140),(c-a)*.42*k,150*k,0,0,7);g.fill();g.globalCompositeOperation='lighter'}}
+    {const l=.9+.05*Math.sin(t*.07)+.05*rnd(Math.floor(t/3),2);const[lx,ly]=o.lamp;glow(g,X(lx),Y(ly+20),40*k,'255,80,80',.4*l);
+      g.fillStyle=`rgba(255,60,70,${.06*l})`;g.beginPath();o.booth.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.fill()}
+    o.under.forEach(([a,y,c])=>{glow(g,X((a+c)/2),Y(y),(c-a)*.7*k,'90,200,255',.14+.05*beat)});
+    {const[a,y,c]=o.meters;for(let x=a,i=0;x<=c;x+=20,i++){const lv=Math.max(0,beat*(.6+.4*rnd(bar,i))-.15);if(lv<.05)continue;const col=lv>.7?'255,80,60':lv>.45?'255,210,80':'90,255,140';glow(g,X(x),Y(y),3*k,col,lv);glow(g,X(x),Y(y),8*k,col,.25*lv)}}
+    {const[a,b,c,d]=o.pads,cols=['255,60,90','255,170,60','90,200,255','160,255,120'];for(let i=0;i<16;i++){const px=a+(i%4+.5)*(c-a)/4,py=b+(Math.floor(i/4)+.5)*(d-b)/4,hit=rnd(bar,i+50)<.18?kick:0;if(hit>.05)glow(g,X(px),Y(py),6*k,cols[i%4],.8*hit)}}
+    o.gold.forEach(([x,y],i)=>{const u=((t+i*97)%300)/40;if(u<1){const a=Math.sin(u*Math.PI);glow(g,X(x+10),Y(y-10),6*k,'255,250,220',.8*a);glow(g,X(x),Y(y),30*k,'255,220,140',.18*a)}});
+    g.restore()},
+  // The Bowling Alley: the broken disco ball turns and throws colored spots across the room, the neon shapes buzz and stutter
+  // (their reflections on the lanes go with them), the busted video board glitches, loose wires spark, the little red lights blink
+  bowlfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    const[bx,by,br]=o.ball,cols=['190,110,255','110,255,140','90,200,255','255,120,220'];
+    g.globalCompositeOperation='lighter';
+    // spots thrown by the disco ball sweep over walls and floor
+    for(let i=0;i<22;i++){const a=t*.006+i*2.399,el=.15+aH(i*3.1)*.75,rr=260+el*900,x=bx+Math.cos(a)*rr*1.1,y=by+120+Math.abs(Math.sin(a*.7+i))*(200+el*700);if(i%5===3&&aH(Math.floor(t/40)+i)<.3)continue;
+      glow(g,X(x),Y(y),(10+el*12)*k,cols[i%4],.22)}
+    // glints on the ball
+    for(let i=0;i<5;i++){const c=Math.floor((t+i*17)/23),u=((t+i*17)%23)/23,ga=rnd(c,i)*6.28,gr=rnd(c,i+9)*.85*br;if(Math.hypot(Math.cos(ga)*gr+10,Math.sin(ga)*gr-20)<45)continue;const a=Math.sin(u*Math.PI);
+      glow(g,X(bx+Math.cos(ga)*gr),Y(by+Math.sin(ga)*gr),4*k,'255,255,255',.9*a);glow(g,X(bx+Math.cos(ga)*gr),Y(by+Math.sin(ga)*gr),16*k,'220,200,255',.25*a)}
+    // neon shapes and their reflections down the lanes
+    o.neon.forEach(([x,y,col],i)=>{const c=Math.floor((t+i*150)/(560+i*70)),u=(t+i*150)%(560+i*70);let on=1;if(aH(c*2.1+i)<.5&&u<55)on=rnd(Math.floor(t/3),c+i)<.45?0:1;
+      if(on){const l=.9+.06*Math.sin(t*.5+i);glow(g,X(x),Y(y),75*k,col,.2*l);g.save();g.translate(X(x+(x-1024)*.15),Y(700));g.scale(.5,1.8);glow(g,0,0,110*k,col,.07*l);g.restore()}
+      else{g.globalCompositeOperation='multiply';g.fillStyle='rgb(70,70,90)';g.beginPath();g.ellipse(X(x),Y(y),62*k,50*k,0,0,7);g.fill();g.globalCompositeOperation='lighter'}});
+    // video board glitches
+    {const tc=Math.floor(t/6);let a=.12+.1*rnd(tc,1);if(rnd(Math.floor(t/90),2)<.25&&(t%90)<20)a=rnd(tc,3)<.5?.0:.35;const q=o.tv;g.fillStyle=`rgba(${cols[Math.floor(rnd(Math.floor(t/30),4)*4)]},${a*.5})`;
+      g.beginPath();q.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.fill();glow(g,X(1680),Y(140),260*k,'170,120,255',a*.35)}
+    // sparks from the loose wires
+    o.sparks.forEach(([x,y],i)=>{const c=Math.floor((t+i*333)/260),u=(t+i*333)%260;if(aH(c*5.7+i)<.6&&u<14){const a=1-u/14;glow(g,X(x),Y(y),5*k,'255,250,220',a);glow(g,X(x),Y(y),40*k,'170,210,255',.4*a);
+      g.fillStyle=`rgba(255,240,180,${a})`;for(let j=0;j<6;j++){const sa=rnd(c,j+i*10)*3.14,sd=u*(2+rnd(c,j+30)*3);g.fillRect(X(x+Math.cos(sa)*sd*3),Y(y+Math.sin(sa)*sd*2+u*u*.15),1.6*k,1.6*k)}}});
+    o.reds.forEach(([x,y],i)=>{const on=((t+i*23)%(70+i%3*20))<40;if(on){glow(g,X(x),Y(y),3*k,'255,40,40',.85);glow(g,X(x),Y(y),9*k,'255,30,30',.25)}});
+    glow(g,X(o.exit[0]),Y(o.exit[1]),18*k,'255,50,40',.3+.1*Math.sin(t*.05));
+    g.restore()},
+  // The Dungeon: torches flicker, the hellfire in the broken wall roars and spits embers, the runes on the wall breathe purple,
+  // the summoning circle pulses, and the cauldron bubbles green over its fire
+  dungeonfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();g.globalCompositeOperation='lighter';
+    o.torches.forEach(([x,y],i)=>{const l=.75+.15*Math.sin(t*(.21+i*.03)+i)+.1*rnd(Math.floor(t/3),i);glow(g,X(x),Y(y),16*k,'255,220,140',.55*l);glow(g,X(x),Y(y+20),110*k,'255,150,60',.14*l)});
+    {const[a,b,c,d]=o.portal,cx=(a+c)/2,l=.8+.12*Math.sin(t*.13)+.08*rnd(Math.floor(t/3),9);glow(g,X(cx),Y(d-120),200*k,'255,110,40',.18*l);glow(g,X(cx),Y(d+80),360*k,'255,90,40',.08*l);
+      for(let i=0;i<24;i++){const u=((t*(.0025+aH(i*1.7)*.003))+aH(i*3.3))%1,x=a+30+aH(i*5.1)*(c-a-60)+Math.sin(t*.05+i)*12*u,y=d-20-u*(d-b+60),al=Math.sin(u*Math.PI)*.9;
+        g.fillStyle=`rgba(255,${150+aH(i)*80|0},60,${al})`;g.fillRect(X(x),Y(y),2.4*k,2.4*k)}}
+    {const[a,b,c,d]=o.runes,p=.5+.5*Math.sin(t*.025);glow(g,X((a+c)/2),Y((b+d)/2),(c-a)*.6*k,'180,110,255',.06+.06*p)}
+    {const[x,y,rx,ry]=o.pent,p=.5+.5*Math.sin(t*.03);g.save();g.translate(X(x),Y(y));g.scale(1,ry/rx);glow(g,0,0,rx*1.05*k,'230,180,255',.06+.07*p);g.restore()}
+    {const[cx,cy]=o.caul;glow(g,X(cx),Y(cy),90*k,'140,255,110',.16+.04*Math.sin(t*.09));for(let i=0;i<6;i++){const c=Math.floor((t+i*29)/70),u=((t+i*29)%70)/70,bx=cx-70+rnd(c,i)*140,by=cy+4-u*10,r=(3+rnd(c,i+9)*7)*Math.sin(u*Math.PI);
+      g.strokeStyle=`rgba(200,255,170,${.7*(1-u)})`;g.lineWidth=1.4*k;g.beginPath();g.arc(X(bx),Y(by),Math.max(.5,r)*k,0,7);g.stroke()}}
+    {const[x,y]=o.cfire,l=.75+.2*Math.sin(t*.23)+.1*rnd(Math.floor(t/3),5);glow(g,X(x),Y(y),30*k,'255,190,90',.5*l);glow(g,X(x),Y(y+20),130*k,'255,140,50',.12*l)}
+    g.restore()},
+  // The Ritual: the bonfire roars and throws embers up toward the blood moon, the standing stones catch the firelight,
+  // the black candles flicker, and the moon pulses red
+  ritualfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();g.globalCompositeOperation='lighter';
+    {const[mx,my]=o.moon,p=.5+.5*Math.sin(t*.015);glow(g,X(mx),Y(my),150*k,'255,60,50',.1+.05*p);glow(g,X(mx),Y(my),320*k,'200,40,40',.05+.02*p)}
+    {const[fx,fy,fb]=o.fire,l=.78+.14*Math.sin(t*.17)+.08*rnd(Math.floor(t/3),1);glow(g,X(fx),Y(fy+40),180*k,'255,170,70',.18*l);glow(g,X(fx),Y(fb+120),420*k,'255,130,60',.07*l);
+      for(let i=0;i<30;i++){const u=((t*(.0022+aH(i*1.7)*.0025))+aH(i*3.3))%1,x=fx+(aH(i*5.1)-.5)*120+Math.sin(t*.04+i*2)*30*u,y=fb-60-u*440,al=Math.sin(u*Math.PI)*.9;
+        g.fillStyle=`rgba(255,${130+aH(i)*100|0},50,${al})`;g.fillRect(X(x),Y(y),2.6*k,2.6*k)}}
+    o.cands.forEach(([x,y],i)=>{const l=.78+.14*Math.sin(t*(.19+i*.02)+i*2)+.08*rnd(Math.floor(t/2),i+10);glow(g,X(x),Y(y),8*k,'255,220,140',.6*l);glow(g,X(x),Y(y+10),45*k,'255,170,80',.16*l)});
+    g.restore()},
+  // The Black Mass: candles flicker, the red rose window pulses, the goat idol's eyes smolder,
+  // the pentagram on the floor glows and breathes, and the fire basket spits embers
+  churchfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();g.globalCompositeOperation='lighter';
+    {const[x,y]=o.rose,p=.5+.5*Math.sin(t*.02);glow(g,X(x),Y(y),110*k,'255,50,40',.16+.08*p);glow(g,X(x),Y(y+200),340*k,'255,40,40',.06+.03*p)}
+    {const ec=Math.floor(t/900),eu=t%900,flare=aH(ec*3.3)<.6&&eu<120?Math.sin(eu/120*Math.PI):0,e=.35+.65*flare;o.eyes.forEach(([x,y])=>{glow(g,X(x),Y(y),4*k,'255,60,40',.9*e);glow(g,X(x),Y(y),16*k,'255,30,20',.35*e)})}
+    {const[x,y,rx,ry]=o.pent,p=.5+.5*Math.sin(t*.03);g.save();g.translate(X(x),Y(y));g.scale(1,ry/rx);glow(g,0,0,rx*1.05*k,'255,50,40',.07+.07*p);g.restore()}
+    o.cands.forEach(([x,y],i)=>{const l=.78+.14*Math.sin(t*(.19+i*.017)+i*2)+.08*rnd(Math.floor(t/2),i+10);glow(g,X(x),Y(y),7*k,'255,220,140',.55*l);glow(g,X(x),Y(y+10),45*k,'255,160,80',.13*l)});
+    {const[x,y]=o.fire,l=.78+.16*Math.sin(t*.21)+.08*rnd(Math.floor(t/3),3);glow(g,X(x),Y(y),50*k,'255,190,90',.4*l);glow(g,X(x),Y(y+40),200*k,'255,140,60',.12*l);
+      for(let i=0;i<16;i++){const u=((t*(.003+aH(i*1.7)*.003))+aH(i*3.3))%1,ex=x+(aH(i*5.1)-.5)*60+Math.sin(t*.05+i)*14*u,ey=y-10-u*260,al=Math.sin(u*Math.PI)*.85;g.fillStyle=`rgba(255,${140+aH(i)*90|0},60,${al})`;g.fillRect(X(ex),Y(ey),2.2*k,2.2*k)}}
+    g.restore()},
   // The Barn: the corn sways in the wind, the blood moon pulses, the candles in the ritual circle flicker and the pentagram glows,
   // the lantern in the barn door flickers, and now and then red eyes open inside the scarecrow's hood (and the goat skull's sockets answer)
   barnfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
@@ -3818,6 +4009,29 @@ Object.assign(ALIVE,{
     ['moths',{at:[[512,40],[818,132]],n:5}],
     ['smoke',{x:790,y:478,n:6,spread:50,rise:90,size:40,a:.1,rate:.004,wind:.3,rgb:'200,190,180'}],
     ['smoke',{x:660,y:518,n:5,spread:60,rise:70,size:34,a:.08,rate:.004,wind:.3,rgb:'200,190,180'}]],
+  recordstore:[
+    ['recordfx',{"tt":[[893,584,53,10],[1105,584,55,10],[445,612,28,6]],"neon":[790,205,1285,360],"word":[1105,210,1272,292],"spots":[[350,14],[479,102],[574,165],[1737,163]],"mixer":[[952,580],[968,580],[984,580],[1000,580],[1016,580],[1032,580]],"spk":[[1560,712,16],[1645,725,16],[1540,785,17],[1620,800,19],[1665,812,21],[1760,825,23]],"win":[[1505,240],[1880,80],[2048,60],[2048,905],[1860,800],[1505,720]]}]],
+  block:[
+    ['blockfx',{"wins":[[631,0,637,14],[611,7,617,43],[621,13,627,41],[413,21,420,31],[630,20,636,39],[380,53,385,76],[389,57,414,74],[684,80,703,100],[533,85,563,118],[790,106,805,140],[533,108,563,141],[742,127,753,140],[612,134,637,163],[532,136,562,163],[259,147,265,159],[611,155,637,181],[279,170,305,216],[619,187,626,214],[256,189,267,195],[611,188,616,210],[629,192,636,220],[377,204,418,239],[271,223,284,272],[254,224,266,265],[289,230,302,278],[377,231,418,265],[923,237,929,249],[923,252,929,264],[975,258,988,273],[377,260,384,284],[388,265,416,291],[975,276,988,292],[0,296,34,329],[922,300,929,312],[922,315,929,325],[0,331,34,364],[118,331,172,397],[0,370,32,399],[271,380,303,430],[812,387,834,450],[253,392,270,399],[786,393,802,427],[778,394,782,430],[115,400,166,421],[373,406,416,433],[251,408,261,416],[153,421,166,468],[135,424,148,464],[118,426,131,459],[786,429,802,441],[373,430,415,465],[773,432,783,469],[976,435,983,443],[252,440,262,457],[267,440,281,461],[286,444,299,465],[1760,456,1767,474],[840,458,845,483],[252,464,262,485],[267,466,281,489],[384,469,389,476],[286,470,299,493],[391,470,413,487],[732,478,739,490],[1738,479,1744,496],[1472,483,1491,498],[395,485,401,521],[1729,491,1733,505],[1749,492,1754,514],[441,494,448,500],[733,501,765,515],[405,504,412,529],[1473,504,1490,520],[711,506,754,560],[706,553,710,574],[1550,552,1565,572],[715,555,719,568],[724,557,729,565],[1031,585,1040,595],[531,595,562,616],[1385,616,1402,627],[650,639,718,661],[1358,648,1374,673],[545,653,558,667],[406,672,413,683],[388,696,407,712],[1232,700,1255,716],[1555,701,1564,720],[660,705,666,714],[1319,711,1327,720],[660,716,669,731],[579,729,588,750],[659,740,664,747],[1067,775,1082,788],[901,794,909,820],[706,805,721,811],[725,806,737,813],[844,814,884,820]],"lamps":[[966,526],[1622,494]],"moon":[1461,115],"rac":[1868,730,124,92],"rim":820,"eyes":[[1910,784],[1945,781]],"laundry":[380,435,150,150],"laundry2":[1410,330,90,40],"ant":[[1932,143],[2010,150],[1700,140]]}],
+    ['moths',{at:[[966,526],[1622,494]],n:5}]],
+  lowrider:[
+    ['lowfx',{"body":[0,315,852,387],"pivot":[60,690],"palms":[700,55,360,290],"spk":[[1740,800,45],[1855,822,50],[1970,860,48],[1745,722,24],[1812,752,18],[1898,755,17]],"flash":[1407,466],"sun":[763,413],"lamp":[151,294],"truck":[1010,421,1081,509],"trophies":[[1868,517],[1940,549],[1987,509]],"heads":[[604,590],[640,585],[875,560],[905,560]]}]],
+  bodega:[
+    ['bodegafx',{"wins":[[1259,179,1270,190],[1435,198,1461,220],[1578,198,1604,225],[1257,205,1265,214],[1360,207,1383,226],[1435,230,1456,256],[1578,231,1604,242],[1360,232,1386,244],[1698,241,1705,247],[1264,242,1297,263],[1687,250,1695,259],[1732,250,1750,260],[1672,253,1687,272],[1691,260,1704,279],[1733,262,1765,270],[1733,275,1740,284],[1652,289,1667,295],[1735,298,1741,305],[1743,306,1749,314],[1793,321,1803,345],[1643,322,1651,329],[1654,322,1663,330],[1578,326,1604,352],[1795,346,1803,356],[1577,356,1603,380]],"corona":[708,418,842,492],"bud":[976,423,1107,499],"cat":[[993,592],[1013,591]],"globes":[[1471,409],[1681,409]],"lamp":[1717,187],"awn":[1250,412],"shop":[1000,560],"steam":[1580,750],"reds":[[1856,125],[1745,40],[1810,60]]}],
+    ['moths',{at:[[1717,190],[1250,415]],n:4}],
+    ['smoke',{x:1580,y:745,n:6,spread:110,rise:110,size:60,a:.08,rate:.003,wind:.25,rgb:'190,210,200'}]],
+  studio:[
+    ['studiofx',{"strips":[[572,179,700,199,"210,110,255"],[715,250,894,266,"210,110,255"],[950,250,1153,266,"90,200,255"],[1208,250,1395,266,"210,110,255"],[1419,199,1526,238,"210,110,255"],[1614,32,1820,159,"90,200,255"]],"mic":[1685,199,1852,541],"lamp":[238,211],"booth":[[200,225],[285,225],[480,830],[70,830]],"under":[[795,640,906],[1160,640,1280]],"spk":[[845,482,28],[900,505,15],[1228,480,28],[1162,505,15]],"meters":[810,556,1290],"gold":[[906,330],[1025,330],[1145,330],[739,477]],"pads":[1320,731,1383,779]}]],
+  bowling:[
+    ['bowlfx',{"neon":[[580,425,"190,110,255"],[800,425,"110,255,140"],[1035,425,"190,110,255"],[1255,425,"110,255,140"],[1460,425,"190,110,255"]],"reds":[[520,485],[535,485],[665,485],[700,485],[850,485],[865,485],[890,485],[1045,485],[1080,485],[1100,485],[1165,485],[1335,485],[1375,485],[1395,485],[1510,485],[1525,485]],"ball":[990,105,118],"tv":[[1423,119],[1892,12],[1940,199],[1471,262]],"sparks":[[1534,334],[1836,223]],"exit":[1695,385]}]],
+  dungeon:[
+    ['dungeonfx',{"torches":[[190,200],[262,138],[372,178],[500,292]],"portal":[1000,300,1200,680],"runes":[640,140,1440,660],"pent":[1020,980,480,140],"caul":[1910,660],"cfire":[1900,820]}],
+    ['smoke',{x:1905,y:640,n:7,spread:120,rise:300,size:90,a:.08,rate:.0025,wind:.15,rgb:'150,230,130'}]],
+  ritual:[
+    ['ritualfx',{"fire":[1220,470,560],"moon":[1232,152],"cands":[[1420,745],[1470,760],[1488,780],[1456,840],[1928,868],[1876,935]]}],
+    ['fogsheet',{y0:700,y1:900,n:12,a:.08,rgb:'150,170,150',sp:.2,rx:700,ry:40}]],
+  church:[
+    ['churchfx',{"rose":[1034,115],"eyes":[[1002,262],[1057,262]],"pent":[1014,819,398,135],"fire":[1916,692],"cands":[[90,374],[133,366],[163,390],[185,390],[509,493],[531,493],[554,493],[857,494],[878,473],[901,481],[930,568],[1119,568],[1146,477],[1169,473],[1191,494]]}]],
   barn:[
     ['barnfx',{corn:[660,84],moon:[878,82],eyes:[[740,181],[751,181]],skull:[[511,94],[545,94]],lantern:[170,197],pent:[530,381],
       flames:[[419,345],[434,328],[457,356],[486,325],[558,363],[589,324],[620,350],[644,337]]}],
@@ -5712,7 +5926,7 @@ const ENV_STAGE={
   mansion:['cemetery',{fog:.5,lightning:0,bats:0}], hellpit:['hell',{bats:0,skyBats:1}], overpass:['city',{sparks:.35,ripples:.6}],
   alley:['city',{ripples:.5,drips:.5,bats:4}], hauntedhouse:['cemetery',{bats:4,fog:1.6}], neontunnel:['neon',{sparks:1.4,power:1.2,lights:1.8}], midway:['carnival',{ripples:.4}],
   warehouse:['industrial'], club:['venue',{spot:.5,smoke:.7,dust:.6,eq:0,lights:0,crowdFlash:.35,power:.15}], theater:['venue',{spot:.8,smoke:.6,dust:.7,eq:0,lights:0,crowdFlash:.2,power:.2}], cage:['venue',{spot:1,crowdFlash:0,smoke:.6,dust:.7,lights:0,eq:0,power:.35}], sewer:['quiet',{dust:.5,mist:1,fog:1.1,lights:0,power:.8,ripples:.4,drips:.4}], slaughter:['industrial',{sparks:.25,spot:0,smoke:.6,dust:.9,lights:0,power:1.3,fog:.8,debris:.35}], juggalette:['venue',{fireworks:.5}], nu_ring:['festival',{eq:0,spot:0,crowdFlash:0,bats:.4,fireworks:0,embers:0}],
-  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], swamp:['quiet',{dust:0,mist:0.35,lights:0,lightCol:['200,255,170', '255,220,140'],power:.5}],drivein:['quiet',{dust:0,mist:0.2,lights:0,lightCol:['170,210,255', '255,120,120'],power:.5}],asylum:['quiet',{dust:0.35,mist:0,lights:0,lightCol:['200,235,225', '190,220,255'],power:.5}],junkyard:['quiet',{dust:0.2,mist:0.1,lights:0,lightCol:['255,190,120', '150,255,150'],power:.5}],subway:['quiet',{dust:0.4,mist:0,lights:0,lightCol:['255,220,150', '255,200,120'],power:.5}],cemetery:['quiet',{dust:0,mist:0.4,lights:0,lightCol:['190,220,255', '255,200,120'],power:.5}],attic:['quiet',{dust:0.3,mist:0.08,lights:0,lightCol:['200,220,255', '255,200,140'],power:.5}],court:['quiet',{dust:0.1,mist:0.08,lights:0,lightCol:['255,210,140', '255,120,100'],power:.5}],barn:['quiet',{dust:0.15,mist:0.25,lights:0,lightCol:['255,120,90', '255,200,120'],power:.5}],trailerpark:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.9,lightning:1,thunder:1,flashes:0,fog:.1,ripples:.6,bats:0,dust:0}],killerbasement:['quiet',{dust:.5,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],rooftop:['quiet',{dust:0,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],morgue:['quiet',{dust:0,mist:0,lights:0,lightCol:['200,235,215','180,220,200'],power:.5}],hallowicked:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.6,lightning:1,thunder:1,flashes:0,fog:.15,ripples:.9,bats:0,dust:0}],jeckel:['quiet',{dust:0,mist:.12,lights:0,lightCol:['255,190,120','255,150,90'],power:.5}],backwoods:['quiet',{dust:0,mist:.3,lights:0,lightCol:['255,170,90','255,140,60'],power:.5}],cabin:['quiet',{dust:0,mist:.12,lights:.25,lightCol:['255,170,90','255,140,60'],power:.5}],motel:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.3,lightning:0,thunder:0,flashes:0,fog:.35,ripples:.9,bats:0,dust:0}],riddlebox:['quiet',{dust:.45,mist:.3,lights:.35,lightCol:['255,190,110','255,150,80'],power:.5}],mirrors:['quiet',{dust:.55,mist:.25,lights:.45,lightCol:['255,200,120','255,170,90'],power:.5}],deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
+  nu_bigtop:['carnival',{fireworks:0,bats:0,spot:1}], nu_studio:['venue',{spot:0,smoke:.5,crowdFlash:0,eq:0}], swamp:['quiet',{dust:0,mist:0.35,lights:0,lightCol:['200,255,170', '255,220,140'],power:.5}],drivein:['quiet',{dust:0,mist:0.2,lights:0,lightCol:['170,210,255', '255,120,120'],power:.5}],asylum:['quiet',{dust:0.35,mist:0,lights:0,lightCol:['200,235,225', '190,220,255'],power:.5}],junkyard:['quiet',{dust:0.2,mist:0.1,lights:0,lightCol:['255,190,120', '150,255,150'],power:.5}],subway:['quiet',{dust:0.4,mist:0,lights:0,lightCol:['255,220,150', '255,200,120'],power:.5}],cemetery:['quiet',{dust:0,mist:0.4,lights:0,lightCol:['190,220,255', '255,200,120'],power:.5}],attic:['quiet',{dust:0.3,mist:0.08,lights:0,lightCol:['200,220,255', '255,200,140'],power:.5}],court:['quiet',{dust:0.1,mist:0.08,lights:0,lightCol:['255,210,140', '255,120,100'],power:.5}],recordstore:['quiet',{dust:0.25,mist:0,lights:0,lightCol:['255,90,200', '90,220,255'],power:.5}],block:['quiet',{dust:0,mist:0.1,lights:0,lightCol:['255,210,140', '200,215,255'],power:.5}],lowrider:['quiet',{dust:0.15,mist:0,lights:0,lightCol:['255,170,100', '255,120,180'],power:.5}],bodega:['quiet',{dust:0,mist:0.08,lights:0,lightCol:['255,210,140', '120,255,170'],power:.5}],studio:['quiet',{dust:0.15,mist:0,lights:0,lightCol:['200,120,255', '90,200,255'],power:.5}],bowling:['quiet',{dust:0.25,mist:0,lights:0,lightCol:['190,110,255', '110,255,140'],power:.5}],dungeon:['quiet',{dust:0.2,mist:0.1,lights:0,lightCol:['255,140,70', '190,120,255'],power:.5}],ritual:['quiet',{dust:0,mist:0.25,lights:0,lightCol:['255,150,70', '255,60,60'],power:.5}],church:['quiet',{dust:0.2,mist:0.08,lights:0,lightCol:['255,80,60', '255,170,90'],power:.5}],barn:['quiet',{dust:0.15,mist:0.25,lights:0,lightCol:['255,120,90', '255,200,120'],power:.5}],trailerpark:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.9,lightning:1,thunder:1,flashes:0,fog:.1,ripples:.6,bats:0,dust:0}],killerbasement:['quiet',{dust:.5,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],rooftop:['quiet',{dust:0,mist:0,lights:0,lightCol:['255,220,150','255,200,120'],power:.5}],morgue:['quiet',{dust:0,mist:0,lights:0,lightCol:['200,235,215','180,220,200'],power:.5}],hallowicked:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.6,lightning:1,thunder:1,flashes:0,fog:.15,ripples:.9,bats:0,dust:0}],jeckel:['quiet',{dust:0,mist:.12,lights:0,lightCol:['255,190,120','255,150,90'],power:.5}],backwoods:['quiet',{dust:0,mist:.3,lights:0,lightCol:['255,170,90','255,140,60'],power:.5}],cabin:['quiet',{dust:0,mist:.12,lights:.25,lightCol:['255,170,90','255,140,60'],power:.5}],motel:['city',{spot:0,fireworks:0,storm:1,flyers:0,debris:.3,lightning:0,thunder:0,flashes:0,fog:.35,ripples:.9,bats:0,dust:0}],riddlebox:['quiet',{dust:.45,mist:.3,lights:.35,lightCol:['255,190,110','255,150,80'],power:.5}],mirrors:['quiet',{dust:.55,mist:.25,lights:.45,lightCol:['255,200,120','255,170,90'],power:.5}],deadmall:['quiet',{dust:.6,mist:.4,lights:.5,lightCol:['255,40,140','60,255,120','255,60,60'],power:.4}], killroom:['quiet',{dust:.35,mist:0,fog:0,lights:0,power:.3,ripples:0}]
 };
 function envConfig(stg){const e=ENV_STAGE[stg.id]||[stg.indoor?'quiet':'city'],c={...ENV_PRESET[e[0]],...(e[1]||{})};
   if(stg.indoor){c.fireworks=0;c.shooting=0;c.lightning=0;c.bats=c.bats?c.bats*.4:0;c.flashes=0}
