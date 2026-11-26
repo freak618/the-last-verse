@@ -1751,7 +1751,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'studio',name:"The Hit Station",img:'studio',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1010/1143,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 110, 170],grade:'#24123a',rim:'rgba(170,120,255,.34)',farTone:'none',shadowL:[{x:1030,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'studio',name:"The Hit Station",img:'studio',ww:1226,fsize:1.18,zoom:1.07,full:{scale:1250/2048,feet:1010/1143,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 110, 170],grade:'#24123a',rim:'rgba(170,120,255,.34)',farTone:'none',shadowL:[{x:1030,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -3402,19 +3402,43 @@ Object.assign(ALIVE_FX,{
   // The Hit Station: the beat is playing, so the monitors pump, the console meters bounce, the MPC pads light up,
   // the LED strips and the neon mic hum (the mic sign stutters now and then), the red booth lamp glows and gold records glint
   studiofx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
-    const bp=(t%39)/39,kick=Math.exp(-bp*7),snare=Math.exp(-(((t+20)%39)/39)*9)*.6,beat=Math.max(kick,snare),bar=Math.floor(t/39);
-    if(im){g.globalCompositeOperation='source-over';for(const [x,y,r] of o.spk){const sc=1+.08*beat;g.save();g.beginPath();g.arc(X(x),Y(y),(r+1)*k,0,7);g.clip();g.drawImage(im,x-r-2,y-r-2,(r+2)*2,(r+2)*2,X(x-(r+2)*sc),Y(y-(r+2)*sc),(r+2)*2*sc*k,(r+2)*2*sc*k);g.restore()}}
+    // a 92 bpm beat drives everything: kick, snare, hats, and a bar counter for patterns
+    const BP=39,bp=(t%BP)/BP,kick=Math.exp(-bp*7),snare=Math.exp(-(((t+BP/2)%BP)/BP)*9)*.7,hat=Math.exp(-((t%(BP/4))/(BP/4))*6)*.35,beat=Math.max(kick,snare),bar=Math.floor(t/BP),hue=(t*.004)%1;
+    const mix=(a,b,u)=>a.map((v,i)=>Math.round(v+(b[i]-v)*u)).join(',');const PUR=[210,110,255],BLU=[90,200,255],PNK=[255,90,200];
+    const cyc=(off)=>{const u=(hue+off)%1;return u<.33?mix(PUR,BLU,u/.33):u<.66?mix(BLU,PNK,(u-.33)/.33):mix(PNK,PUR,(u-.66)/.34)};
+    // speakers pump hard, with a glow ring on every kick
+    if(im){g.globalCompositeOperation='source-over';for(const [x,y,r] of o.spk){const sc=1+.13*kick+.05*snare;g.save();g.beginPath();g.arc(X(x),Y(y),(r+1)*k,0,7);g.clip();g.drawImage(im,x-r-2,y-r-2,(r+2)*2,(r+2)*2,X(x-(r+2)*sc),Y(y-(r+2)*sc),(r+2)*2*sc*k,(r+2)*2*sc*k);g.restore();
+      g.globalCompositeOperation='lighter';glow(g,X(x),Y(y),r*1.8*k,cyc(.1),.18*kick);g.globalCompositeOperation='source-over'}}
     g.globalCompositeOperation='lighter';
-    o.strips.forEach(([a,b,c,d,col],i)=>{const l=.85+.08*Math.sin(t*.4+i)+.1*beat;glow(g,X((a+c)/2),Y((b+d)/2),(c-a)*.7*k,col,.1*l);if(d-b<30){g.fillStyle=`rgba(${col},${.12*l})`;g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k)}else for(let u=0;u<=1;u+=.25)glow(g,X(c-(c-a)*u),Y(b+(d-b)*u),40*k,col,.12*l)});
+    // LED strips: colors cycle purple-blue-pink, a bright chase runs along each one, and they punch on the beat
+    o.strips.forEach(([a,b,c,d],i)=>{const col=cyc(i*.13),l=.75+.35*beat;
+      if(d-b<30){glow(g,X((a+c)/2),Y((b+d)/2),(c-a)*.75*k,col,.13*l);g.fillStyle=`rgba(${col},${.2*l})`;g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k);
+        const cx=a+((t*2.2+i*60)%(c-a));glow(g,X(cx),Y((b+d)/2),18*k,'255,255,255',.35);glow(g,X(cx),Y((b+d)/2),40*k,col,.25)}
+      else{for(let u=0;u<=1;u+=.2)glow(g,X(c-(c-a)*u),Y(b+(d-b)*u),40*k,col,.14*l);const u=((t*.012+i*.3)%1);glow(g,X(c-(c-a)*u),Y(b+(d-b)*u),24*k,'255,255,255',.3)}});
+    // the neon mic: pulses with the kick, stutters now and then
     {const[a,b,c,d]=o.mic,mc=Math.floor(t/800),mu=t%800;let on=1;if(aH(mc*2.9)<.5&&mu<55)on=rnd(Math.floor(t/3),mc)<.45?0:1;
-      if(on){glow(g,X((a+c)/2),Y(b+150),180*k,'90,210,255',.13+.03*Math.sin(t*.3));glow(g,X((a+c)/2),Y(b+110),70*k,'200,240,255',.1)}
+      if(on){const p=.8+.4*kick;glow(g,X((a+c)/2),Y(b+150),190*k,'90,210,255',.15*p);glow(g,X((a+c)/2),Y(b+110),80*k,'200,240,255',.13*p)}
       else{g.globalCompositeOperation='multiply';g.fillStyle='rgb(120,120,150)';g.beginPath();g.ellipse(X((a+c)/2),Y(b+140),(c-a)*.42*k,150*k,0,0,7);g.fill();g.globalCompositeOperation='lighter'}}
-    {const l=.9+.05*Math.sin(t*.07)+.05*rnd(Math.floor(t/3),2);const[lx,ly]=o.lamp;glow(g,X(lx),Y(ly+20),40*k,'255,80,80',.4*l);
-      g.fillStyle=`rgba(255,60,70,${.06*l})`;g.beginPath();o.booth.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.fill()}
-    o.under.forEach(([a,y,c])=>{glow(g,X((a+c)/2),Y(y),(c-a)*.7*k,'90,200,255',.14+.05*beat)});
-    {const[a,y,c]=o.meters;for(let x=a,i=0;x<=c;x+=20,i++){const lv=Math.max(0,beat*(.6+.4*rnd(bar,i))-.15);if(lv<.05)continue;const col=lv>.7?'255,80,60':lv>.45?'255,210,80':'90,255,140';glow(g,X(x),Y(y),3*k,col,lv);glow(g,X(x),Y(y),8*k,col,.25*lv)}}
-    {const[a,b,c,d]=o.pads,cols=['255,60,90','255,170,60','90,200,255','160,255,120'];for(let i=0;i<16;i++){const px=a+(i%4+.5)*(c-a)/4,py=b+(Math.floor(i/4)+.5)*(d-b)/4,hit=rnd(bar,i+50)<.18?kick:0;if(hit>.05)glow(g,X(px),Y(py),6*k,cols[i%4],.8*hit)}}
-    o.gold.forEach(([x,y],i)=>{const u=((t+i*97)%300)/40;if(u<1){const a=Math.sin(u*Math.PI);glow(g,X(x+10),Y(y-10),6*k,'255,250,220',.8*a);glow(g,X(x),Y(y),30*k,'255,220,140',.18*a)}});
+    // red recording lamp over the booth
+    {const l=.9+.06*Math.sin(t*.07)+.06*rnd(Math.floor(t/3),2),[lx,ly]=o.lamp;glow(g,X(lx),Y(ly+20),46*k,'255,70,70',.45*l);g.fillStyle=`rgba(255,60,70,${.07*l})`;g.beginPath();o.booth.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.fill()}
+    // under-console glow breathes with the beat
+    o.under.forEach(([a,y,c])=>{glow(g,X((a+c)/2),Y(y),(c-a)*.8*k,'90,200,255',.16+.12*beat)});
+    // the big screen over the desk runs the session: a scrolling waveform and a playhead
+    {const[a,b,c,d]=[905,432,1205,530];g.save();g.beginPath();g.rect(X(a),Y(b),(c-a)*k,(d-b)*k);g.clip();g.fillStyle='rgba(60,140,255,.08)';g.fillRect(X(a),Y(b),(c-a)*k,(d-b)*k);
+      for(let tr=0;tr<3;tr++){const yy=b+18+tr*30,col=[ '120,220,255','220,130,255','140,255,170'][tr];g.strokeStyle=`rgba(${col},.55)`;g.lineWidth=1.2*k;g.beginPath();
+        for(let x=a;x<=c;x+=3){const ph=(x-a)+t*1.5,amp=(5+7*Math.abs(Math.sin(ph*.05+tr)))*Math.abs(Math.sin(ph*.31+tr*2))*(tr===0?1:.7);g.moveTo(X(x),Y(yy-amp));g.lineTo(X(x),Y(yy+amp))}g.stroke()}
+      const ph=a+((t*1.5)%(c-a));g.fillStyle='rgba(255,255,255,.7)';g.fillRect(X(ph),Y(b),1.4*k,(d-b)*k);g.restore();glow(g,X(1055),Y(480),180*k,'110,170,255',.07+.03*beat)}
+    // console: VU bars jump on every channel, peak LEDs flash red, channel buttons twinkle
+    {const[a,y,c]=o.meters;for(let x=a,i=0;x<=c;x+=16,i++){const lv=Math.min(1,beat*(.55+.45*rnd(bar,i))+hat*rnd(Math.floor(t/4),i+30));const segs=Math.round(lv*6);
+        for(let j=0;j<segs;j++){const col=j>=5?'255,60,50':j>=4?'255,210,70':'90,255,140';g.fillStyle=`rgba(${col},.9)`;g.fillRect(X(x-3),Y(y+4-j*3.4),6*k,2.4*k)}if(segs)glow(g,X(x),Y(y-segs*1.7),8*k,segs>=5?'255,80,60':'120,255,150',.25)}
+      for(let i=0;i<40;i++){const x=815+(i%20)*24+rnd(1,i)*6,yy=590+Math.floor(i/20)*22;if(rnd(Math.floor(t/6),i)<.35){const col=['255,170,60','90,200,255','255,90,200','140,255,170'][i%4];glow(g,X(x),Y(yy),3*k,col,.9);glow(g,X(x),Y(yy),9*k,col,.25)}}}
+    // the amp rack on the right: its meters dance
+    for(let i=0;i<6;i++){const lv=Math.min(1,beat*(.5+.5*rnd(bar,i+80))+hat);glow(g,X(1395+i*12),Y(632-lv*14),3*k,lv>.8?'255,80,60':'90,255,140',.9);glow(g,X(1395+i*12),Y(632-lv*14),8*k,'120,255,150',.2)}
+    // MPC pads: the drum pattern plays across the pads
+    {const[a,b,c,d]=o.pads,cols=['255,60,90','255,170,60','90,200,255','160,255,120'],step=Math.floor(t/(BP/4))%16,pat=[0,5,10,5,2,5,10,7,0,5,10,5,2,13,10,15];
+      for(let i=0;i<16;i++){const px=a+(i%4+.5)*(c-a)/4,py=b+(Math.floor(i/4)+.5)*(d-b)/4,hit=(i===pat[step]?1:0)*(1-((t%(BP/4))/(BP/4)))+(rnd(bar,i+50)<.12?.4*kick:0);if(hit>.05){glow(g,X(px),Y(py),6*k,cols[i%4],.95*hit);glow(g,X(px),Y(py),16*k,cols[i%4],.3*hit)}}}
+    // gold records: a light glint slowly rotates around each disc
+    o.gold.forEach(([x,y],i)=>{const r=i===3?30:40,a=t*.03+i*1.7,gx=x+12+Math.cos(a)*r*.6,gy=y-8+Math.sin(a)*r*.6;glow(g,X(gx),Y(gy),7*k,'255,250,225',.7);glow(g,X(gx),Y(gy),26*k,'255,225,150',.18)});
     g.restore()},
   // The Bowling Alley: the broken disco ball turns and throws colored spots across the room, the neon shapes buzz and stutter
   // (their reflections on the lanes go with them), the busted video board glitches, loose wires spark, the little red lights blink
