@@ -1339,7 +1339,7 @@ const buf=document.createElement('canvas');buf.width=BW;buf.height=BH;const bg=b
 /* draws one fighter with a real-time shadow cast away from the nearest light, a wet-floor reflection and a rim light */
 /* soft shadows on the floor: a contact shadow at the feet plus a long shadow away from each of the stage's key lights */
 const sbuf=document.createElement('canvas'),sbg=sbuf.getContext('2d');
-function drawCastShadow(f,stg,bx,by,alpha){
+function drawCastShadow(f,stg,bx,by,alpha,bw=BW,bh=BH){
   if(S.shadows===false)return;
   const lift=Math.max(0,GROUND-f.y),fade=Math.max(0,1-lift/220)*alpha;if(fade<=.02)return;
   useCam(1);
@@ -1362,12 +1362,12 @@ function drawCastShadow(f,stg,bx,by,alpha){
     for(const[sl,sa,bl]of[[1,Math.min(.95,L.a*2.6),1.6],[.5,Math.min(.75,L.a*1.8),.8]]){const ln=len*sl;
       ctx.save();ctx.globalAlpha=sa*fade;
       ctx.translate(f.x,GROUND+1);ctx.transform(1,0,skew*ln*2.2,ln,0,0);ctx.scale(1,-1);ctx.translate(-f.x,-GROUND);
-      ctx.drawImage(sbuf,bx,by+(GROUND-f.y),BW,BH);ctx.restore()}}
+      ctx.drawImage(sbuf,bx,by+(GROUND-f.y),bw,bh);ctx.restore()}}
 }
 function drawFighterLit(f,st,alpha=1){
   bg.setTransform(1,0,0,1,0,0);bg.clearRect(0,0,buf.width,buf.height);bg.setTransform(R,0,0,R,0,0);bg.save();bg.translate(BX-f.x,BY-f.y);drawFighter(bg,f,st);bg.restore();
-  const bx=f.x-BX,by=f.y-BY,stg=STAGES[G.stage];
-  drawCastShadow(f,stg,bx,by,alpha);
+  const stg=STAGES[G.stage],fs=(stg&&stg.fsize)||1,bx=f.x-BX*fs,by=f.y-BY*fs,bw=BW*fs,bh=BH*fs;
+  drawCastShadow(f,stg,bx,by,alpha,bw,bh);
   const L=castLight(f.x);
   if(L&&S.hq){
     const lift=Math.max(0,GROUND-f.y),dx=f.x-L.x,dy=Math.max(80,GROUND-L.y);
@@ -1375,10 +1375,10 @@ function drawFighterLit(f,st,alpha=1){
     ctx.save();ctx.globalAlpha=Math.max(0,.55-lift/300)*alpha;ctx.filter='brightness(0) blur(2.5px)';
     useCam(1);
     ctx.translate(f.x,GROUND+2);ctx.transform(1,0,-skew*len*2.2,-len,0,0);ctx.translate(-f.x,-f.y);
-    ctx.drawImage(buf,bx,by,BW,BH);ctx.restore();
+    ctx.drawImage(buf,bx,by,bw,bh);ctx.restore();
   }
-  if(stg.wet||stg.mirror){ctx.save();ctx.beginPath();ctx.rect(-200,GROUND-4,WW+400,H);ctx.clip();ctx.globalAlpha=(stg.reflA||.2)*alpha;ctx.translate(0,2*(GROUND-4));ctx.scale(1,-1);ctx.drawImage(buf,bx,by,BW,BH);ctx.restore()}
-  ctx.save();ctx.globalAlpha=alpha;ctx.drawImage(buf,bx,by,BW,BH);ctx.restore();
+  if(stg.wet||stg.mirror){ctx.save();ctx.beginPath();ctx.rect(-200,GROUND-4,WW+400,H);ctx.clip();ctx.globalAlpha=(stg.reflA||.2)*alpha;ctx.translate(0,2*(GROUND-4));ctx.scale(1,-1);ctx.drawImage(buf,bx,by,bw,bh);ctx.restore()}
+  ctx.save();ctx.globalAlpha=alpha;ctx.drawImage(buf,bx,by,bw,bh);ctx.restore();
 }
 
 /* ---------- camera ---------- */
@@ -1719,7 +1719,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'subway',name:"The Subway",img:'subway',ww:1226,wall:[40,975],zoom:1.12,full:{scale:1250/1024,feet:470/559,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 130, 100],grade:'#1e1a10',rim:'rgba(255,220,150,.3)',farTone:'none',shadowL:[{x:597,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'subway',name:"The Subway",img:'subway',ww:1226,wall:[40,975],fsize:1.3,zoom:1.04,full:{scale:1250/1024,feet:470/559,p:1,rigid:true},indoor:true,dry:true,ambient:[140, 130, 100],grade:'#1e1a10',rim:'rgba(255,220,150,.3)',farTone:'none',shadowL:[{x:597,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -4766,12 +4766,12 @@ class Fighter{
   }
   stepAttack(opp){
     const m=MOVES[this.atk.type],f=++this.atk.f,A=this.atk;
-    if(A.type==='special'){if(f===m.startup)spawnProj(this,this.x+this.facing*52,this.y+this.c.shoulder+6,12)}
+    if(A.type==='special'){if(f===m.startup)spawnProj(this,this.x+this.facing*52*FSZ(),this.y+(this.c.shoulder+6)*FSZ(),12)}
     else if(A.type==='ultra'){
       if(f>m.startup&&f<=m.startup+m.active){
         if(this.ground)this.vx=this.facing*(A.hits>0?3:12);
         const dx=(opp.x-this.x)*this.facing;
-        if(f%4===0&&A.hits<6&&dx>-10&&dx<m.reach&&Math.abs(opp.y-this.y)<110&&!opp.ko&&!opp.down){
+        if(f%4===0&&A.hits<6&&dx>-10&&dx<m.reach*FSZ()&&Math.abs(opp.y-this.y)<110&&!opp.ko&&!opp.down){
           A.hits++;A.hit=true;const last=A.hits===6;
           applyHit(this,opp,m.dmg*this.c.power*(last?2:1),last?12:2,last?30:16,this.x,last);
           if(last&&!opp.block&&!opp.ko){opp.vy=-9;opp.down={t:0};opp.stun=0;opp.atk=null}
@@ -4780,7 +4780,7 @@ class Fighter{
     }
     else if(!A.hit&&f>m.startup&&f<=m.startup+m.active){
       const dx=(opp.x-this.x)*this.facing;
-      if(dx>-10&&dx<m.reach&&Math.abs(opp.y-this.y)<110&&!opp.ko&&!opp.down){A.hit=true;applyHit(this,opp,m.dmg*this.c.power,m.kb,m.stun,this.x,A.type==='kick')}
+      if(dx>-10&&dx<m.reach*FSZ()&&Math.abs(opp.y-this.y)<110*FSZ()&&!opp.ko&&!opp.down){A.hit=true;applyHit(this,opp,m.dmg*this.c.power,m.kb,m.stun,this.x,A.type==='kick')}
     }
     if(this.atk&&f>=m.startup+m.active+m.recover)this.atk=null;
   }
@@ -5758,9 +5758,10 @@ function updateFinisher(){
   if(F.t>50){F.def.anim++;if(F.def.flash>0)F.def.flash--;F.def.physics()}
   if(F.t>=120)endFinisher(F.att);
 }
+function FSZ(){const st=STAGES[G.stage];return(st&&st.fsize)||1}
 function separate(a,b){
   if(!a.ko&&!b.ko&&Math.abs(a.y-b.y)<100){
-    const dx=b.x-a.x,min=58;
+    const dx=b.x-a.x,min=58*FSZ();
     if(Math.abs(dx)<min){const push=(min-Math.abs(dx))/2,s=Math.sign(dx)||a.facing;a.x-=s*push;b.x+=s*push;
       a.x=Math.max(WL,Math.min(WR,a.x));b.x=Math.max(WL,Math.min(WR,b.x));
       if(Math.abs(b.x-a.x)<min-1){if(a.x<=WL)b.x=a.x+min;else if(b.x<=WL)a.x=b.x+min;else if(a.x>=WR)b.x=a.x-min;else if(b.x>=WR)a.x=b.x-min}}
