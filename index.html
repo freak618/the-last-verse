@@ -1659,7 +1659,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'backwoods',name:'The Backwoods',img:'backwoods',ww:1226,zoom:1.12,full:{scale:1250/1376,feet:640/768,p:1,rigid:true},indoor:false,dry:true,ambient:[95,105,145],grade:'#141c30',rim:'rgba(255,170,90,.32)',farTone:'none',shadowL:[{x:1065,y:-220,a:.3}],crowd:{groups:[],front:0},
+ { id:'backwoods',name:'The Backwoods',img:'backwoods',ww:1226,zoom:1.12,full:{scale:1250/1376,feet:640/768,p:1,rigid:true},indoor:false,dry:false,wet:true,reflA:.09,noBolt:true,ambient:[95,105,145],grade:'#141c30',rim:'rgba(255,170,90,.32)',farTone:'none',shadowL:[{x:1065,y:-220,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -2116,7 +2116,7 @@ function weather(stg){
       ctx.stroke()}
     ctx.strokeStyle='rgba(200,210,235,.35)';ctx.lineWidth=1;
     splashes=splashes.filter(s=>++s.t<8);for(const s of splashes){ctx.beginPath();ctx.ellipse(s.x,s.y,s.t*1.6,s.t*.5,0,0,Math.PI*2);ctx.stroke()}
-    if(Math.random()<1/560&&light<.1){light=1;setTimeout(()=>SFX.thunder(),300+Math.random()*700)}
+    if(!stg.noBolt&&Math.random()<1/560&&light<.1){light=1;setTimeout(()=>SFX.thunder(),300+Math.random()*700)}
   }
   if(light>0){ctx.fillStyle=`rgba(200,215,255,${light*(reduceMotion||!S.fx?.08:.35)})`;ctx.fillRect(0,0,W,H);light*=.86;if(light<.02)light=0}
   if(!GL.on)ctx.drawImage(vig,0,0);
@@ -2939,6 +2939,36 @@ Object.assign(ALIVE_FX,{
       g.save();g.translate(rc.x+x*k,rc.y+y*k);g.rotate(rot);g.scale(1,.45+.55*Math.abs(Math.sin(rot*.7)));
       g.fillStyle=['#b4541c','#8c3a14','#c9772a','#6e2c12'][i%4];g.beginPath();g.ellipse(0,0,s,s*.55,0,0,7);g.fill();g.strokeStyle='rgba(30,12,6,.8)';g.lineWidth=Math.max(.8,k);g.stroke();g.restore()}
     g.restore()},
+  // Backwoods extras: real flames licking out of the burn barrel, rain puddles on the dirt that mirror the fire, headlights and porch lights
+  // (with rain rings), and two bare porch bulbs that buzz and flicker
+  bwextra(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    // porch bulbs
+    const pl=o.porch.map(([x,y],j)=>{const pc=Math.floor((t+j*300)/540),pu=(t+j*300)%540;let lv=.85+.08*Math.sin(t*.6+j)+.07*Math.sin(t*1.7+j*2);
+      if(aH(pc*3.3+j)<.6&&pu<50)lv=rnd(Math.floor(t/3),pc+j*9)<.45?.12:.9;if(rnd(Math.floor(t/2),j+60)<.015)lv*=.4;return lv});
+    o.porch.forEach(([x,y],j)=>{const lv=pl[j];g.globalCompositeOperation='source-over';g.strokeStyle='rgba(12,10,8,.9)';g.lineWidth=1.4*k;g.beginPath();g.moveTo(X(x),Y(y-14));g.lineTo(X(x),Y(y-3));g.stroke();
+      g.fillStyle='rgba(30,26,20,.95)';g.fillRect(X(x-3),Y(y-4),6*k,3*k);g.fillStyle=`rgba(255,${200+40*lv|0},${120+60*lv|0},${.35+.65*lv})`;g.beginPath();g.ellipse(X(x),Y(y+2),3.6*k,4.8*k,0,0,7);g.fill();
+      g.globalCompositeOperation='lighter';glow(g,X(x),Y(y+2),14*k,'255,235,170',.75*lv);glow(g,X(x),Y(y+30),120*k,'255,205,120',.16*lv);glow(g,X(x),Y(y+110),150*k,'255,190,110',.06*lv)});
+    // flames in the barrel
+    {const[bx,by]=o.fire;g.globalCompositeOperation='lighter';
+      for(let j=0;j<9;j++){const ph=t*(.09+aH(j)*.07)+j*2.1,h=(48+aH(j+.4)*62)*(.75+.25*Math.sin(ph)+.12*Math.sin(ph*2.7)),w=(10+aH(j+.7)*9),ox=(j-4)*7.5+Math.sin(ph*.8)*5,
+          sway=Math.sin(t*.07+j)*10+Math.sin(t*.19+j*3)*5,x0=bx+ox,y0=by;
+        const gr=g.createLinearGradient(0,Y(y0),0,Y(y0-h));gr.addColorStop(0,'rgba(255,110,30,.55)');gr.addColorStop(.45,'rgba(255,170,50,.45)');gr.addColorStop(1,'rgba(255,230,140,0)');
+        g.fillStyle=gr;g.beginPath();g.moveTo(X(x0-w),Y(y0));g.bezierCurveTo(X(x0-w*.9),Y(y0-h*.45),X(x0+sway*.5-w*.3),Y(y0-h*.7),X(x0+sway),Y(y0-h));
+        g.bezierCurveTo(X(x0+sway*.5+w*.3),Y(y0-h*.7),X(x0+w*.9),Y(y0-h*.45),X(x0+w),Y(y0));g.closePath();g.fill()}
+      glow(g,X(bx),Y(by-18),34*k,'255,220,140',.35+.1*Math.sin(t*.3))}
+    // puddles
+    const fl=.8+.12*Math.sin(t*.17)+.08*Math.sin(t*.43+2);
+    o.puddles.forEach(([px,py,rx,ry],j)=>{g.save();g.globalCompositeOperation='source-over';g.beginPath();g.ellipse(X(px),Y(py),rx*k,ry*k,0,0,7);g.fillStyle='rgba(16,22,40,.42)';g.fill();g.clip();
+      g.globalCompositeOperation='lighter';
+      const fd=Math.abs(px-o.fire[0]);if(fd<420){const a=(1-fd/420)*.5*fl;const rx2=px+(o.fire[0]-px)*.25;for(let i=0;i<3;i++)glow(g,X(rx2+Math.sin(t*.2+i)*3),Y(py-ry*.5+i*ry*.5),rx*.45*k,'255,150,60',a*.8);glow(g,X(rx2),Y(py),rx*.8*k,'255,170,80',a*.5)}
+      if(px<700){const a=Math.max(0,1-Math.abs(px-430)/380)*.35;glow(g,X(px+(380-px)*.2),Y(py),rx*.8*k,'255,245,215',a)}
+      o.porch.forEach(([x],i)=>{const d=Math.abs(px-x);if(d<260)glow(g,X(px+(x-px)*.3),Y(py),rx*.5*k,'255,210,130',(1-d/260)*.3*pl[i])});
+      glow(g,X(px-rx*.3),Y(py-ry*.2),rx*.6*k,'150,175,230',.12);
+      g.strokeStyle='rgba(200,215,240,.45)';g.lineWidth=Math.max(.8,k);
+      for(let i=0;i<4;i++){const per=34+aH(j*5+i)*30,u=((t+aH(j+i*.3)*per)%per)/per,c=Math.floor((t+aH(j+i*.3)*per)/per),cx=px+(aH(c*1.3+i+j)-.5)*rx*1.5,cy=py+(aH(c*2.1+i)-.5)*ry*1.2;
+        g.globalAlpha=1-u;g.beginPath();g.ellipse(X(cx),Y(cy),(2+u*13)*k,(.7+u*4)*k,0,0,7);g.stroke()}
+      g.globalAlpha=1;g.restore()});
+    g.restore()},
   // wet floor: shimmering columns of reflected light under each glowing thing, rising and falling with that light
   floorglow(g,rc,t,o){const k=rc.k;g.save();g.globalCompositeOperation='lighter';
     o.at.forEach(([x,y,len,w,rgb,a,key],i)=>{let lv=key?(DMS[key]==null?1:DMS[key]):1;if(key&&key.startsWith('arc'))rgb=DMS['arcRGB'+key.slice(3)]||rgb;if(lv<.03)return;
@@ -3366,7 +3396,10 @@ Object.assign(ALIVE,{
     ['bats',{x0:0,x1:1376,y0:50,y1:300,n:4,size:20,speed:1.3}],
     ['fogsheet',{y0:400,y1:520,n:12,a:.16,rgb:'140,160,195',sp:.25,rx:360,ry:34}],
     ['backwoodsfx',{lights:[[217,420],[350,415]],beam:[[226,404],[362,398],[640,455],[560,566],[300,520]],barrel:[1072,392],flame:[1070,320],win:[684,297,727,372],moon:[382,69]}],
-    ['fogsheet',{y0:520,y1:620,n:10,a:.12,rgb:'150,170,205',sp:.3,rx:420,ry:30}]],
+    ['fogsheet',{y0:520,y1:620,n:10,a:.12,rgb:'150,170,205',sp:.3,rx:420,ry:30}],
+    ['bwextra',{porch:[[470,298],[632,296]],fire:[1072,402],
+      puddles:[[505,575,95,13],[820,612,125,15],[1120,575,85,11],[285,655,115,15],[980,690,150,18],[640,720,110,14]]}],
+    ['moths',{at:[[470,312],[632,310],[300,420],[1072,330]],n:6}]],
   cabin:[
     ['rainpane',{at:[742,318,160,186],n:26}],
     ['rainpane',{at:[1258,284,80,244],n:16}],
