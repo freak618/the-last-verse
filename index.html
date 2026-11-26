@@ -1377,7 +1377,7 @@ function drawFighterLit(f,st,alpha=1){
     ctx.translate(f.x,GROUND+2);ctx.transform(1,0,-skew*len*2.2,-len,0,0);ctx.translate(-f.x,-f.y);
     ctx.drawImage(buf,bx,by,BW,BH);ctx.restore();
   }
-  if(stg.wet){ctx.save();ctx.beginPath();ctx.rect(-200,GROUND-4,WW+400,H);ctx.clip();ctx.globalAlpha=(stg.reflA||.2)*alpha;ctx.translate(0,2*(GROUND-4));ctx.scale(1,-1);ctx.drawImage(buf,bx,by,BW,BH);ctx.restore()}
+  if(stg.wet||stg.mirror){ctx.save();ctx.beginPath();ctx.rect(-200,GROUND-4,WW+400,H);ctx.clip();ctx.globalAlpha=(stg.reflA||.2)*alpha;ctx.translate(0,2*(GROUND-4));ctx.scale(1,-1);ctx.drawImage(buf,bx,by,BW,BH);ctx.restore()}
   ctx.save();ctx.globalAlpha=alpha;ctx.drawImage(buf,bx,by,BW,BH);ctx.restore();
 }
 
@@ -1747,7 +1747,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'bowling',name:"The Bowling Alley",img:'bowling',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1030/1157,p:1,rigid:true},indoor:true,dry:true,ambient:[120, 110, 150],grade:'#1a1030',rim:'rgba(180,110,255,.34)',farTone:'none',shadowL:[{x:1024,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'bowling',name:"The Bowling Alley",img:'bowling',ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1030/1157,p:1,rigid:true},indoor:true,dry:true,mirror:true,reflA:.32,ambient:[120, 110, 150],grade:'#1a1030',rim:'rgba(180,110,255,.34)',farTone:'none',shadowL:[{x:1024,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -3379,6 +3379,14 @@ Object.assign(ALIVE_FX,{
   // The Bowling Alley: the broken disco ball turns and throws colored spots across the room, the neon shapes buzz and stutter
   // (their reflections on the lanes go with them), the busted video board glitches, loose wires spark, the little red lights blink
   bowlfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,rnd=(a,b)=>aH(a*12.9898+b*78.233);g.save();
+    // polished wood: the pins, the neon wall and the room mirror in the lanes and the approach (built once, then shimmered)
+    {const im=rc.im;if(im&&!o._ref){try{const W=512,H=Math.round(1157/4),c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');const ax=548/4;
+        q.save();q.translate(0,ax*2);q.scale(1,-1);q.filter='blur(1.2px)';q.drawImage(im,0,0,W,H);q.restore();q.filter='none';
+        q.globalCompositeOperation='destination-in';const gr=q.createLinearGradient(0,ax,0,H);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.45,'rgba(0,0,0,.7)');gr.addColorStop(1,'rgba(0,0,0,.2)');q.fillStyle=gr;q.fillRect(0,ax,W,H-ax);q.clearRect(0,0,W,ax);o._ref=c}catch(e){o._ref=1}}
+      if(o._ref&&o._ref!==1){g.save();g.beginPath();[[430,548],[1610,548],[1690,720],[2048,740],[2048,1157],[0,1157],[0,740],[370,720]].forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.clip();
+        g.globalCompositeOperation='screen';g.globalAlpha=.9;const sh=Math.sin(t*.01)*1.5;g.drawImage(o._ref,X(sh),Y(0),2048*k,1157*k);g.globalAlpha=1;
+        // a bright sheen sliding slowly across the polish
+        g.globalCompositeOperation='lighter';const sx=((t*.6)%2600)-300,gr=g.createLinearGradient(X(sx-160),0,X(sx+160),0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,'rgba(220,210,255,.06)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(X(sx-160),Y(548),320*k,609*k);g.restore()}}
     const[bx,by,br]=o.ball,cols=['190,110,255','110,255,140','90,200,255','255,120,220'];
     g.globalCompositeOperation='lighter';
     // spots thrown by the disco ball sweep over walls and floor
@@ -3391,9 +3399,21 @@ Object.assign(ALIVE_FX,{
     o.neon.forEach(([x,y,col],i)=>{const c=Math.floor((t+i*150)/(560+i*70)),u=(t+i*150)%(560+i*70);let on=1;if(aH(c*2.1+i)<.5&&u<55)on=rnd(Math.floor(t/3),c+i)<.45?0:1;
       if(on){const l=.9+.06*Math.sin(t*.5+i);glow(g,X(x),Y(y),75*k,col,.2*l);g.save();g.translate(X(x+(x-1024)*.15),Y(700));g.scale(.5,1.8);glow(g,0,0,110*k,col,.07*l);g.restore()}
       else{g.globalCompositeOperation='multiply';g.fillStyle='rgb(70,70,90)';g.beginPath();g.ellipse(X(x),Y(y),62*k,50*k,0,0,7);g.fill();g.globalCompositeOperation='lighter'}});
-    // video board glitches
-    {const tc=Math.floor(t/6);let a=.12+.1*rnd(tc,1);if(rnd(Math.floor(t/90),2)<.25&&(t%90)<20)a=rnd(tc,3)<.5?.0:.35;const q=o.tv;g.fillStyle=`rgba(${cols[Math.floor(rnd(Math.floor(t/30),4)*4)]},${a*.5})`;
-      g.beginPath();q.forEach(([x,y],j)=>j?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y)));g.closePath();g.fill();glow(g,X(1680),Y(140),260*k,'170,120,255',a*.35)}
+    // the busted video board is still running: each panel cycles colors in a wave, dead panels sputter back to life,
+    // scan lines roll down it and now and then the whole board glitches
+    {const cols=['190,110,255','90,220,255','110,255,140','255,110,220','120,140,255'],ang=-.26,tw=31,th=26,
+      tiles=[[1479,129],[1554,107],[1629,86],[1689,61],[1743,118],[1757,171],[1661,189],[1568,221],[1489,232]],dead=[[1564,150],[1493,179],[1700,128]];
+      const gc=Math.floor(t/420),gu=t%420,glitch=aH(gc*3.7)<.5&&gu<26,seq=Math.floor(t/50);
+      const tile=(x,y,f)=>{g.save();g.translate(X(x),Y(y));g.rotate(ang);f();g.restore()};
+      tiles.forEach(([x,y],i)=>{const wave=.5+.5*Math.sin(t*.06-i*.7),ci=(seq+i+(aH(i*3.1)*4|0))%cols.length,col=cols[glitch?(rnd(Math.floor(t/3),i)*5|0):ci];
+        tile(x,y,()=>{g.globalCompositeOperation='hue';g.fillStyle=`rgb(${col})`;g.fillRect(-tw*k,-th*k,tw*2*k,th*2*k);
+          g.globalCompositeOperation='lighter';g.fillStyle=`rgba(${col},${.12+.22*wave})`;g.fillRect(-tw*k,-th*k,tw*2*k,th*2*k);
+          if(glitch&&rnd(Math.floor(t/2),i+20)<.4){g.globalCompositeOperation='multiply';g.fillStyle='rgb(30,30,40)';g.fillRect(-tw*k,-th*k,tw*2*k,th*2*k)}
+          const sy=((t*1.2+i*13)%(th*2))-th;g.globalCompositeOperation='lighter';g.fillStyle='rgba(255,255,255,.14)';g.fillRect(-tw*k,sy*k,tw*2*k,2.5*k)});
+        glow(g,X(x),Y(y),50*k,col,.05+.07*wave)});
+      dead.forEach(([x,y],i)=>{const c=Math.floor((t+i*170)/300),u=(t+i*170)%300;if(aH(c*2.3+i)<.5&&u<40&&rnd(Math.floor(t/3),c+i)<.6){const col=cols[(c+i)%5];
+        tile(x,y,()=>{g.globalCompositeOperation='lighter';g.fillStyle=`rgba(${col},.4)`;g.fillRect(-tw*k,-th*k,tw*2*k,th*2*k);for(let r=0;r<6;r++){g.fillStyle=`rgba(255,255,255,${rnd(t,r+i*9)*.4})`;g.fillRect((rnd(t,r)*2-1)*tw*k,(rnd(t,r+5)*2-1)*th*k,(4+rnd(t,r+7)*14)*k,2*k)}})}});
+      g.globalCompositeOperation='lighter';glow(g,X(1660),Y(150),300*k,'170,120,255',.07+(glitch?.08:0))}
     // sparks from the loose wires
     o.sparks.forEach(([x,y],i)=>{const c=Math.floor((t+i*333)/260),u=(t+i*333)%260;if(aH(c*5.7+i)<.6&&u<14){const a=1-u/14;glow(g,X(x),Y(y),5*k,'255,250,220',a);glow(g,X(x),Y(y),40*k,'170,210,255',.4*a);
       g.fillStyle=`rgba(255,240,180,${a})`;for(let j=0;j<6;j++){const sa=rnd(c,j+i*10)*3.14,sd=u*(2+rnd(c,j+30)*3);g.fillRect(X(x+Math.cos(sa)*sd*3),Y(y+Math.sin(sa)*sd*2+u*u*.15),1.6*k,1.6*k)}}});
