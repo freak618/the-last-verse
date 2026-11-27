@@ -1452,7 +1452,7 @@ function drawCores(){
 }
 function postPass(stg){
   screenT();
-  if(S.hq){
+  if(S.hq&&!MENU_LITE){
     blg.globalCompositeOperation='source-over';blg.clearRect(0,0,LW,LH);blg.filter='brightness(1.15) contrast(2.4) saturate(1.4) blur(6px)';blg.drawImage(cv,0,0,LW,LH);blg.filter='none';
     ctx.globalCompositeOperation='screen';ctx.globalAlpha=.42;ctx.drawImage(bloomC,0,0,W,H);ctx.globalAlpha=1;
   }
@@ -2218,8 +2218,8 @@ function drawStageBack(stg,t){
       const rcb={...rc,x:(WW-W)/2*bp-(w-W)/2,p:bp,im},wsb=Math.max(w,W+(WW-W)*bp+80),bx=(WW-W)/2*bp-(wsb-W)/2;
       if(F.rigid){useCam(1);ctx.save();Object.assign(rcb,{x:rc.x,p:1})}else if(F.legacyFloor){useCam(F.p);ctx.save();Object.assign(rcb,{x:rc.x,p:rc.p})}else{useCam(bp);ctx.save();ctx.translate(bx,0);ctx.scale(wsb/w,1);ctx.translate(-rcb.x,0)}
       if(stg.screen||(S.screenTune&&S.screenTune[stg.id]))try{drawScreen(stg,ctx,rcb,t)}catch(e){}
-      if(fx&&S.fx!==false){fx(ctx,rcb,t,'back');fx(ctx,rcb,t,'front')}
-      if(S.fx!==false&&ALIVE[stg.id])aliveDraw(ALIVE[stg.id],ctx,rcb,t);
+      if(fx&&S.fx!==false&&!MENU_LITE){fx(ctx,rcb,t,'back');fx(ctx,rcb,t,'front')}
+      if(S.fx!==false&&ALIVE[stg.id]&&!MENU_LITE)aliveDraw(ALIVE[stg.id],ctx,rcb,t);
       ctx.restore();useCam(F.p);
       drawBackCrowd(stg,t);useCam(F.p)}
     useCam(1);ctx.drawImage(midCanvas(stg),0,0,WW,H);
@@ -7310,9 +7310,13 @@ function rnd(a){return a[Math.random()*a.length|0]}
 function shuffle(a){return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1])}
 function cap(s){return s.split(' ').map(w=>w.charAt(0)+w.slice(1).toLowerCase()).join(' ')}
 
+/* the CPU fight that plays behind the menus skips the stages that cost the most to draw (timed with the menu up),
+   so menus stay smooth whichever stage it lands on */
+const DEMO_HEAVY=new Set(['dragonhouse','slaughter','sewer','morgue','bodega','trailerpark','rooftop','overpass','lowrider']);
+function demoStage(){const ok=[];STAGES.forEach((s,i)=>{if(!DEMO_HEAVY.has(s.id))ok.push(i)});return ok.length?ok[Math.random()*ok.length|0]:rndStage()}
 function startDemo(){
   const P=playable(),a=rnd(P);let b=rnd(P);while(b===a)b=rnd(P);
-  const keep=G.type;G.type='cpu';startMatch(a,b,{ai1:new AI(.7),ai2:new AI(.7),stage:rndStage(),demo:true});G.type=keep;G.lock=40;
+  const keep=G.type;G.type='cpu';startMatch(a,b,{ai1:new AI(.7),ai2:new AI(.7),stage:demoStage(),demo:true});G.type=keep;G.lock=40;
 }
 function showTitleOld(){
   if(typeof netLeave==='function')netLeave();
@@ -10053,9 +10057,11 @@ function launchPicked(stage){
 const SELBG_IM=new Image();SELBG_IM.src='media/selectbg.webp';
 function selBgStart(){const cv=document.getElementById('selBG');if(!cv)return;const g=cv.getContext('2d'),v=cv.parentNode.querySelector('video.fe-selfx');
   if(v){v.muted=true;try{const p=v.play();p&&p.catch&&p.catch(()=>{})}catch(e){}}
+  let lastT=-1,n=0;
   (function f(){if(!cv.isConnected){if(v){try{v.pause();v.removeAttribute('src');v.load()}catch(e){}}return}requestAnimationFrame(f);
-    if(document.hidden||!SELBG_IM.complete||!SELBG_IM.naturalWidth)return;g.globalCompositeOperation='source-over';g.drawImage(SELBG_IM,0,0,960,540);
-    if(v&&v.readyState>=2){g.globalCompositeOperation='lighter';try{g.drawImage(v,0,0,960,540)}catch(e){}g.globalCompositeOperation='source-over'}})()}
+    if(document.hidden||!SELBG_IM.complete||!SELBG_IM.naturalWidth)return;const vt=v&&v.readyState>=2?v.currentTime:-2;
+    if(vt===lastT&&n>2)return;lastT=vt;n++;g.globalCompositeOperation='source-over';g.drawImage(SELBG_IM,0,0,960,540);
+    if(vt>=0){g.globalCompositeOperation='lighter';try{g.drawImage(v,0,0,960,540)}catch(e){}g.globalCompositeOperation='source-over'}})()}
 /* the character and stage select screens cover the whole game, so the demo fight behind them is not drawn
    (the character select only counts once its background video is actually showing) */
 function menuCovers(){
@@ -10063,6 +10069,11 @@ function menuCovers(){
   if(document.querySelector('.fe-intro'))return true;{const m=document.querySelector('.fe-mature');if(m&&getComputedStyle(m).opacity>.98)return true}
   if(typeof ov==='undefined'||!ov||ov.classList.contains('clear')||G.mode!=='select'||ov.style.display==='none')return false;
   if(ov.classList.contains('ssmode'))return true;const v=ov.querySelector('.fe-sel>canvas.fe-bgvid');return !!(v&&SELBG_IM.complete&&SELBG_IM.naturalWidth)}
+/* while a menu sits over the demo fight (main menu, settings, the select screens), the fight behind it is dimmed and mostly
+   hidden, so it is only redrawn every other frame (it still moves smoothly, at half the cost), and without the stage's living
+   effects or the glow pass, which the darkening hides anyway */
+var MENU_RF=0,MENU_LITE=false;
+function menuDim(){return typeof ov!=='undefined'&&ov&&!ov.hidden&&ov.style.display!=='none'&&G.mode!=='fight'&&!(FE.cur&&FE.cur.id==='attract')}
 /* ---------- loop ---------- */
 let last=performance.now(),acc=0,fpsN=0,fpsT=performance.now(),fps=0;
 function step(now){
@@ -10073,7 +10084,8 @@ function step(now){
   else while(acc>=1000/60){tick++;update();acc-=1000/60}
   fpsN++;if(now-fpsT>=1000){fps=fpsN;fpsN=0;fpsT=now}
   autoResTick(now);
-  if(!menuCovers()){if(GL.on)renderGL();else{screenEl.classList.remove('webgl');ctx=hudx;render()}}
+  MENU_RF=(MENU_RF+1)|0;MENU_LITE=menuDim();
+  if(!menuCovers()&&!(menuDim()&&(MENU_RF&1))){if(GL.on)renderGL();else{screenEl.classList.remove('webgl');ctx=hudx;render()}}
   feFrame();
   if(TEST_API&&!TEST_API.ready&&SPR.ok&&(GL.on||!wantGL()||GL.failed))TEST_API.ready=true;
 }
