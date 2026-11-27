@@ -1776,7 +1776,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'dragonhouse',name:"Dragon House",img:'dragonhouse',extra:['dragonhouse_lan'],ww:1226,zoom:1.12,full:{scale:1250/2048,feet:1000/1156,p:1,rigid:true},indoor:true,dry:true,ambient:[215, 148, 98],grade:'#3a1a0a',rim:'rgba(255,165,85,.38)',farTone:'none',shadowL:[{x:1024,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'dragonhouse',name:"Dragon House",img:'dragonhouse',extra:['dragonhouse_lan'],ww:1226,zoom:1.0,fsize:.86,full:{scale:1250/2048,feet:860/1156,p:1,rigid:true},indoor:true,dry:true,ambient:[215, 148, 98],grade:'#3a1a0a',rim:'rgba(255,165,85,.38)',farTone:'none',shadowL:[{x:1024,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -3757,6 +3757,18 @@ Object.assign(ALIVE_FX,{
     g.restore()},
   // mirror-like puddles: the scene above the curb flips into every puddle (built once from the painting), shimmering as rain hits
   // darkens the ground where puddles gather (wet asphalt goes near-black), so the reflections on top read as standing water
+  // scraps of newspaper blowing through on the wind: some skid and hop along the ground, some get lifted and tumble past
+  newsscraps(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k;
+    if(!o._sp){o._sp=[];for(let v=0;v<5;v++){const w=30+v*7,h=20+(v%3)*6,c=dmCv(w,h),q=c.getContext('2d');q.fillStyle=['#d8d2c2','#cfc8b4','#e0dacb','#c9c2ae','#d4cdb9'][v];q.beginPath();q.moveTo(0,2);q.lineTo(w*.4,0);q.lineTo(w,3);q.lineTo(w-2,h);q.lineTo(w*.55,h-3);q.lineTo(2,h);q.closePath();q.fill();
+      q.fillStyle='rgba(40,38,36,.55)';q.fillRect(3,3,w*.55,3);for(let r=8;r<h-3;r+=3){q.fillStyle='rgba(60,58,55,.4)';q.fillRect(3,r,w*.42,1.2);q.fillRect(w*.5,r,w*.42,1.2)}o._sp.push(c)}}
+    g.save();g.globalCompositeOperation='source-over';const gust=.75+.35*Math.sin(t*.0035)+.3*Math.max(0,Math.sin(t*.011));
+    for(let i=0;i<o.n;i++){const life=(260+aH(i*3.3)*240)/gust,cyc=Math.floor((t+aH(i*7.1)*life)/life),u=((t+aH(i*7.1)*life)%life)/life;if(aH(cyc*1.7+i)<.3)continue;
+      const air=aH(cyc*2.9+i)<.4,gy=o.y0+aH(cyc*4.1+i)*(o.y1-o.y0),x=-120+u*(o.W+240),
+        y=air?gy-(160+aH(i*5.3)*260)+Math.sin(u*9+i)*50-Math.sin(u*Math.PI)*80:gy-Math.abs(Math.sin(u*14+i))*(14+aH(i*2.2)*26),
+        sp=o._sp[i%5],sz=(.95+aH(i*8.8)*.6)*k,rot=t*(air?.11:.06)*(i%2?1:-1)+i,fl=Math.sin(t*(air?.17:.09)+i*2);
+      g.save();g.translate(X(x),Y(y));g.rotate(rot);g.scale(1,.25+.75*Math.abs(fl));g.globalAlpha=.92;g.drawImage(sp,-sp.width*sz/2,-sp.height*sz/2,sp.width*sz,sp.height*sz);
+      if(fl<0){g.fillStyle='rgba(0,0,0,.25)';g.fillRect(-sp.width*sz/2,-sp.height*sz/2,sp.width*sz,sp.height*sz)}g.restore()}
+    g.restore()},
   puddletint(g,rc,t,o){const M=STIMG[o.mask];if(!M||!M.ok)return;const k=rc.k,sc=M.width/o.W;if(!o._c){const c=dmCv(M.width,M.height),q=c.getContext('2d');q.drawImage(M,0,0);q.globalCompositeOperation='source-in';q.fillStyle='rgb(6,8,18)';q.fillRect(0,0,c.width,c.height);o._c=c}
     g.save();g.globalAlpha=o.a;g.drawImage(o._c,rc.x,rc.y+o.top*k,o.W*k,M.height/sc*k);g.restore()},
   puddlemirror(g,rc,t,o){const im=rc.im,M=STIMG[o.mask];if(!im||!M||!M.ok)return;const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k;
@@ -3926,9 +3938,6 @@ Object.assign(ALIVE_FX,{
     // broken glass catches the light
     {const c=Math.floor(t/50),u=t%50;if(u<14){const gl=o.glass[Math.floor(aH(c*1.9)*o.glass.length)],x=gl[0]+aH(c*3.7)*(gl[2]-gl[0]),y=gl[1]+aH(c*4.3)*(gl[3]-gl[1]),e=Math.sin(u/14*Math.PI),L=12*e;
       glow(g,X(x),Y(y),4*k,'230,235,255',.9*e);g.strokeStyle=`rgba(235,240,255,${.75*e})`;g.lineWidth=1.1*k;g.beginPath();g.moveTo(X(x-L),Y(y));g.lineTo(X(x+L),Y(y));g.moveTo(X(x),Y(y-L));g.lineTo(X(x),Y(y+L));g.stroke()}}
-    // loose paper blowing down the street
-    {g.globalCompositeOperation='source-over';for(let i=0;i<3;i++){const life=600+i*170,u=((t+i*311)%life)/life;if(aH(Math.floor((t+i*311)/life)*1.3+i)<.35)continue;const x=-80+u*2200,y=800+i*55+Math.sin(u*20+i)*18-Math.abs(Math.sin(u*9+i))*30,r=t*.09*(i%2?1:-1)+i;
-      g.save();g.translate(X(x),Y(y));g.rotate(r);g.scale(1,.5+.5*Math.sin(t*.11+i));g.fillStyle='rgba(205,200,190,.9)';g.fillRect(-9*k,-6*k,18*k,12*k);g.strokeStyle='rgba(40,35,45,.8)';g.lineWidth=1*k;g.strokeRect(-9*k,-6*k,18*k,12*k);g.restore()}}
     g.restore()},
   // Hunts Point Scrapyard: the strings of bulbs over the yard buzz and twinkle (a few sputter and die out for a moment), their light
   // shimmers in the puddles, the crane's hook sways on its cable, fog drifts out of the far end, a wrecked car's headlights sputter on,
@@ -4625,13 +4634,15 @@ Object.assign(ALIVE,{
     ['puddletint',{mask:'aftermath_puddles',W:2048,top:842,a:.45}],
     ['puddlemirror',{mask:'aftermath_puddles',W:2048,H:1024,axis:836,top:842,a:.8}],
     ['aftermathfx',{"lamp":[1745,148],"spk":[[1408,672,28],[1504,672,28]],"tapes":[[0,505,300,433],[1560,520,1810,455]],"fires":[[1720,330],[300,290],[1990,300]],"smoke":[[1760,330],[250,300]],"glass":[[420,290,640,560],[660,340,790,640]]}],
-    ['fogsheet',{y0:760,y1:960,n:12,a:.08,rgb:'150,140,170',sp:.3,rx:600,ry:45}]],
+    ['fogsheet',{y0:760,y1:960,n:12,a:.08,rgb:'150,140,170',sp:.3,rx:600,ry:45}],
+    ['newsscraps',{W:2048,y0:860,y1:1000,n:4}]],
   huntspoint:[
     ['puddletint',{mask:'huntspoint_puddles',W:2048,top:690,a:.4}],
     ['puddlemirror',{mask:'huntspoint_puddles',W:2048,H:1156,axis:690,top:690,a:.8}],
     ['huntsfx',{"bulbs":[[301,1,9],[297,16,25],[1846,12,9],[1849,25,23],[438,51,9],[435,66,24],[1740,56,9],[1743,70,23],[577,97,8],[1618,99,8],[575,111,23],[1621,112,22],[151,119,17],[1935,131,13],[722,146,26],[1482,134,8],[1484,147,21],[1342,157,8],[881,158,7],[426,169,16],[1343,171,23],[880,173,22],[183,174,17],[1052,172,9],[1201,170,8],[1202,184,23],[1052,185,21],[1909,185,17],[490,199,16],[1623,200,13],[562,226,15],[1555,227,14],[1864,227,14],[353,226,11],[1769,237,14],[1809,246,15],[625,247,16],[326,248,13],[1488,250,15],[296,257,15],[695,267,15],[1409,272,15],[777,285,15],[1327,290,17],[664,296,11],[865,299,16],[1241,302,15],[956,309,16],[1153,310,17],[1413,309,10],[1058,314,16],[709,314,12],[1359,328,10],[758,329,11],[811,344,11],[705,345,9],[1301,345,10],[1357,350,8],[867,356,11],[1238,357,11],[750,363,9],[925,365,10],[1176,366,11],[1315,367,8],[987,371,10],[1112,372,11],[274,371,6],[1050,373,11],[264,378,8],[796,378,9],[1273,382,8],[746,384,7],[846,391,10],[1232,392,8],[780,397,6],[895,400,9],[1190,403,12],[946,408,9],[1145,407,8],[815,409,7],[996,411,9],[1096,411,9],[1047,413,9],[1151,415,6],[851,418,7],[1114,422,6],[888,425,6],[1076,427,7],[925,430,7],[1037,432,7],[961,432,6],[999,433,7],[848,446,3],[858,445,3],[983,468,4],[928,469,4]],"glints":[[403,760],[414,767],[848,760],[852,760],[1125,762],[1439,764],[1457,760],[903,762],[1131,763],[1381,766],[441,766],[703,766],[866,765],[1170,767],[567,768],[600,770],[637,768],[450,772],[460,773],[729,774],[669,779],[683,778],[1478,784],[1734,788],[1437,789],[450,787],[762,786],[852,788],[863,788],[592,788],[1638,794],[870,791],[1488,791],[1319,792],[1393,792],[861,794],[1461,798],[1724,796],[1741,795],[667,797],[706,797],[865,798],[1484,803],[1706,801],[872,803],[577,807],[589,806],[601,807],[642,804],[567,808],[1696,807],[594,808],[1645,809],[875,810],[377,814],[534,816],[1206,813],[875,815],[963,818],[1316,818],[625,821],[1212,824],[1634,820],[1641,822],[1162,822],[1171,822],[1319,829],[1613,826],[1629,822],[1051,827],[1169,826],[1635,829],[1170,829],[1529,829],[430,832],[442,832],[1281,831],[1527,831],[467,835],[471,836]],"hook":[878,918,40,380],"heads":[[703,673],[1512,632],[1680,642]],"eyes":[[150,500],[300,640],[1900,600]],"fog":[1050,640]}],
     ['fogsheet',{y0:600,y1:760,n:12,a:.1,rgb:'130,125,135',sp:.2,rx:500,ry:40}],
-    ['fogsheet',{y0:900,y1:1100,n:10,a:.05,rgb:'130,125,135',sp:.3,rx:500,ry:35}]],
+    ['fogsheet',{y0:900,y1:1100,n:10,a:.05,rgb:'130,125,135',sp:.3,rx:500,ry:35}],
+    ['newsscraps',{W:2048,y0:780,y1:1120,n:4}]],
   dragonhouse:[
     ['dragonfx',{"eyes":[[377,490],[1690,490]],"deyes":[[995,345],[1055,345]],"inc":[[625,628],[745,632],[1312,635],[1437,662],[2003,680]],"door":[940,560,1120,735],"parts":[[0,0,131,192,104,37,169.5,40],[0,194,115,181,294,148,351.0,151],[0,377,127,162,390,43,453.5,46],[0,541,93,149,446,226,495.0,229],[0,692,86,93,571,266,613.5,269],[0,787,108,167,626,126,677.0,129],[0,956,81,117,683,271,723.5,274],[0,1075,95,107,811,166,860.5,169],[0,1184,97,109,1132,163,1179.5,166],[0,1295,83,113,1280,272,1321.0,275],[0,1410,107,168,1310,128,1364.5,131],[0,1580,84,92,1388,264,1429.5,267],[0,1674,89,100,1502,226,1543.0,229],[0,1776,121,202,1525,46,1585.5,49],[0,1980,121,151,1632,148,1692.0,151],[0,2133,141,230,1800,40,1870.0,43]]}],
     ['fogsheet',{y0:720,y1:880,n:10,a:.07,rgb:'120,90,80',sp:.18,rx:420,ry:35}]],
