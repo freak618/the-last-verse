@@ -1777,7 +1777,7 @@ const STAGES=[
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
- { id:'playhouse',name:"Misty's Playhouse",img:'playhouse',extra:['playhouse_parts'],ww:1226,fsize:1.4,zoom:1.01,full:{scale:1250/2048,feet:1010/1152,p:1,rigid:true},indoor:true,dry:true,ambient:[150, 115, 190],grade:'#1e0c30',rim:'rgba(200,120,255,.38)',farTone:'none',shadowL:[{x:1040,y:-200,a:.3}],crowd:{groups:[],front:0},
+ { id:'playhouse',name:"Misty's Playhouse",img:'playhouse',extra:['playhouse_parts'],ww:1226,fsize:1.18,zoom:1.0,full:{scale:0.51,feet:880/1152,p:1,rigid:true},indoor:true,dry:true,ambient:[150, 115, 190],grade:'#1e0c30',rim:'rgba(200,120,255,.38)',farTone:'none',shadowL:[{x:1040,y:-200,a:.3}],crowd:{groups:[],front:0},
    setup(){return{props:[],pend:[],puddles:[],throws:[]}},
    build(g){},fg(g){},lights(){},
  },
@@ -4017,6 +4017,19 @@ Object.assign(ALIVE_FX,{
   // through the tube light and a low purple haze rolls over the shag carpet
   playfx(g,rc,t,o){const k=rc.k,X=x=>rc.x+x*k,Y=y=>rc.y+y*k,im=rc.im,P=STIMG.playhouse_parts,rnd=(a,b)=>aH(a*12.9898+b*78.233);
     if(P&&!P.ok&&!P._go)stageStart(P,true);g.save();const ok=P&&P.ok;
+    // the room carries on past the picture's edges when the camera is pulled back: mirrored, blurred and sunk into shadow
+    if(im&&!o._frame){try{const PX=300,PT=300,PB=160,c=dmCv(2048+2*PX,1152+PT+PB),q=c.getContext('2d');q.filter='blur(3px) brightness(.55)';
+        q.save();q.translate(PX,0);q.scale(-1,1);q.drawImage(im,0,0,PX,1152,0,PT,PX,1152);q.restore();
+        q.save();q.translate(PX+2048+PX,0);q.scale(-1,1);q.drawImage(im,2048-PX,0,PX,1152,0,PT,PX,1152);q.restore();
+        q.save();q.translate(0,PT);q.scale(1,-1);q.drawImage(im,0,0,2048,PT,PX,0,2048,PT);q.drawImage(c,0,PT,PX,PT,0,0,PX,PT);q.restore();
+        q.save();q.translate(0,PT+1152+PB+1152-0);q.restore();
+        q.save();q.translate(0,PT+1152);q.scale(1,-1);q.translate(0,-PB);q.drawImage(im,0,1152-PB,2048,PB,PX,0,2048,PB);q.restore();
+        q.filter='none';q.fillStyle='#07040c';q.fillRect(0,0,PX,PT);q.fillRect(PX+2048,0,PX,PT);
+        q.globalCompositeOperation='destination-out';q.fillRect(PX,PT,2048,1152);
+        q.globalCompositeOperation='source-atop';const sh=(x0,y0,x1,y1)=>{const gr=q.createLinearGradient(x0,y0,x1,y1);gr.addColorStop(0,'rgba(5,2,10,.15)');gr.addColorStop(1,'rgba(5,2,10,.9)');return gr};
+        q.fillStyle=sh(PX,0,0,0);q.fillRect(0,0,PX,c.height);q.fillStyle=sh(PX+2048,0,c.width,0);q.fillRect(PX+2048,0,PX,c.height);q.fillStyle=sh(0,PT,0,0);q.fillRect(0,0,c.width,PT);
+        o._frame=c;o._fp=[PX,PT]}catch(e){o._frame=1}}
+    if(o._frame&&o._frame!==1){g.globalCompositeOperation='source-over';g.drawImage(o._frame,X(-o._fp[0]),Y(-o._fp[1]),o._frame.width*k,o._frame.height*k)}
     const part=(n,a)=>{const m=o.parts[n];g.globalAlpha=Math.max(0,Math.min(1,a));g.drawImage(P,m[0],m[1],m[2],m[3],X(m[4]),Y(m[5]),m[2]*k,m[3]*k);g.globalAlpha=1};
     // the pegboard: each piece swings on its own hook (sheared from the hook down, so the hook stays put)
     if(im){g.globalCompositeOperation='source-over';const gust=.7+.3*Math.sin(t*.004)+.25*Math.max(0,Math.sin(t*.0013+1));
@@ -4033,6 +4046,49 @@ Object.assign(ALIVE_FX,{
       const m=o.parts.xxx,xa=.34*(.9+.1*Math.sin(t*1.7));
       for(let L=0;L<3;L++){const lw=m[2]/3;let a=xa;if(L===dead&&xf)a=0;g.globalAlpha=a;g.drawImage(P,m[0]+L*lw,m[1],lw,m[3],X(m[4]+L*lw),Y(m[5]),lw*k,m[3]*k)}g.globalAlpha=1;
       if(dead>=0&&xf){g.globalCompositeOperation='source-over';g.fillStyle='rgba(12,4,20,.55)';const lw=m[2]/3;g.fillRect(X(m[4]+dead*lw+20),Y(m[5]+15),(lw-40)*k,(m[3]-30)*k);g.globalCompositeOperation='lighter'}}
+    // blacklight on the pegboard: the toys look wet and glossy; their highlights shimmer, and now and then a sheen slides across them
+    if(ok){const m=o.parts.shine;g.globalAlpha=.35+.2*Math.sin(t*.05)+.1*Math.sin(t*.17);g.drawImage(P,m[0],m[1],m[2],m[3],X(m[4]),Y(m[5]),m[6]*k,m[7]*k);g.globalAlpha=1;
+      const per=420,u=t%per;if(u<110){if(!o._sh)o._sh=dmCv(m[2],m[3]);const q=o._sh.getContext('2d');q.globalCompositeOperation='source-over';q.clearRect(0,0,m[2],m[3]);q.drawImage(P,m[0],m[1],m[2],m[3],0,0,m[2],m[3]);
+        q.globalCompositeOperation='source-in';const bx=-60+u/110*(m[2]+120),gr=q.createLinearGradient(bx-40,0,bx+40,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,'rgba(255,240,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');q.fillStyle=gr;q.fillRect(0,0,m[2],m[3]);
+        g.globalAlpha=.9;g.drawImage(o._sh,X(m[4]),Y(m[5]),m[6]*k,m[7]*k);g.globalAlpha=1}}
+    // the rack's yellow fluorescent backlight hums
+    {const f=.75+.12*Math.sin(t*1.9)+.08*Math.sin(t*.37);glow(g,X(478),Y(530),260*k,'255,215,90',.06*f);glow(g,X(478),Y(820),220*k,'255,200,80',.04*f)}
+    // hippy liquid light show: slow oily colour blobs drifting over the walls and carpet, like an old overhead projector
+    {if(!o._ll)o._ll=dmCv(256,144);const L=o._ll,q=L.getContext('2d');if(!(t%3)){q.globalCompositeOperation='source-over';q.clearRect(0,0,256,144);q.globalCompositeOperation='lighter';
+      const C=['255,70,190','190,80,255','255,150,60','80,200,255','140,255,120','255,90,120'];
+      for(let b=0;b<9;b++){const ph=b*1.7,x=128+Math.sin(t*.0041+ph)*110+Math.sin(t*.0093+ph*2)*30,y=72+Math.sin(t*.0057+ph*1.3)*58,r=26+14*Math.sin(t*.007+ph),c=C[(b+Math.floor(t/900))%C.length];
+        const gr=q.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,`rgba(${c},.9)`);gr.addColorStop(.55,`rgba(${c},.45)`);gr.addColorStop(1,`rgba(${c},0)`);q.fillStyle=gr;q.fillRect(x-r,y-r,2*r,2*r)}}
+      g.globalCompositeOperation='lighter';g.globalAlpha=.15;g.drawImage(L,X(0),Y(0),2048*k,1152*k);g.globalAlpha=1}
+    // pink and purple mini spotlights hanging from the ceiling, sweeping slowly; each throws a beam and a pool on the carpet
+    if(!o._sp){o._sp={};for(const[, ,c] of o.spots)if(!o._sp[c]){const cv=dmCv(64,64),q=cv.getContext('2d'),gr=q.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,`rgba(${c},1)`);gr.addColorStop(1,`rgba(${c},0)`);q.fillStyle=gr;q.fillRect(0,0,64,64);o._sp[c]=cv}}
+    o.spots.forEach(([x,y,c,ph],i)=>{const a=ph+Math.sin(t*(.006+i*.0013)+i*2)*.32,fx=x+Math.tan(a)*880,fy=900;
+      g.save();const gr=g.createLinearGradient(X(x),Y(y),X(fx),Y(fy));gr.addColorStop(0,`rgba(${c},.2)`);gr.addColorStop(.7,`rgba(${c},.05)`);gr.addColorStop(1,`rgba(${c},0)`);
+      g.fillStyle=gr;g.beginPath();g.moveTo(X(x-7),Y(y+16));g.lineTo(X(x+7),Y(y+16));g.lineTo(X(fx+110),Y(fy));g.lineTo(X(fx-110),Y(fy));g.closePath();g.fill();
+      g.globalAlpha=.28;g.drawImage(o._sp[c],X(fx-150),Y(fy-42),300*k,84*k);g.globalAlpha=1;g.restore();
+      g.save();g.globalCompositeOperation='source-over';g.translate(X(x),Y(y));g.rotate(-a);g.fillStyle='#120a1a';g.fillRect(-9*k,-4*k,18*k,22*k);g.fillStyle='#2a1a3a';g.fillRect(-9*k,-4*k,18*k,3*k);g.restore();
+      g.globalAlpha=.95;g.drawImage(o._sp[c],X(x+Math.sin(a)*-16-9),Y(y+9),18*k,18*k);g.globalAlpha=.3;g.drawImage(o._sp[c],X(x-26),Y(y-8),52*k,52*k);g.globalAlpha=1});
+    // a purple spotlight trained on the handcuffs: a beam down from the ceiling, the cuffs lit up in it, a pool on the wall behind
+    {const sx=1600,sy=-40,sw=Math.sin(t*.008)*14,cx=1600+sw,f=.9+.06*Math.sin(t*1.3)+.04*Math.sin(t*.29);
+      const gr=g.createLinearGradient(0,Y(sy),0,Y(720));gr.addColorStop(0,`rgba(190,90,255,${.24*f})`);gr.addColorStop(.6,`rgba(170,80,255,${.12*f})`);gr.addColorStop(1,'rgba(170,80,255,0)');
+      g.fillStyle=gr;g.beginPath();g.moveTo(X(sx-14),Y(sy+30));g.lineTo(X(sx+14),Y(sy+30));g.lineTo(X(cx+210),Y(720));g.lineTo(X(cx-210),Y(720));g.closePath();g.fill();
+      if(!o._cp){const c=dmCv(64,64),q=c.getContext('2d'),r=q.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,'rgba(185,90,255,1)');r.addColorStop(.6,'rgba(170,80,255,.45)');r.addColorStop(1,'rgba(170,80,255,0)');q.fillStyle=r;q.fillRect(0,0,64,64);o._cp=c}
+      g.globalAlpha=.32*f;g.drawImage(o._cp,X(cx-230),Y(90),460*k,640*k);g.globalAlpha=1;
+      if(ok){const m=o.parts.cuffs;g.globalAlpha=.55*f;g.drawImage(P,m[0],m[1],m[2],m[3],X(m[4]),Y(m[5]),m[2]*k,m[3]*k);g.globalAlpha=1}
+      // the metal links catch it
+      const c2=Math.floor(t/45),u=t%45;if(u<14){const x=1440+aH(c2*1.7)*320,y=120+aH(c2*3.1)*560,e=Math.sin(u/14*Math.PI),L=10*e;g.drawImage(o._cp,X(x-6),Y(y-6),12*k,12*k);g.strokeStyle=`rgba(240,220,255,${.8*e})`;g.lineWidth=1.1*k;g.beginPath();g.moveTo(X(x-L),Y(y));g.lineTo(X(x+L),Y(y));g.moveTo(X(x),Y(y-L));g.lineTo(X(x),Y(y+L));g.stroke()}
+      g.save();g.globalCompositeOperation='source-over';g.translate(X(sx),Y(sy+14));g.fillStyle='#120a1a';g.fillRect(-12*k,-6*k,24*k,26*k);g.restore();g.globalAlpha=.95;g.drawImage(o._cp,X(sx-13),Y(sy+26),26*k,26*k);g.globalAlpha=1}
+    // a lava lamp on the end of the bench: wax blobs rise and sink, the glass glows
+    {const[lx,ly]=o.lava,hh=118;g.save();g.globalCompositeOperation='source-over';
+      g.fillStyle='#1d1420';g.beginPath();g.moveTo(X(lx-20),Y(ly));g.lineTo(X(lx+20),Y(ly));g.lineTo(X(lx+13),Y(ly-34));g.lineTo(X(lx-13),Y(ly-34));g.closePath();g.fill();
+      const body=()=>{g.beginPath();g.moveTo(X(lx-13),Y(ly-34));g.lineTo(X(lx-22),Y(ly-hh*.62));g.lineTo(X(lx-9),Y(ly-hh+18));g.lineTo(X(lx+9),Y(ly-hh+18));g.lineTo(X(lx+22),Y(ly-hh*.62));g.lineTo(X(lx+13),Y(ly-34));g.closePath()};
+      body();const lg=g.createLinearGradient(X(lx-22),0,X(lx+22),0);lg.addColorStop(0,'rgba(120,20,140,.95)');lg.addColorStop(.5,'rgba(220,60,200,.95)');lg.addColorStop(1,'rgba(110,20,130,.95)');g.fillStyle=lg;g.fill();
+      g.save();body();g.clip();for(let b=0;b<4;b++){const u=(Math.sin(t*(.004+b*.0012)+b*1.9)+1)/2,by=ly-42-u*(hh-70),bx=lx+Math.sin(t*.01+b)*5,r=(7+b*2)*(1+.2*Math.sin(t*.02+b));
+        const bg=g.createRadialGradient(X(bx),Y(by),0,X(bx),Y(by),r*k);bg.addColorStop(0,'rgba(255,190,90,1)');bg.addColorStop(.7,'rgba(255,120,60,.95)');bg.addColorStop(1,'rgba(255,90,60,0)');g.fillStyle=bg;g.beginPath();g.ellipse(X(bx),Y(by),r*.85*k,r*1.15*k,0,0,7);g.fill()}g.restore();
+      g.fillStyle='#1d1420';g.beginPath();g.moveTo(X(lx-9),Y(ly-hh+18));g.lineTo(X(lx+9),Y(ly-hh+18));g.lineTo(X(lx+6),Y(ly-hh));g.lineTo(X(lx-6),Y(ly-hh));g.closePath();g.fill();g.restore();
+      glow(g,X(lx),Y(ly-hh*.5),70*k,'255,90,200',.22);glow(g,X(lx),Y(ly-hh*.5),170*k,'255,120,160',.07)}
+    // incense on the lotion shelf
+    {g.save();g.globalCompositeOperation='source-over';g.lineCap='round';const[x,y]=o.inc;for(let s2=0;s2<2;s2++){g.beginPath();g.moveTo(X(x+s2*4),Y(y));for(let j=1;j<=24;j++){const yy=y-j*7,dx=Math.sin(j*.35-t*.04+s2)*(2+j*.9)+Math.sin(j*.13+t*.011)*j*.6;g.lineTo(X(x+s2*4+dx),Y(yy))}
+      const gr=g.createLinearGradient(0,Y(y),0,Y(y-168));gr.addColorStop(0,'rgba(225,205,235,.42)');gr.addColorStop(1,'rgba(225,205,235,0)');g.strokeStyle=gr;g.lineWidth=(2.2-s2*.6)*k;g.stroke()}g.restore();g.globalCompositeOperation='lighter';glow(g,X(x),Y(y),2.6*k,'255,140,60',.85)}
     glow(g,X(1030),Y(160),330*k,'200,90,255',.1*hum);glow(g,X(1040),Y(40),260*k,'225,170,255',.07*hum);glow(g,X(1040),Y(300),240*k,'225,170,255',.07*hum);glow(g,X(1900),Y(290),220*k,'225,170,255',.09*rt*hum);
     // light pooling on the carpet under the tubes
     {const gr=g.createRadialGradient(X(1040),Y(900),0,X(1040),Y(900),620*k);gr.addColorStop(0,`rgba(190,110,255,${.07*hum})`);gr.addColorStop(1,'rgba(190,110,255,0)');g.save();g.translate(X(1040),Y(900));g.scale(1,.3);g.translate(-X(1040),-Y(900));g.fillStyle=gr;g.fillRect(X(420),Y(280),1240*k,1240*k);g.restore()}
@@ -4673,7 +4729,7 @@ Object.assign(ALIVE,{
     ['fogsheet',{y0:760,y1:960,n:12,a:.08,rgb:'150,140,170',sp:.3,rx:600,ry:45}],
     ['newsscraps',{W:2048,y0:860,y1:1000,n:4}]],
   playhouse:[
-    ['playfx',{"parts":{"xxx":[0,0,600,215,730,55],"tt":[0,217,560,30,760,20],"tb":[0,249,500,28,800,280],"tr":[0,279,180,80,1820,250],"tl":[0,361,250,30,420,50],"trr":[0,393,320,30,1400,50],"tc":[0,425,160,60,1760,0]},"toys":[[664,719,312,508,694],[719,765,312,508,744],[765,808,312,508,786],[808,851,312,508,830],[851,894,312,508,872],[894,940,312,508,917],[940,984,312,508,962],[984,1026,312,508,1006],[1026,1068,312,508,1046],[1068,1112,312,508,1090],[1112,1154,312,508,1134],[1154,1196,312,508,1174],[1196,1238,312,508,1218],[1238,1276,312,508,1258],[1276,1312,312,508,1293],[1312,1348,312,508,1330],[1348,1384,312,508,1365],[1384,1416,312,508,1402],[1416,1452,312,508,1430],[675,716,508,705,697],[716,752,508,705,734],[752,786,508,705,770],[786,818,508,705,802],[818,856,508,705,834],[856,899,508,705,878],[899,940,508,705,920],[940,976,508,705,960],[976,1014,508,705,992],[1279,1314,508,705,1301],[1314,1342,508,705,1327],[1342,1368,508,705,1356],[1368,1388,508,705,1380],[1388,1409,508,705,1396],[1409,1444,508,705,1422]],"chains":[[0,150,30,560]]}],
+    ['playfx',{"parts":{"xxx":[0,0,600,215,730,55],"tt":[0,217,560,30,760,20],"tb":[0,249,500,28,800,280],"tr":[0,279,180,80,1820,250],"tl":[0,361,250,30,420,50],"trr":[0,393,320,30,1400,50],"tc":[0,425,160,60,1760,0],"shine":[0,489,420,210,640,300,840,420],"cuffs":[0,701,360,600,1420,100]},"toys":[[664,719,312,508,694],[719,765,312,508,744],[765,808,312,508,786],[808,851,312,508,830],[851,894,312,508,872],[894,940,312,508,917],[940,984,312,508,962],[984,1026,312,508,1006],[1026,1068,312,508,1046],[1068,1112,312,508,1090],[1112,1154,312,508,1134],[1154,1196,312,508,1174],[1196,1238,312,508,1218],[1238,1276,312,508,1258],[1276,1312,312,508,1293],[1312,1348,312,508,1330],[1348,1384,312,508,1365],[1384,1416,312,508,1402],[1416,1452,312,508,1430],[675,716,508,705,697],[716,752,508,705,734],[752,786,508,705,770],[786,818,508,705,802],[818,856,508,705,834],[856,899,508,705,878],[899,940,508,705,920],[940,976,508,705,960],[976,1014,508,705,992],[1279,1314,508,705,1301],[1314,1342,508,705,1327],[1342,1368,508,705,1356],[1368,1388,508,705,1380],[1388,1409,508,705,1396],[1409,1444,508,705,1422]],"chains":[[0,150,30,560]],"spots":[[240,6,"255,90,200",-0.18],[640,6,"185,90,255",0.12],[1420,6,"255,90,200",-0.1],[1830,6,"185,90,255",0.2]],"lava":[1262,646],"inc":[1022,640]}],
     ['fogsheet',{y0:820,y1:1000,n:12,a:.09,rgb:'150,90,200',sp:.18,rx:520,ry:40}]],
   huntspoint:[
     ['puddletint',{mask:'huntspoint_puddles',W:2048,top:690,a:.4}],
