@@ -159,7 +159,7 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 .ss2{position:relative;flex:1 1 auto;width:100%;min-height:0;display:flex;flex-direction:column;justify-content:space-between;--acc:255,90,40;overflow:hidden}
 .ss2-bg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ss2-shade{position:absolute;inset:0;pointer-events:none;background:
-  linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 52%,rgba(0,0,0,.72) 74%,rgba(0,0,0,.9) 100%),
+  linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 20%,rgba(0,0,0,0) 58%,rgba(0,0,0,.55) 78%,rgba(0,0,0,.82) 100%),
   radial-gradient(ellipse 85% 75% at 50% 40%,rgba(0,0,0,0) 55%,rgba(0,0,0,.45) 100%)}
 .ss2-top{position:relative;padding:1.6cqw 2.4cqw 0;pointer-events:none}
 .ss2-num{font-family:var(--head);font-weight:700;font-size:1.5cqw;letter-spacing:.2em;text-transform:uppercase;color:rgb(var(--acc));text-shadow:0 0 1cqw rgba(var(--acc),.8),0 .15cqw .3cqw #000}
@@ -170,14 +170,13 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 @keyframes ss2pop{0%{opacity:0;transform:scale(1.9) translateX(-3%) rotate(-3deg);filter:blur(.6cqw)}55%{opacity:1;transform:scale(.95) rotate(.6deg);filter:blur(0)}100%{transform:none}}
 @keyframes ss2num{0%{opacity:0;transform:translateX(-3cqw)}100%{opacity:1;transform:none}}
 .ss2-panel{position:relative;padding:0 2cqw .8cqw}
-.ss2-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:.55cqw;padding:.8cqw;border-radius:.6cqw;
-  background:rgba(8,6,10,.7);box-shadow:inset 0 0 0 .1cqw rgba(var(--acc),.45),0 0 2.4cqw rgba(var(--acc),.25)}
-.ss2 .scard{transition:transform .12s cubic-bezier(.2,1.6,.4,1),filter .15s,box-shadow .15s;border-color:#000}
+.ss2-grid{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:.45cqw;padding:.7cqw .8cqw;border-radius:.5cqw;
+  background:linear-gradient(180deg,rgba(8,6,10,.32),rgba(8,6,10,.55));border-top:.12cqw solid rgba(var(--acc),.55)}
+.ss2 .scard{transition:transform .12s cubic-bezier(.2,1.6,.4,1),filter .15s;border-color:rgba(0,0,0,.8);filter:brightness(.58) saturate(.7)}
 .ss2 .scard .nm{display:none}
-.ss2-grid:hover .scard:not(:hover),.ss2-grid:focus-within:not(:hover) .scard:not(:focus){filter:brightness(.62) saturate(.75)}
-.ss2 .scard:hover,.ss2 .scard:focus-visible,.ss2 .scard:focus{outline:none;z-index:3;transform:scale(1.32) translateY(-12%);filter:none;border-color:#fff;
-  box-shadow:0 0 0 .18cqw #fff,0 0 0 .4cqw rgb(var(--acc)),0 0 2.2cqw rgba(var(--acc),.95);animation:ss2glow .9s ease-in-out infinite alternate}
-@keyframes ss2glow{to{box-shadow:0 0 0 .18cqw #fff,0 0 0 .55cqw rgb(var(--acc)),0 0 3.4cqw rgba(var(--acc),1)}}
+.ss2 .scard:hover{filter:brightness(.85) saturate(.9)}
+.ss2 .scard:focus-visible,.ss2 .scard:focus{outline:none;z-index:3;transform:scale(1.3) translateY(-10%);filter:none;border-color:#fff;
+  box-shadow:0 0 0 .16cqw #fff,0 0 0 .4cqw rgb(var(--acc)),0 0 2cqw rgba(var(--acc),.9)}
 .ss2-rand{font-size:2.6cqw!important;background:linear-gradient(135deg,#ff2a6a,#ffb020,#3ad0ff,#b04aff)!important;background-size:300% 300%!important;color:#fff!important;
   text-shadow:0 .1cqw .3cqw #000;animation:ss2rain 2.4s linear infinite}
 @keyframes ss2rain{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
@@ -7710,6 +7709,12 @@ function stageThumb(k,w=480){
     g.save();g.translate(-(WW-W)/2,0);g.drawImage(midCanvas(stg),0,0,WW,H);g.restore()}
   if(ok)STHUMB[key]=cv;return cv;
 }
+/* stage-select thumbnails: one small sheet with every stage on it (240x135 each), so the menu never has to load
+   all the full stage pictures just to show their thumbnails. A stage missing from the sheet falls back to the old way. */
+const SS_TH={im:null,map:{"riverfront":[0,0],"pops":[240,0],"conservatory":[480,0],"popsinside":[720,0],"soundhouse":[960,0],"gathering":[1200,0],"spiritboard":[1440,0],"graveyard":[1680,0],"seminartent":[1920,0],"marsh":[2160,0],"carnival":[0,135],"funhouse":[240,135],"delray":[480,135],"campground":[720,135],"mansion":[960,135],"hellpit":[1200,135],"overpass":[1440,135],"img00":[1680,135],"img18":[1920,135],"alley":[2160,135],"hauntedhouse":[0,270],"neontunnel":[240,270],"midway":[480,270],"warehouse":[720,270],"juggalette":[960,270],"deadmall":[1200,270],"mirrors":[1440,270],"riddlebox":[1680,270],"motel":[1920,270],"cabin":[2160,270],"backwoods":[0,405],"jeckel":[240,405],"hallowicked":[480,405],"morgue":[720,405],"rooftop":[960,405],"killerbasement":[1200,405],"swamp":[1440,405],"drivein":[1680,405],"asylum":[1920,405],"junkyard":[2160,405],"subway":[0,540],"cemetery":[240,540],"trailerpark":[480,540],"barn":[720,540],"ghostcarnival":[960,540],"dojo":[1200,540],"bjj":[1440,540],"aftermath":[1680,540],"huntspoint":[1920,540],"dragonhouse":[2160,540],"church":[0,675],"ritual":[240,675],"dungeon":[480,675],"bowling":[720,675],"studio":[960,675],"bodega":[1200,675],"lowrider":[1440,675],"block":[1680,675],"recordstore":[1920,675],"court":[2160,675],"attic":[0,810],"nu_ring":[240,810],"nu_bigtop":[480,810],"nu_studio":[720,810],"slaughter":[960,810],"sewer":[1200,810],"cage":[1440,810],"club":[1680,810],"theater":[1920,810],"killroom":[2160,810]}};
+function ssThumbs(){if(!SS_TH.im){SS_TH.im=new Image();SS_TH.im.src='stages/thumbs.webp'}return SS_TH.im}
+function ssThumbDraw(id,c){const p=SS_TH.map[id],im=ssThumbs();if(!p)return false;const go=()=>{if(c.isConnected||!c.parentNode)c.getContext('2d').drawImage(im,p[0],p[1],240,135,0,0,c.width,c.height)};
+  if(im.complete&&im.naturalWidth)go();else im.addEventListener('load',go,{once:true});return true}
 function showStageSelect(){
   G.mode='select';
   const k0=STAGES.includes(STAGES[G.stage])?G.stage:0,N=STAGES.length;
@@ -7725,11 +7730,11 @@ function showStageSelect(){
   ov.classList.add('sel','ssmode');
   const root=ov.querySelector('.ss2'),cv=document.getElementById('ssBg'),g=cv.getContext('2d'),nm=document.getElementById('ssName'),num=document.getElementById('ssNum'),strip=document.getElementById('ssStrip');
   const accOf=k=>{const m=/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(STAGES[k].rim||STAGES[k].grade||'');return m?`${m[1]},${m[2]},${m[3]}`:'255,90,40'};
-  const picOf=k=>{const stg=STAGES[k];if(stg.full){const im=STIMG[stg.img];if(im&&im.ok)return{im,id:stg.id,live:true}}return{im:stageThumb(k,1280),id:stg.id,live:false}};
+  const picOf=k=>{const stg=STAGES[k];if(stg.full){const im=STIMG[stg.img];if(im&&im.ok)return{im,id:stg.id,full:true};const c=dmCv(240,135);if(ssThumbDraw(stg.id,c))return{im:c,id:stg.id,full:false}}return{im:stageThumb(k,1280),id:stg.id,full:!stg.full}};
   // background state: the stage on show, what it replaced (fades out), and when it changed
   const B={k:-2,pic:null,acc:'255,90,40',t0:0,prev:dmCv(8,8),pa:0,ft:0,rnd:false,rk:0,rnext:0,embers:[]};
-  for(let i=0;i<46;i++)B.embers.push({x:Math.random(),y:Math.random(),v:.0006+Math.random()*.0016,r:1+Math.random()*2.6,ph:Math.random()*6.3});
-  const setStage=(k,quiet,spin)=>{const now=performance.now();B.spin=!!spin;stageNeed(k);
+  for(let i=0;i<26;i++)B.embers.push({x:Math.random(),y:Math.random(),v:.0006+Math.random()*.0016,r:1+Math.random()*2.6,ph:Math.random()*6.3});
+  const setStage=(k,quiet,spin)=>{const now=performance.now();B.spin=!!spin;clearTimeout(B.ld);B.want=-1;if(!spin)B.ld=setTimeout(()=>{if(B.k2===k){B.want=k;stageNeed(k)}},240);
     if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1}
     B.pic=picOf(k);B.acc=accOf(k);B.t0=now;B.k2=k;root.style.setProperty('--acc',B.acc);if(!quiet&&SFX.navtick)try{SFX.navtick()}catch(e){}};
   const RSPIN=2600,RHOLD=1500;
@@ -7739,7 +7744,7 @@ function showStageSelect(){
     nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');num.classList.remove('pop');void num.offsetWidth;num.classList.add('pop')};
   let ft=0;
   const frame=()=>{if(!cv.isConnected)return;requestAnimationFrame(frame);
-    const dpr=Math.min(1.5,window.devicePixelRatio||1),W2=Math.round(cv.clientWidth*dpr),H2=Math.round(cv.clientHeight*dpr);if(!W2||!H2)return;
+    const dpr=1,W2=Math.round(cv.clientWidth*dpr),H2=Math.round(cv.clientHeight*dpr);if(!W2||!H2)return;
     if(cv.width!==W2||cv.height!==H2){cv.width=W2;cv.height=H2}
     const now=performance.now();ft++;
     if(B.rnd&&now>B.rnext){const el=now-B.rs;
@@ -7748,13 +7753,13 @@ function showStageSelect(){
         if(p>.82){setStage(r);nm.textContent=STAGES[r].name+'?';num.textContent='Random stage';nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');B.rnext=B.rs+RSPIN+RHOLD+1}
         else{setStage(r,!(p>.4||Math.random()<.5),true);nm.textContent='? ? ?';B.rnext=now+55+p*p*420}}
     }
+    if(B.pic&&!B.pic.full&&B.want===B.k2){const p2=picOf(B.k2);if(p2.full)B.pic=p2}
     const P=B.pic;if(!P)return;const age=now-B.t0,im=P.im,iw=im.width,ih=im.height;
     // cover the screen, breathing slowly, drifting across the whole painting so every part of it gets seen;
     // a change of stage lands with a punch-in zoom
     const cov=Math.max(W2/iw,H2/ih),punch=1+(B.spin?.05:.14)*Math.exp(-age/170),z=cov*(1.07+.05*Math.sin(now/4300))*punch,dw=iw*z,dh=ih*z;
     const u=.5+.5*Math.sin(now/5200+B.k2),v=.5+.4*Math.sin(now/6300+B.k2*1.7),x=-(dw-W2)*u,y=-(dh-H2)*v;
     g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle='#000';g.fillRect(0,0,W2,H2);g.imageSmoothingQuality='high';g.drawImage(im,x,y,dw,dh);
-    if(P.live&&ALIVE[P.id]&&S.fx!==false){g.save();CROWD_PREVIEW=true;try{aliveDraw(ALIVE[P.id],g,{x,y,k:z,im,w:dw,h:dh,p:1,noCrowd:1},ft)}catch(e){}CROWD_PREVIEW=false;g.restore();g.globalCompositeOperation='source-over';g.globalAlpha=1}
     // the old stage melts away behind a light sweep
     if(B.pa>0){B.pa=Math.max(0,1-age/(B.spin?120:280));g.globalAlpha=B.pa;const sc=1+(1-B.pa)*.06;g.drawImage(B.prev,-(W2*sc-W2)/2,-(H2*sc-H2)/2,W2*sc,H2*sc);g.globalAlpha=1}
     g.globalCompositeOperation='lighter';
@@ -7762,13 +7767,14 @@ function showStageSelect(){
     if(age<620&&!B.spin){const sx=-W2*.4+(W2*1.8)*(age/620),gr=g.createLinearGradient(sx-W2*.18,0,sx+W2*.18,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,`rgba(${B.acc},.32)`);gr.addColorStop(1,'rgba(255,255,255,0)');
       g.save();g.translate(sx,H2/2);g.transform(1,0,-.35,1,0,0);g.fillStyle=gr;g.fillRect(-W2*.2,-H2,W2*.4,H2*2);g.restore()}
     // sparks drifting up in the stage's own colour
-    for(const e of B.embers){e.y-=e.v;if(e.y<-.05){e.y=1.05;e.x=Math.random()}const ex=(e.x+Math.sin(now/1300+e.ph)*.015)*W2,ey=e.y*H2,a=.25+.25*Math.sin(now/300+e.ph*3);glow(g,ex,ey,e.r*3*dpr,B.acc,a)}
+    for(const e of B.embers){e.y-=e.v;if(e.y<-.05){e.y=1.05;e.x=Math.random()}const ex=(e.x+Math.sin(now/1300+e.ph)*.015)*W2,ey=e.y*H2,a=.25+.25*Math.sin(now/300+e.ph*3),r=e.r*3;if(B.spr_acc!==B.acc){B.spr_acc=B.acc;const c=B.spr||(B.spr=dmCv(32,32)),q=c.getContext('2d'),gr=q.createRadialGradient(16,16,0,16,16,16);q.clearRect(0,0,32,32);gr.addColorStop(0,`rgba(${B.acc},1)`);gr.addColorStop(1,`rgba(${B.acc},0)`);q.fillStyle=gr;q.fillRect(0,0,32,32)}g.globalAlpha=a;g.drawImage(B.spr,ex-r,ey-r,2*r,2*r);g.globalAlpha=1}
     g.globalCompositeOperation='source-over'};
   [-1,...STAGES.map((_,k)=>k)].forEach(k=>{
     const b=document.createElement('button');b.type='button';b.className='scard';b.dataset.act='stagepick';b.dataset.k=k;
     if(k<0){const q=document.createElement('span');q.className='ss-q sm ss2-rand';q.textContent='?';b.appendChild(q)}
-    else{const t=stageThumb(k,240),c=document.createElement('canvas');c.width=t.width;c.height=t.height;c.getContext('2d').drawImage(t,0,0);b.appendChild(c);b.style.setProperty('--acc',accOf(k));
-      const stg=STAGES[k],im=stg.full&&STIMG[stg.img];if(im&&!im.ok){stageNeed(k);im.addEventListener('load',()=>{const t2=stageThumb(k,240);if(c.isConnected)c.getContext('2d').drawImage(t2,0,0)},{once:true})}}
+    else{const c=document.createElement('canvas');c.width=240;c.height=135;b.appendChild(c);b.style.setProperty('--acc',accOf(k));
+      if(!ssThumbDraw(STAGES[k].id,c)){const t=stageThumb(k,240);c.getContext('2d').drawImage(t,0,0,240,135);
+        const stg=STAGES[k],im=stg.full&&STIMG[stg.img];if(im&&!im.ok){stageNeed(k);im.addEventListener('load',()=>{const t2=stageThumb(k,240);if(c.isConnected)c.getContext('2d').drawImage(t2,0,0,240,135)},{once:true})}}}
     const n=document.createElement('span');n.className='nm';n.textContent=k<0?'Random':STAGES[k].name;b.appendChild(n);
     b.setAttribute('aria-label',k<0?'Random stage':STAGES[k].name);
     b.addEventListener('mouseenter',()=>{show(k);if(document.activeElement!==b)b.focus({preventScroll:true})});b.addEventListener('focus',()=>show(k));strip.appendChild(b);
