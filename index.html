@@ -1082,6 +1082,7 @@ const CHARS=[
  {id:'juffalo',nu:true,secret:true,unlock:'story',cut:'juffalo',sheet:'juffalo',sprite:'juffalo',name:"Juffalo Dweebiz",title:"Clown paint, tattered coat",aura:'#b45aff',shoulder:-120,speed:1,power:1.02,proj:'bass',special:'Signature',ultra:'ALL IN',finisher:'LAST WORD',line:"Coming soon."},
  {id:'lazy',nu:true,cut:'lazy',sheet:'lazy',sprite:'lazy',name:"Lazy",title:"Green top hat, galaxy tee",aura:'#3ad45a',shoulder:-120,speed:1,power:1.02,proj:'bass',special:'Signature',ultra:'ALL IN',finisher:'LAST WORD',line:"Coming soon."},
  {id:'tavian',nu:true,cut:'tavian',sheet:'tavian',sprite:'tavian',name:"Tavian",title:"Glasses, blue lightning",aura:'#5ac8ff',shoulder:-120,speed:1,power:1.02,proj:'bass',special:'Signature',ultra:'ALL IN',finisher:'LAST WORD',line:"Coming soon."},
+ {id:'beardedzeus',soonImg:'assets/soon_beardedzeus.webp',name:"Bearded Zeus",title:"Cowboy hat, dreads, iron fists",aura:'#ffc83a',shoulder:-120,speed:.96,power:1.12,proj:'hellfire',special:"Thunderclap",ultra:"WRATH OF ZEUS",finisher:"STRUCK DOWN",line:"Kneel before the beard."},
 ];
 /* fighters taken off the roster for now; move back into CHARS to restore */
 const SHELVED=[{id:'apeshyt',cameo:true,sprite:'apeshyt',name:'Steele',title:'Claws, chain, no manners',accent:'#7fd36a',shoulder:-112,speed:.92,power:1.15,proj:'chain',special:'Chain Lash',ultra:'GO APE',finisher:'JUNGLE RULES',line:"You talk a lot for somebody that's about to get rearranged."}];
@@ -2136,13 +2137,14 @@ function paintClub(){
 }
 
 const STIMG={},STQ=[];let stqBusy=0;
-/* stage paintings: made up front but downloaded in the background two at a time, and paused while a fight's fighters load.
-   stageNeed() fetches one straight away (the stage you're about to fight on, or the one on show in stage select). */
-function stagePic(k,src){const im=new Image();im.onload=()=>{im.ok=true};im._src=src;STIMG[k]=im;STQ.push(im);return im}
+/* stage paintings: made up front but only downloaded when needed. stageNeed() fetches one straight away (the stage you're
+   about to fight on, or the one on show in stage select); stageLoaded() says when it and its extra layers are in. */
+function stagePic(k,src){const im=new Image();im.onload=()=>{im.ok=true};im.onerror=()=>{im._err=true};im._src=src;STIMG[k]=im;STQ.push(im);return im}
 function stageStart(im,hi){if(im._go)return;im._go=1;try{im.fetchPriority=hi?'high':'low'}catch(e){}
   if(!hi){stqBusy++;const done=()=>{stqBusy--;setTimeout(stagePump,60)};im.addEventListener('load',done,{once:true});im.addEventListener('error',done,{once:true})}im.src=im._src}
 function stagePump(){while(stqBusy<2&&STQ.length&&!(typeof fighterSheetsPending==='function'&&fighterSheetsPending())){const im=STQ.shift();if(!im._go)stageStart(im,false)}
   if(STQ.length&&stqBusy<2)setTimeout(stagePump,500)}
+function stageLoaded(k){const stg=STAGES[k];if(!stg)return true;const ok=im=>!im||im.ok||im._err;if(stg.full&&!ok(STIMG[stg.img]))return false;if(stg.extra)for(const e of stg.extra)if(!ok(STIMG[e]))return false;return true}
 function stageNeed(k){const stg=STAGES[k],im=stg&&STIMG[stg.img];if(im&&!im._go)stageStart(im,true);if(stg&&stg.extra)for(const e of stg.extra){const x=STIMG[e];if(x&&!x._go)stageStart(x,true)}}
 for(const k in ASSET.stages)stagePic(k,ASSET.stages[k]);
 /* newer stage paintings ship as files next to the page instead of inside it */
@@ -2152,7 +2154,7 @@ const STAGE_FILES={carnival:'jg_carnival',funhouse:'jg_funhouse',delray:'jg_delr
 for(const[k,f,paint]of[['slaughter','p_slaughter',()=>paintSlaughterhouse()],['sewer','p_sewer',()=>paintSewer()],['cage','p_cage',()=>paintCage()],['club','p_club',()=>paintClub()]]){
   const im=stagePic(k,'stages/'+f+'.webp');im.addEventListener('error',()=>{try{const cv=paint();if(STIMG[k]===im)STIMG[k]=cv}catch(e){}},{once:true})}
 for(const k in STAGE_FILES)if(!STIMG[k])stagePic(k,'stages/'+STAGE_FILES[k]+'.webp');
-setTimeout(stagePump,0);
+/* stages now load only when needed (picked for a fight, or stopped on in stage select); nothing is fetched ahead in the background */
 function farCanvas(stg){
   const im=STIMG[stg.img];if(!im||!im.ok)return null;
   return getCache(stg,'_far',()=>{const fh=GROUND+30,sc=fh/im.height,fw=Math.round(im.width*sc);const c=document.createElement('canvas');c.width=fw;c.height=fh;const g=c.getContext('2d');
@@ -2208,6 +2210,7 @@ function drawLayers(stg,t){for(const L of stg.layers){useCam(L.p);const w=LYW(L.
 function drawStageBack(stg,t){
   screenT();ctx.fillStyle='#07070a';ctx.fillRect(0,0,W,H);
   if(CROWD.lt!==t){CROWD.lt=t;crowdTick()}
+  if(stg.full&&!(STIMG[stg.img]&&STIMG[stg.img].ok)&&SS_TH){const p=SS_TH.map[stg.id],T=ssThumbs();if(p&&T.complete&&T.naturalWidth)ctx.drawImage(T,p[0],p[1],240,135,0,0,W,H)}
   if(stg.full){const im=STIMG[stg.img];
     if(im&&im.ok){const F=stg.full,w=im.width*F.scale,h=im.height*F.scale;
       if(F.floor&&S.depth!==false)drawLayeredFull(im,F,w,h);
@@ -7327,13 +7330,16 @@ function showTitleOld(){
 }
 /* ---------- fighter select: big renders up top, a strip of bust cards below ---------- */
 const BUST={},BIG={};
+/* Coming Soon fighters with only one cutout picture so far (no sprites yet) */
+const SOON_IM={};function soonIm(c){if(!c||!c.soonImg)return null;let im=SOON_IM[c.id];if(!im){im=SOON_IM[c.id]=new Image();im.onload=()=>{im.ok=true;delete BUST[c.id]};im.src=c.soonImg}return im.ok?im:null}
 function bust(c){
   if(BUST[c.id])return BUST[c.id];
   const W2=120,H2=168,cv=document.createElement('canvas');cv.width=W2;cv.height=H2;const g=cv.getContext('2d');
   const gr=g.createLinearGradient(0,0,0,H2);gr.addColorStop(0,'#3a3026');gr.addColorStop(1,'#0e0b09');g.fillStyle=gr;g.fillRect(0,0,W2,H2);
   const put=(img,sx,sy,side,maxY)=>{const want=side*1.4,sh=Math.max(1,Math.min(want,maxY-sy));g.drawImage(img,sx,sy,side,sh,0,0,W2,H2*sh/want);return true};
   let ok=false;
-  if(c.custom){const SH=CUSTOM[c.id];if(SH&&SH.ok){const ch=SH.meta.chars[c.sprite],fr=SH.meta.frames[ch.anims.idle[0]],side=ch.charH*.6,top=Math.max(fr[1],fr[1]+fr[5]-ch.charH-side*.08);ok=put(SH.img,fr[0]+fr[4]-side/2,top,side,fr[1]+fr[3])}}
+  {const si=soonIm(c);if(si){const side=si.width*.5;ok=put(si,si.width*.35,0,side,si.height)}}
+  if(ok){}else if(c.custom){const SH=CUSTOM[c.id];if(SH&&SH.ok){const ch=SH.meta.chars[c.sprite],fr=SH.meta.frames[ch.anims.idle[0]],side=ch.charH*.6,top=Math.max(fr[1],fr[1]+fr[5]-ch.charH-side*.08);ok=put(SH.img,fr[0]+fr[4]-side/2,top,side,fr[1]+fr[3])}}
   else if(c.cut&&CUT.ok){const M=CUT.meta.chars[c.cut],fr=CUT.meta.frames[M.full],hd=M.head;ok=put(cutIm(M),fr[0]+hd[0],fr[1]+hd[1],hd[2],fr[1]+fr[3])}
   else if(c.sprite&&SPR.ok){const A=SPR.meta.chars[c.sprite].anims.idle,fr=SPR.meta.frames[A[0]],side=fr[2]*.62;ok=put(SPR.img,fr[0]+fr[2]/2-side/2,fr[1],side,fr[1]+fr[3])}
   const v=g.createLinearGradient(0,H2*.6,0,H2);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=v;g.fillRect(0,0,W2,H2);
@@ -7711,8 +7717,9 @@ function stageThumb(k,w=480){
 }
 /* stage-select thumbnails: one small sheet with every stage on it (240x135 each), so the menu never has to load
    all the full stage pictures just to show their thumbnails. A stage missing from the sheet falls back to the old way. */
-const SS_TH={im:null,map:{"riverfront":[0,0],"pops":[240,0],"conservatory":[480,0],"popsinside":[720,0],"soundhouse":[960,0],"gathering":[1200,0],"spiritboard":[1440,0],"graveyard":[1680,0],"seminartent":[1920,0],"marsh":[2160,0],"carnival":[0,135],"funhouse":[240,135],"delray":[480,135],"campground":[720,135],"mansion":[960,135],"hellpit":[1200,135],"overpass":[1440,135],"img00":[1680,135],"img18":[1920,135],"alley":[2160,135],"hauntedhouse":[0,270],"neontunnel":[240,270],"midway":[480,270],"warehouse":[720,270],"juggalette":[960,270],"deadmall":[1200,270],"mirrors":[1440,270],"riddlebox":[1680,270],"motel":[1920,270],"cabin":[2160,270],"backwoods":[0,405],"jeckel":[240,405],"hallowicked":[480,405],"morgue":[720,405],"rooftop":[960,405],"killerbasement":[1200,405],"swamp":[1440,405],"drivein":[1680,405],"asylum":[1920,405],"junkyard":[2160,405],"subway":[0,540],"cemetery":[240,540],"trailerpark":[480,540],"barn":[720,540],"ghostcarnival":[960,540],"dojo":[1200,540],"bjj":[1440,540],"aftermath":[1680,540],"huntspoint":[1920,540],"dragonhouse":[2160,540],"church":[0,675],"ritual":[240,675],"dungeon":[480,675],"bowling":[720,675],"studio":[960,675],"bodega":[1200,675],"lowrider":[1440,675],"block":[1680,675],"recordstore":[1920,675],"court":[2160,675],"attic":[0,810],"nu_ring":[240,810],"nu_bigtop":[480,810],"nu_studio":[720,810],"slaughter":[960,810],"sewer":[1200,810],"cage":[1440,810],"club":[1680,810],"theater":[1920,810],"killroom":[2160,810]}};
+var SS_TH={im:null,map:{"riverfront":[0,0],"pops":[240,0],"conservatory":[480,0],"popsinside":[720,0],"soundhouse":[960,0],"gathering":[1200,0],"spiritboard":[1440,0],"graveyard":[1680,0],"seminartent":[1920,0],"marsh":[2160,0],"carnival":[0,135],"funhouse":[240,135],"delray":[480,135],"campground":[720,135],"mansion":[960,135],"hellpit":[1200,135],"overpass":[1440,135],"img00":[1680,135],"img18":[1920,135],"alley":[2160,135],"hauntedhouse":[0,270],"neontunnel":[240,270],"midway":[480,270],"warehouse":[720,270],"juggalette":[960,270],"deadmall":[1200,270],"mirrors":[1440,270],"riddlebox":[1680,270],"motel":[1920,270],"cabin":[2160,270],"backwoods":[0,405],"jeckel":[240,405],"hallowicked":[480,405],"morgue":[720,405],"rooftop":[960,405],"killerbasement":[1200,405],"swamp":[1440,405],"drivein":[1680,405],"asylum":[1920,405],"junkyard":[2160,405],"subway":[0,540],"cemetery":[240,540],"trailerpark":[480,540],"barn":[720,540],"ghostcarnival":[960,540],"dojo":[1200,540],"bjj":[1440,540],"aftermath":[1680,540],"huntspoint":[1920,540],"dragonhouse":[2160,540],"church":[0,675],"ritual":[240,675],"dungeon":[480,675],"bowling":[720,675],"studio":[960,675],"bodega":[1200,675],"lowrider":[1440,675],"block":[1680,675],"recordstore":[1920,675],"court":[2160,675],"attic":[0,810],"nu_ring":[240,810],"nu_bigtop":[480,810],"nu_studio":[720,810],"slaughter":[960,810],"sewer":[1200,810],"cage":[1440,810],"club":[1680,810],"theater":[1920,810],"killroom":[2160,810]}};
 function ssThumbs(){if(!SS_TH.im){SS_TH.im=new Image();SS_TH.im.src='stages/thumbs.webp'}return SS_TH.im}
+ssThumbs();
 function ssThumbDraw(id,c){const p=SS_TH.map[id],im=ssThumbs();if(!p)return false;const go=()=>{if(c.isConnected||!c.parentNode)c.getContext('2d').drawImage(im,p[0],p[1],240,135,0,0,c.width,c.height)};
   if(im.complete&&im.naturalWidth)go();else im.addEventListener('load',go,{once:true});return true}
 function showStageSelect(){
@@ -8858,6 +8865,7 @@ const FIT_BB={};
 function drawLive(o){
   if(o.fit)return drawLiveFit(o);
   const g=o.cv.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,o.cv.width,o.cv.height);if(!o.c)return;
+  if(o.c.soonImg){o.t++;const si=soonIm(o.c);if(si){const W2=o.cv.width,H2=o.cv.height,sc=Math.min(W2*.92/si.width,H2*.96/si.height),w=si.width*sc,h=si.height*sc;g.save();if(o.mirror){g.translate(W2,0);g.scale(-1,1)}g.drawImage(si,(W2-w)/2,H2-h-H2*.02,w,h);g.restore()}return}
   o.t++;if(o.poseT>0&&--o.poseT===0)o.pose='idle';
   /* menu art: fit the whole fighter inside the frame, centred, whatever their in-fight size */
   const U=120,UH=U*o.cv.height/o.cv.width,M=o.c.cut&&CUT.ok&&CUT.meta.chars[o.c.cut];let k=o.c.cut?.56:.62,foot=UH-4;
@@ -9678,6 +9686,7 @@ function showSelect(){
   const soonEl=document.getElementById('feSoon');
   if(soonEl)soonList.forEach(c=>{const d=document.createElement('div');d.className='vcard fe-tile soon';d.title=c.name+' · coming soon';
     const art=bust(c),cv=document.createElement('canvas');cv.width=art.width;cv.height=art.height;cv.getContext('2d').drawImage(art,0,0);d.appendChild(cv);
+    if(c.soonImg&&!soonIm(c))SOON_IM[c.id].addEventListener('load',()=>{const a2=bust(c);if(cv.isConnected)cv.getContext('2d').drawImage(a2,0,0,cv.width,cv.height)},{once:true});
     d.insertAdjacentHTML('beforeend','<span class="fe-lock" aria-hidden="true">🔒</span><span class="fe-soonnm">'+esc(c.name)+'</span>');
     d.onmouseenter=()=>{const s=sides.find(s=>s.active&&!s.locked)||sides[0];s.hover=c;setSide(s);info.innerHTML=`<b>${esc(c.name)}</b> · Coming soon · Special: ${esc(c.special)} · Ultra: ${esc(cap(c.ultra))}`};
     d.onmouseleave=()=>{sides.forEach(s=>s.hover=null);paint()};soonEl.appendChild(d)});
@@ -9867,7 +9876,7 @@ const VCODES={
   '999999':{name:'The last verse is yours',mod:{}},
 };
 function feVS({c1,c2,stage,go,codes=false}){
-  const st=STAGES[stage];G.mode='select';
+  const st=STAGES[stage];G.mode='select';stageNeed(stage);
   feShow(`<div class="fe fe-vs">${feEmbers(30)}
       <div class="fe-vsart l" id="vsA"></div><div class="fe-vsart r" id="vsB"></div>
       <div class="fe-vsmid"><b class="fe-vsword">VS</b></div>
@@ -9888,7 +9897,7 @@ function feVS({c1,c2,stage,go,codes=false}){
       const m={[b1.punch]:0,[b1.kick]:1,[b1.special]:2,[b2.punch]:3,[b2.kick]:4,[b2.special]:5,Numpad1:3,Numpad2:4,Numpad3:5}[c];if(m!==undefined&&!done)bump(m);return true},
     padRaw(i,k){if(!codes)return true;const s={2:0,0:1,1:2}[k];if(s!==undefined&&!done)bump(s+(i?3:0));return true},
     input(){return true},
-    frame(){const p=clamp((performance.now()-T0)/dur,0,1);const l=document.getElementById('vsLoad');if(l)l.style.width=(p*100)+'%';if(p>=1)finish()}};
+    frame(){const el=performance.now()-T0,ready=stageLoaded(stage)||el>dur+8000,p=clamp(el/dur,0,1)*(ready?1:.94);const l=document.getElementById('vsLoad');if(l){l.style.width=(p*100)+'%';l.style.opacity=!ready&&el>dur?(.55+.45*Math.sin(el/140)):''}if(el>=dur&&ready)finish()}};
 }
 
 /* ---------- results, continue and endings ---------- */
