@@ -5313,7 +5313,7 @@ let padBlocked=false;
 /* a controller only counts once one of its buttons has actually been pressed: some phones report built-in sensors (the
    fingerprint reader and so on) as "gamepads" whose sticks drift or sit off-centre, which made menus move on their own.
    Each pad's resting stick and hat readings are remembered so a stick that sits off-centre is never read as held. */
-const PADSEEN={};
+const PADSEEN={};const BUILD='11-27 b9';
 function padSeen(p){let s=PADSEEN[p.index];if(!s||s.id!==p.id){s=PADSEEN[p.index]={id:p.id,on:false,rest:(p.axes||[]).slice(),b0:p.buttons.map((_,k)=>rawPressed(p,k))}}
   if(!s.on&&p.buttons.some((_,k)=>rawPressed(p,k)&&!s.b0[k]))s.on=true;if(!s.on)s.b0=p.buttons.map((_,k)=>s.b0[k]&&rawPressed(p,k));return s}
 function padList(){
@@ -5419,8 +5419,11 @@ function padMenu(){
 function padStatusText(){
   const l=padList();
   if(padBlocked)return 'This view is blocking controllers. Open the downloaded game file in your browser to use one.';
-  if(!l.length)return 'No controller detected. Plug it in, then press any button on it.';
-  return l.slice(0,2).map((p,i)=>`Player ${i?'Two':'One'}: ${(p.id||'Gamepad').split('(')[0].trim().slice(0,40)}`).join(' · ');
+  let all=[];try{all=Array.from(navigator.getGamepads()||[]).filter(p=>p&&p.connected!==false)}catch(e){}
+  const ign=all.filter(p=>!l.includes(p)).map(p=>(p.id||'device').split('(')[0].trim().slice(0,40));
+  const tail=(ign.length?` · Ignoring until a button is pressed: ${ign.join(', ')}`:'')+` · Build ${BUILD}`;
+  if(!l.length)return 'No controller detected. Plug it in, then press any button on it.'+tail;
+  return l.slice(0,2).map((p,i)=>`Player ${i?'Two':'One'}: ${(p.id||'Gamepad').split('(')[0].trim().slice(0,40)}`).join(' · ')+tail;
 }
 
 /* ---------- fighters ---------- */
@@ -8004,7 +8007,7 @@ function showStageSelect(){
         const stg=STAGES[k],im=stg.full&&STIMG[stg.img];if(im&&!im.ok){stageNeed(k);im.addEventListener('load',()=>{const t2=stageThumb(k,240);if(c.isConnected)c.getContext('2d').drawImage(t2,0,0,240,135)},{once:true})}}}
     const n=document.createElement('span');n.className='nm';n.textContent=k<0?'Random':STAGES[k].name;b.appendChild(n);
     b.setAttribute('aria-label',k<0?'Random stage':STAGES[k].name);
-    b.addEventListener('mouseenter',()=>{show(k);if(document.activeElement!==b)b.focus({preventScroll:true})});b.addEventListener('focus',()=>show(k));strip.appendChild(b);
+    b.addEventListener('mouseenter',()=>{if(!hoverOK())return;show(k);if(document.activeElement!==b)b.focus({preventScroll:true})});b.addEventListener('focus',()=>show(k));strip.appendChild(b);
   });
   const cols=()=>getComputedStyle(strip).gridTemplateColumns.split(' ').length||12;
   /* the D-pad / stick / arrow keys move round the grid and stop at its edges (they never wrap to the far end);
@@ -9059,6 +9062,8 @@ function feReveal(el){let p=el.parentElement;while(p&&p!==ov.parentElement){cons
   if(r.bottom>o.bottom)p.scrollTop+=r.bottom-o.bottom+8;else if(r.top<o.top)p.scrollTop-=o.top-r.top+8;break}p=p.parentElement}}
 addEventListener('pointerdown',()=>{FE.lastIn=performance.now()},true);
 addEventListener('mousemove',()=>{FE.lastIn=performance.now()},true);
+let MOUSE_REAL=0;addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&(e.movementX||e.movementY))MOUSE_REAL=performance.now()},true);
+function hoverOK(){return performance.now()-MOUSE_REAL<500}
 
 /* ---------- shared bits ---------- */
 function feBar(items){
@@ -9916,7 +9921,7 @@ function showSelect(){
     const art=bust(c),cv=document.createElement('canvas');cv.width=art.width;cv.height=art.height;cv.getContext('2d').drawImage(art,0,0);d.appendChild(cv);
     if(c.soonImg&&!soonIm(c))SOON_IM[c.id].addEventListener('load',()=>{const a2=bust(c);if(cv.isConnected)cv.getContext('2d').drawImage(a2,0,0,cv.width,cv.height)},{once:true});
     d.insertAdjacentHTML('beforeend','<span class="fe-lock" aria-hidden="true">🔒</span><span class="fe-soonnm">'+esc(c.name)+'</span>');
-    d.onmouseenter=()=>{const s=sides.find(s=>s.active&&!s.locked)||sides[0];s.hover=c;setSide(s);info.innerHTML=`<b>${esc(c.name)}</b> · Coming soon · Special: ${esc(c.special)} · Ultra: ${esc(cap(c.ultra))}`};
+    d.onmouseenter=()=>{if(!hoverOK())return;const s=sides.find(s=>s.active&&!s.locked)||sides[0];s.hover=c;setSide(s);info.innerHTML=`<b>${esc(c.name)}</b> · Coming soon · Special: ${esc(c.special)} · Ultra: ${esc(cap(c.ultra))}`};
     d.onmouseleave=()=>{sides.forEach(s=>s.hover=null);paint()};soonEl.appendChild(d)});
   /* with shelves the grid's children are the racks, so collect the cases themselves;
      document order matches `tiles` because they were appended shelf by shelf */
