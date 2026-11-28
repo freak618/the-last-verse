@@ -181,14 +181,16 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
   text-shadow:0 .1cqw .3cqw #000;animation:ss2rain 2.4s linear infinite}
 @keyframes ss2rain{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
 .ss2-flow{position:relative;height:15cqw;perspective:1100px;perspective-origin:50% 45%;touch-action:none;cursor:grab;margin-bottom:.3cqw}
-.ss2-rack{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+.ss2-rack{position:absolute;inset:0;pointer-events:none}
 .ss2 .sfl{position:absolute;left:50%;top:50%;width:17cqw;aspect-ratio:16/9;margin:0;padding:0;border:0;background:#000;border-radius:.6cqw;overflow:hidden;cursor:pointer;
-  transform:translate(-50%,-50%);transform-origin:50% 50%;transition:transform .26s cubic-bezier(.25,.6,.25,1),opacity .26s ease,filter .26s ease;will-change:transform;pointer-events:auto;
-  box-shadow:0 1.2cqw 2.4cqw rgba(0,0,0,.7);filter:brightness(.72) saturate(.85)}
+  transform:translate(-50%,-50%);transform-origin:50% 50%;transition:transform .24s cubic-bezier(.25,.6,.25,1),opacity .24s ease;will-change:transform;pointer-events:auto;backface-visibility:hidden;
+  box-shadow:0 .8cqw 1.6cqw rgba(0,0,0,.7)}
+.ss2 .sfl::before{content:'';position:absolute;inset:0;background:#000;opacity:.34;transition:opacity .24s ease;pointer-events:none;z-index:1}
+.ss2 .sfl.on::before{opacity:0}
 .ss2 .sfl canvas{width:100%;height:100%;display:block}
-.ss2 .sfl.on{filter:none;box-shadow:0 0 0 .18cqw #fff,0 0 0 .45cqw rgb(var(--acc)),0 0 2.6cqw rgba(var(--acc),.85),0 1.6cqw 3cqw rgba(0,0,0,.8)}
+.ss2 .sfl.on{box-shadow:0 0 0 .18cqw #fff,0 0 0 .45cqw rgb(var(--acc)),0 0 2.6cqw rgba(var(--acc),.85),0 1.6cqw 3cqw rgba(0,0,0,.8)}
 .ss2 .sfl:focus{outline:none}
-.ss2 .sfl::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 38%);pointer-events:none}
+.ss2 .sfl::after{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(115deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 38%);pointer-events:none}
 .ss2-arw{position:absolute;top:50%;z-index:200;transform:translateY(-50%);width:3.2cqw;height:3.2cqw;border-radius:50%;border:.12cqw solid rgba(255,247,230,.5);
   background:rgba(0,0,0,.45);color:#fff7e6;font:700 1.8cqw/1 var(--head);display:grid;place-items:center;cursor:pointer;padding:0}
 .ss2-arw.l{left:1cqw}.ss2-arw.r{right:1cqw}
@@ -5325,7 +5327,7 @@ let padBlocked=false;
 /* a controller only counts once one of its buttons has actually been pressed: some phones report built-in sensors (the
    fingerprint reader and so on) as "gamepads" whose sticks drift or sit off-centre, which made menus move on their own.
    Each pad's resting stick and hat readings are remembered so a stick that sits off-centre is never read as held. */
-const PADSEEN={};const BUILD='11-27 b10';
+const PADSEEN={};const BUILD='11-27 b11';
 function padSeen(p){let s=PADSEEN[p.index];if(!s||s.id!==p.id){s=PADSEEN[p.index]={id:p.id,on:false,rest:(p.axes||[]).slice(),b0:p.buttons.map((_,k)=>rawPressed(p,k))}}
   if(!s.on&&p.buttons.some((_,k)=>rawPressed(p,k)&&!s.b0[k]))s.on=true;if(!s.on)s.b0=p.buttons.map((_,k)=>s.b0[k]&&rawPressed(p,k));return s}
 function padList(){
@@ -7977,12 +7979,12 @@ function showStageSelect(){
   const B={k:-2,pic:null,acc:'255,90,40',t0:0,prev:dmCv(8,8),pa:0,ft:0,rnd:false,rk:0,rnext:0,embers:[]};
   for(let i=0;i<26;i++)B.embers.push({x:Math.random(),y:Math.random(),v:.0006+Math.random()*.0016,r:1+Math.random()*2.6,ph:Math.random()*6.3});
   const setStage=(k,quiet,spin)=>{const now=performance.now();B.spin=!!spin;clearTimeout(B.ld);B.want=-1;if(!spin)B.ld=setTimeout(()=>{if(B.k2===k){B.want=k;stageNeed(k)}},240);
-    if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1}
+    if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1;B.pt=now}
     B.pic=picOf(k);B.acc=accOf(k);B.t0=now;B.k2=k;root.style.setProperty('--acc',B.acc);if(!quiet&&SFX.navtick)try{SFX.navtick()}catch(e){}};
   const RSPIN=2600,RHOLD=1500;
   const show=k=>{if(k===B.k)return;B.k=k;B.rnd=k<0;
     if(k<0){B.rk=Math.random()*N|0;B.rs=performance.now();setStage(B.rk,false,true);B.rnext=B.rs+60;nm.textContent='? ? ?';num.textContent='Random stage'}
-    else{setStage(k);nm.textContent=STAGES[k].name;num.textContent=`Stage ${k+1} of ${N}`}
+    else{clearTimeout(B.sw);B.sw=setTimeout(()=>{if(B.k===k&&cv.isConnected)setStage(k,true)},170);nm.textContent=STAGES[k].name;num.textContent=`Stage ${k+1} of ${N}`}
     nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');num.classList.remove('pop');void num.offsetWidth;num.classList.add('pop')};
   let ft=0;
   const frame=()=>{if(!cv.isConnected)return;requestAnimationFrame(frame);
@@ -7995,19 +7997,16 @@ function showStageSelect(){
         if(p>.82){setStage(r);nm.textContent=STAGES[r].name+'?';num.textContent='Random stage';nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');B.rnext=B.rs+RSPIN+RHOLD+1}
         else{setStage(r,!(p>.4||Math.random()<.5),true);nm.textContent='? ? ?';B.rnext=now+55+p*p*420}}
     }
-    if(B.pic&&!B.pic.full&&B.want===B.k2){const p2=picOf(B.k2);if(p2.full)B.pic=p2}
+    if(B.pic&&!B.pic.full&&B.want===B.k2){const p2=picOf(B.k2);if(p2.full){if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1;B.pt=now}B.pic=p2}}
     const P=B.pic;if(!P)return;const age=now-B.t0,im=P.im,iw=im.width,ih=im.height;
     // cover the screen, breathing slowly, drifting across the whole painting so every part of it gets seen;
     // a change of stage lands with a punch-in zoom
-    const cov=Math.max(W2/iw,H2/ih),punch=1+(B.spin?.05:.14)*Math.exp(-age/170),z=cov*(1.07+.05*Math.sin(now/4300))*punch,dw=iw*z,dh=ih*z;
+    const cov=Math.max(W2/iw,H2/ih),punch=1+(B.spin?.03:.05)*Math.exp(-age/260),z=cov*(1.07+.05*Math.sin(now/4300))*punch,dw=iw*z,dh=ih*z;
     const u=.5+.5*Math.sin(now/5200+B.k2),v=.5+.4*Math.sin(now/6300+B.k2*1.7),x=-(dw-W2)*u,y=-(dh-H2)*v;
     g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle='#000';g.fillRect(0,0,W2,H2);g.imageSmoothingQuality='high';g.drawImage(im,x,y,dw,dh);
     // the old stage melts away behind a light sweep
-    if(B.pa>0){B.pa=Math.max(0,1-age/(B.spin?120:280));g.globalAlpha=B.pa;const sc=1+(1-B.pa)*.06;g.drawImage(B.prev,-(W2*sc-W2)/2,-(H2*sc-H2)/2,W2*sc,H2*sc);g.globalAlpha=1}
+    if(B.pa>0){B.pa=Math.max(0,1-(now-(B.pt||B.t0))/(B.spin?120:300));const e2=B.pa*B.pa*(3-2*B.pa);g.globalAlpha=e2;g.drawImage(B.prev,0,0,W2,H2);g.globalAlpha=1}
     g.globalCompositeOperation='lighter';
-    if(age<160&&!B.spin){g.fillStyle=`rgba(255,255,255,${.28*(1-age/160)})`;g.fillRect(0,0,W2,H2)}
-    if(age<620&&!B.spin){const sx=-W2*.4+(W2*1.8)*(age/620),gr=g.createLinearGradient(sx-W2*.18,0,sx+W2*.18,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,`rgba(${B.acc},.32)`);gr.addColorStop(1,'rgba(255,255,255,0)');
-      g.save();g.translate(sx,H2/2);g.transform(1,0,-.35,1,0,0);g.fillStyle=gr;g.fillRect(-W2*.2,-H2,W2*.4,H2*2);g.restore()}
     // sparks drifting up in the stage's own colour
     for(const e of B.embers){e.y-=e.v;if(e.y<-.05){e.y=1.05;e.x=Math.random()}const ex=(e.x+Math.sin(now/1300+e.ph)*.015)*W2,ey=e.y*H2,a=.25+.25*Math.sin(now/300+e.ph*3),r=e.r*3;if(B.spr_acc!==B.acc){B.spr_acc=B.acc;const c=B.spr||(B.spr=dmCv(32,32)),q=c.getContext('2d'),gr=q.createRadialGradient(16,16,0,16,16,16);q.clearRect(0,0,32,32);gr.addColorStop(0,`rgba(${B.acc},1)`);gr.addColorStop(1,`rgba(${B.acc},0)`);q.fillStyle=gr;q.fillRect(0,0,32,32)}g.globalAlpha=a;g.drawImage(B.spr,ex-r,ey-r,2*r,2*r);g.globalAlpha=1}
     g.globalCompositeOperation='source-over'};
@@ -8019,10 +8018,10 @@ function showStageSelect(){
     const c=document.createElement('canvas');c.width=240;c.height=135;b.appendChild(c);
     if(!ssThumbDraw(st.id,c)){c.getContext('2d').drawImage(stageThumb(k,240),0,0,240,135)}
     strip.appendChild(b);cards.push(b)});
-  const flow=()=>{const tw=cards[0].offsetWidth||160,step=tw*.5,depth=95;
-    cards.forEach((el,k)=>{const d=k-cur,ad=Math.abs(d);if(ad>7){el.style.visibility='hidden';return}el.style.visibility='';
-      const rot=d===0?0:(d<0?42:-42),sc=d===0?1.2:Math.max(.6,.95-ad*.06),x=d===0?0:Math.sign(d)*(tw*.5+ad*step);
-      el.style.transform=`translate(-50%,-50%) translateX(${x}px) translateZ(${-ad*depth}px) rotateY(${rot}deg) scale(${sc})`;
+  const flow=()=>{const tw=cards[0].offsetWidth||160,step=tw*.42;
+    cards.forEach((el,k)=>{const d=k-cur,ad=Math.min(Math.abs(d),8);el.style.visibility=ad>7?'hidden':'';
+      const rot=d===0?0:(d<0?40:-40),sc=d===0?1.2:Math.max(.56,.9-ad*.06),x=d===0?0:Math.sign(d)*(tw*.62+(ad-1)*step+(ad>1?tw*.06:0));
+      el.style.transform=`translate(-50%,-50%) translateX(${x}px) perspective(${tw*4}px) rotateY(${rot}deg) scale(${sc})`;
       el.style.opacity=String(ad<=5?1:Math.max(0,1-(ad-5)*.45));el.style.zIndex=String(100-ad);el.classList.toggle('on',d===0)})};
   const go=(k,quiet)=>{k=Math.max(0,Math.min(N-1,k));if(k===cur&&!quiet)return;cur=k;flow();show(k);
     const b=cards[k];if(document.activeElement!==b)b.focus({preventScroll:true})};
