@@ -5310,20 +5310,27 @@ const NONE={};ACTS.forEach(a=>NONE[a]=false);
 function bindKeys(p){const b=S.binds[p],o={};for(const a of ACTS)o[a]=!!keys[b[a]];if(p==='p2')for(const a in NUMPAD)if(keys[NUMPAD[a]])o[a]=true;return o}
 function merge(a,...bs){for(const b of bs)if(b)for(const k in b)if(b[k])a[k]=true;return a}
 let padBlocked=false;
+/* a controller only counts once one of its buttons has actually been pressed: some phones report built-in sensors (the
+   fingerprint reader and so on) as "gamepads" whose sticks drift or sit off-centre, which made menus move on their own.
+   Each pad's resting stick and hat readings are remembered so a stick that sits off-centre is never read as held. */
+const PADSEEN={};
+function padSeen(p){let s=PADSEEN[p.index];if(!s||s.id!==p.id){s=PADSEEN[p.index]={id:p.id,on:false,rest:(p.axes||[]).slice(),b0:p.buttons.map((_,k)=>rawPressed(p,k))}}
+  if(!s.on&&p.buttons.some((_,k)=>rawPressed(p,k)&&!s.b0[k]))s.on=true;if(!s.on)s.b0=p.buttons.map((_,k)=>s.b0[k]&&rawPressed(p,k));return s}
 function padList(){
-  try{if(!navigator.getGamepads){padBlocked=true;return[]}const ps=navigator.getGamepads()||[];padBlocked=false;return Array.from(ps).filter(p=>p&&p.connected!==false)}
+  try{if(!navigator.getGamepads){padBlocked=true;return[]}const ps=navigator.getGamepads()||[];padBlocked=false;return Array.from(ps).filter(p=>p&&p.connected!==false&&padSeen(p).on)}
   catch(e){padBlocked=true;return[]}
 }
 try{if(document.featurePolicy&&document.featurePolicy.allowsFeature&&!document.featurePolicy.allowsFeature('gamepad'))padBlocked=true}catch(e){}
 function rawPressed(p,k){const b=p.buttons[k];return!!b&&(b.pressed||b.value>.5)}
 function hat(p){
   const ax=p.axes||[];if(p.mapping==='standard'||ax.length<10)return{};const v=ax[9];if(v===undefined||v>1.1)return{};
+  {const s=PADSEEN[p.index];if(s&&s.id===p.id&&Math.abs((s.rest[9]==null?9:s.rest[9])-v)<.05)return{}}
   const dirs=[[-1,'up'],[-.714,'up right'],[-.428,'right'],[-.143,'down right'],[.143,'down'],[.428,'down left'],[.714,'left'],[1,'up left']];
   let best=dirs[0];for(const d of dirs)if(Math.abs(d[0]-v)<Math.abs(best[0]-v))best=d;
   const o={};best[1].split(' ').forEach(k=>o[k]=true);return o;
 }
 function readPad(p){
-  const b=k=>rawPressed(p,k),ax=p.axes||[],h=hat(p),m=S.pad;
+  const s=PADSEEN[p.index],rest=s&&s.id===p.id?s.rest:[],live=i=>!(Math.abs(rest[i]||0)>.4),ax=(p.axes||[]).map((v,i)=>live(i)?v:0),b=k=>rawPressed(p,k),h=hat(p),m=S.pad;
   return{left:b(14)||ax[0]<-.5||!!h.left,right:b(15)||ax[0]>.5||!!h.right,up:b(12)||ax[1]<-.6||!!h.up,down:b(13)||ax[1]>.6||!!h.down,
     punch:b(m.punch),kick:b(m.kick),special:b(m.special),ultra:b(m.ultra),assist:b(m.assist),finish:b(m.finish),start:b(9),select:b(8),confirm:b(0)||b(m.kick)};
 }
@@ -5370,7 +5377,7 @@ setInterval(()=>{if(typeof G==='undefined')return;const m=touchInMenu();document
   const vis=o=>{for(const[c,d]of[['u','up'],['d','down'],['l','left'],['r','right']])dp.classList.toggle('p'+c,!!o[d])};
   const setDirs=o=>{for(const d of['up','down','left','right']){touchIn[d]=!!o[d]}TP.dirs=o;const k=Object.keys(o).sort().join();if(k&&k!==last)tpBuzz();last=k;vis(o)};
   const stopRep=()=>{if(rep){clearTimeout(rep);rep=null}menuDir=null};
-  const menuMove=d=>{if(d===menuDir)return;stopRep();menuDir=d;if(!d)return;tpBuzz();feInput({p:0,a:d});const go=()=>{feInput({p:0,a:d});rep=setTimeout(go,95)};rep=setTimeout(go,360)};
+  const menuMove=d=>{if(d===menuDir)return;stopRep();menuDir=d;if(!d)return;tpBuzz();feInput({p:0,a:d});const go=()=>{if(id===null||!touchInMenu()){stopRep();vis({});return}feInput({p:0,a:d});rep=setTimeout(go,95)};rep=setTimeout(go,360)};
   const apply=e=>{const r=dp.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy),R=r.width/2,o={};
     if(len>R*.2){const a=Math.atan2(dy,dx)*57.29578,df=c=>Math.abs((((a-c)%360)+540)%360-180);
       if(df(0)<62)o.right=1;if(df(180)<62)o.left=1;if(df(90)<62)o.down=1;if(df(-90)<62)o.up=1}
@@ -5381,7 +5388,8 @@ setInterval(()=>{if(typeof G==='undefined')return;const m=touchInMenu();document
   const end=e=>{if(e.pointerId!==id)return;id=null;setDirs({});stopRep();vis({})};
   for(const ev of['pointerup','pointercancel','lostpointercapture'])dp.addEventListener(ev,end);
   dp.addEventListener('contextmenu',e=>e.preventDefault());
-  addEventListener('blur',()=>{setDirs({});for(const a of PAD_ACTS)touchIn[a]=false});
+  addEventListener('blur',()=>{setDirs({});stopRep();id=null;vis({});for(const a of PAD_ACTS)touchIn[a]=false});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){setDirs({});stopRep();id=null;vis({})}});
   applyTouch();
 })();
 const padPrev=[{},{}];let rawPrev={},padCapture=null,padTick=0;
