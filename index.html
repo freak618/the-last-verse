@@ -5377,11 +5377,16 @@ setInterval(()=>{if(typeof G==='undefined')return;const m=touchInMenu();document
   const vis=o=>{for(const[c,d]of[['u','up'],['d','down'],['l','left'],['r','right']])dp.classList.toggle('p'+c,!!o[d])};
   const setDirs=o=>{for(const d of['up','down','left','right']){touchIn[d]=!!o[d]}TP.dirs=o;const k=Object.keys(o).sort().join();if(k&&k!==last)tpBuzz();last=k;vis(o)};
   const stopRep=()=>{if(rep){clearTimeout(rep);rep=null}menuDir=null};
-  const menuMove=d=>{if(d===menuDir)return;stopRep();menuDir=d;if(!d)return;tpBuzz();feInput({p:0,a:d});const go=()=>{if(id===null||!touchInMenu()){stopRep();vis({});return}feInput({p:0,a:d});rep=setTimeout(go,95)};rep=setTimeout(go,360)};
+  const menuMove=d=>{if(d===menuDir)return;stopRep();menuDir=d;if(!d)return;tpBuzz();feInput({p:0,a:d});const go=()=>{if(id===null||!touchInMenu()){stopRep();vis({});return}feInput({p:0,a:d});rep=setTimeout(go,140)};rep=setTimeout(go,450)};
   const apply=e=>{const r=dp.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy),R=r.width/2,o={};
     if(len>R*.2){const a=Math.atan2(dy,dx)*57.29578,df=c=>Math.abs((((a-c)%360)+540)%360-180);
       if(df(0)<62)o.right=1;if(df(180)<62)o.left=1;if(df(90)<62)o.down=1;if(df(-90)<62)o.up=1}
-    if(touchInMenu()){setDirs({});let d=null;if(len>R*.2)d=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');vis(d?{[d]:1}:{});menuMove(d)}
+    if(touchInMenu()){setDirs({});let d=null;const ax=Math.abs(dx),ay=Math.abs(dy);
+      /* menus: a wider dead middle, and the direction you're holding sticks unless your thumb clearly rolls onto another arm,
+         so a thumb resting near the centre doesn't wobble between directions and send the cursor flying */
+      if(len>R*(menuDir?.3:.42)){const cand=ax>ay?(dx>0?'right':'left'):(dy>0?'down':'up');
+        if(menuDir&&cand!==menuDir){const h=menuDir==='left'||menuDir==='right',sg=menuDir==='right'||menuDir==='down'?1:-1,keep=h?(Math.sign(dx)===sg&&ax*1.8>ay):(Math.sign(dy)===sg&&ay*1.8>ax);d=keep?menuDir:cand}else d=cand}
+      vis(d?{[d]:1}:{});menuMove(d)}
     else setDirs(o)};
   dp.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();id=e.pointerId;try{dp.setPointerCapture(id)}catch(_){}FE.lastIn=performance.now();apply(e)});
   dp.addEventListener('pointermove',e=>{if(e.pointerId===id)apply(e)});
@@ -8002,8 +8007,16 @@ function showStageSelect(){
     b.addEventListener('mouseenter',()=>{show(k);if(document.activeElement!==b)b.focus({preventScroll:true})});b.addEventListener('focus',()=>show(k));strip.appendChild(b);
   });
   const cols=()=>getComputedStyle(strip).gridTemplateColumns.split(' ').length||12;
+  /* the D-pad / stick / arrow keys move round the grid and stop at its edges (they never wrap to the far end);
+     down from the bottom row goes to Back, up from Back comes back to the grid */
+  FE.cur={id:'stage',input(m){const d=m.a;if(!['up','down','left','right'].includes(d))return false;
+    const items=[...strip.querySelectorAll('.scard')],a=document.activeElement,i=items.indexOf(a),c=cols(),bk=root.querySelector('[data-act="stageback"]');
+    if(i<0){if(a===bk&&d==='up'){const t=strip.querySelector(`.scard[data-k="${B.k>=0?B.k:0}"]`)||items[0];t.focus({preventScroll:true});SFX.navtick()}else if(a!==bk){(strip.querySelector(`.scard[data-k="${B.k>=0?B.k:0}"]`)||items[0]).focus({preventScroll:true})}return true}
+    let n=i;if(d==='left'&&i%c>0)n=i-1;else if(d==='right'&&i%c<c-1&&i+1<items.length)n=i+1;else if(d==='up'&&i-c>=0)n=i-c;
+    else if(d==='down'){if(i+c<items.length)n=i+c;else if(Math.floor(i/c)<Math.floor((items.length-1)/c))n=items.length-1;else{if(bk){bk.focus({preventScroll:true});SFX.navtick()}return true}}
+    if(n!==i){items[n].focus({preventScroll:true});SFX.navtick()}return true}};
   strip.addEventListener('keydown',e=>{const items=[...strip.querySelectorAll('.scard')],i=items.indexOf(document.activeElement);if(i<0)return;
-    const c=cols(),d={ArrowRight:1,ArrowLeft:-1,ArrowDown:c,ArrowUp:-c}[e.key];if(!d)return;e.preventDefault();e.stopPropagation();const n=items[Math.max(0,Math.min(items.length-1,i+d))];if(n)n.focus()});
+    const dir={ArrowRight:'right',ArrowLeft:'left',ArrowDown:'down',ArrowUp:'up'}[e.key];if(!dir)return;e.preventDefault();e.stopPropagation();FE.cur&&FE.cur.input&&FE.cur.input({p:0,a:dir})});
   B.k=k0;setStage(k0,true);nm.textContent=STAGES[k0].name;num.textContent=`Stage ${k0+1} of ${N}`;nm.classList.add('pop');
   const f0=strip.querySelector(`.scard[data-k="${k0}"]`)||strip.querySelector('.scard');f0.focus({preventScroll:true});
   requestAnimationFrame(frame);
