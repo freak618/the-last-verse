@@ -180,6 +180,18 @@ kbd{font-family:var(--body);font-weight:700;font-size:13px;background:#1f1e24;co
 .ss2-rand{font-size:2.6cqw!important;background:linear-gradient(135deg,#ff2a6a,#ffb020,#3ad0ff,#b04aff)!important;background-size:300% 300%!important;color:#fff!important;
   text-shadow:0 .1cqw .3cqw #000;animation:ss2rain 2.4s linear infinite}
 @keyframes ss2rain{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+.ss2-flow{position:relative;height:15cqw;perspective:1100px;perspective-origin:50% 45%;touch-action:none;cursor:grab;margin-bottom:.3cqw}
+.ss2-rack{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+.ss2 .sfl{position:absolute;left:50%;top:50%;width:17cqw;aspect-ratio:16/9;margin:0;padding:0;border:0;background:#000;border-radius:.6cqw;overflow:hidden;cursor:pointer;
+  transform:translate(-50%,-50%);transform-origin:50% 50%;transition:transform .26s cubic-bezier(.25,.6,.25,1),opacity .26s ease,filter .26s ease;will-change:transform;pointer-events:auto;
+  box-shadow:0 1.2cqw 2.4cqw rgba(0,0,0,.7);filter:brightness(.72) saturate(.85)}
+.ss2 .sfl canvas{width:100%;height:100%;display:block}
+.ss2 .sfl.on{filter:none;box-shadow:0 0 0 .18cqw #fff,0 0 0 .45cqw rgb(var(--acc)),0 0 2.6cqw rgba(var(--acc),.85),0 1.6cqw 3cqw rgba(0,0,0,.8)}
+.ss2 .sfl:focus{outline:none}
+.ss2 .sfl::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 38%);pointer-events:none}
+.ss2-arw{position:absolute;top:50%;z-index:200;transform:translateY(-50%);width:3.2cqw;height:3.2cqw;border-radius:50%;border:.12cqw solid rgba(255,247,230,.5);
+  background:rgba(0,0,0,.45);color:#fff7e6;font:700 1.8cqw/1 var(--head);display:grid;place-items:center;cursor:pointer;padding:0}
+.ss2-arw.l{left:1cqw}.ss2-arw.r{right:1cqw}
 .ss2-bar{display:flex;align-items:center;gap:1.6cqw;padding-top:.7cqw}
 .ss2-vs{margin:0;flex:1;text-align:center;font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:1.7cqw;color:#fff7e6;text-shadow:0 .15cqw .3cqw #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ss2-vs b{color:rgb(var(--acc));font-weight:400}
@@ -5313,7 +5325,7 @@ let padBlocked=false;
 /* a controller only counts once one of its buttons has actually been pressed: some phones report built-in sensors (the
    fingerprint reader and so on) as "gamepads" whose sticks drift or sit off-centre, which made menus move on their own.
    Each pad's resting stick and hat readings are remembered so a stick that sits off-centre is never read as held. */
-const PADSEEN={};const BUILD='11-27 b9';
+const PADSEEN={};const BUILD='11-27 b10';
 function padSeen(p){let s=PADSEEN[p.index];if(!s||s.id!==p.id){s=PADSEEN[p.index]={id:p.id,on:false,rest:(p.axes||[]).slice(),b0:p.buttons.map((_,k)=>rawPressed(p,k))}}
   if(!s.on&&p.buttons.some((_,k)=>rawPressed(p,k)&&!s.b0[k]))s.on=true;if(!s.on)s.b0=p.buttons.map((_,k)=>s.b0[k]&&rawPressed(p,k));return s}
 function padList(){
@@ -7953,7 +7965,7 @@ function showStageSelect(){
       <div class="ss2-shade" aria-hidden="true"></div>
       <div class="ss2-top"><div class="ss2-num" id="ssNum"></div><h2 class="ss2-name" id="ssName"></h2></div>
       <div class="ss2-panel">
-        <div class="ss2-grid" id="ssStrip"></div>
+        <div class="ss2-flow" id="ssFlow"><div class="ss2-rack" id="ssStrip"></div></div>
         <div class="ss2-bar"><button class="btn sm" data-act="stageback">Back</button><p class="ss2-vs">${esc(G.pick[0].name)} <b>vs.</b> ${esc(G.pick[1].name)}</p><span class="ss2-hint">Pick a stage</span></div>
       </div>
     </div>`);
@@ -7999,29 +8011,44 @@ function showStageSelect(){
     // sparks drifting up in the stage's own colour
     for(const e of B.embers){e.y-=e.v;if(e.y<-.05){e.y=1.05;e.x=Math.random()}const ex=(e.x+Math.sin(now/1300+e.ph)*.015)*W2,ey=e.y*H2,a=.25+.25*Math.sin(now/300+e.ph*3),r=e.r*3;if(B.spr_acc!==B.acc){B.spr_acc=B.acc;const c=B.spr||(B.spr=dmCv(32,32)),q=c.getContext('2d'),gr=q.createRadialGradient(16,16,0,16,16,16);q.clearRect(0,0,32,32);gr.addColorStop(0,`rgba(${B.acc},1)`);gr.addColorStop(1,`rgba(${B.acc},0)`);q.fillStyle=gr;q.fillRect(0,0,32,32)}g.globalAlpha=a;g.drawImage(B.spr,ex-r,ey-r,2*r,2*r);g.globalAlpha=1}
     g.globalCompositeOperation='source-over'};
-  STAGES.map((_,k)=>k).forEach(k=>{
-    const b=document.createElement('button');b.type='button';b.className='scard';b.dataset.act='stagepick';b.dataset.k=k;
-    if(k<0){const q=document.createElement('span');q.className='ss-q sm ss2-rand';q.textContent='?';b.appendChild(q)}
-    else{const c=document.createElement('canvas');c.width=240;c.height=135;b.appendChild(c);b.style.setProperty('--acc',accOf(k));
-      if(!ssThumbDraw(STAGES[k].id,c)){const t=stageThumb(k,240);c.getContext('2d').drawImage(t,0,0,240,135);
-        const stg=STAGES[k],im=stg.full&&STIMG[stg.img];if(im&&!im.ok){stageNeed(k);im.addEventListener('load',()=>{const t2=stageThumb(k,240);if(c.isConnected)c.getContext('2d').drawImage(t2,0,0,240,135)},{once:true})}}}
-    const n=document.createElement('span');n.className='nm';n.textContent=k<0?'Random':STAGES[k].name;b.appendChild(n);
-    b.setAttribute('aria-label',k<0?'Random stage':STAGES[k].name);
-    b.addEventListener('mouseenter',()=>{if(!hoverOK())return;show(k);if(document.activeElement!==b)b.focus({preventScroll:true})});b.addEventListener('focus',()=>show(k));strip.appendChild(b);
-  });
-  const cols=()=>getComputedStyle(strip).gridTemplateColumns.split(' ').length||12;
-  /* the D-pad / stick / arrow keys move round the grid and stop at its edges (they never wrap to the far end);
-     down from the bottom row goes to Back, up from Back comes back to the grid */
-  FE.cur={id:'stage',input(m){const d=m.a;if(!['up','down','left','right'].includes(d))return false;
-    const items=[...strip.querySelectorAll('.scard')],a=document.activeElement,i=items.indexOf(a),c=cols(),bk=root.querySelector('[data-act="stageback"]');
-    if(i<0){if(a===bk&&d==='up'){const t=strip.querySelector(`.scard[data-k="${B.k>=0?B.k:0}"]`)||items[0];t.focus({preventScroll:true});SFX.navtick()}else if(a!==bk){(strip.querySelector(`.scard[data-k="${B.k>=0?B.k:0}"]`)||items[0]).focus({preventScroll:true})}return true}
-    let n=i;if(d==='left'&&i%c>0)n=i-1;else if(d==='right'&&i%c<c-1&&i+1<items.length)n=i+1;else if(d==='up'&&i-c>=0)n=i-c;
-    else if(d==='down'){if(i+c<items.length)n=i+c;else if(Math.floor(i/c)<Math.floor((items.length-1)/c))n=items.length-1;else{if(bk){bk.focus({preventScroll:true});SFX.navtick()}return true}}
-    if(n!==i){items[n].focus({preventScroll:true});SFX.navtick()}return true}};
-  strip.addEventListener('keydown',e=>{const items=[...strip.querySelectorAll('.scard')],i=items.indexOf(document.activeElement);if(i<0)return;
-    const dir={ArrowRight:'right',ArrowLeft:'left',ArrowDown:'down',ArrowUp:'up'}[e.key];if(!dir)return;e.preventDefault();e.stopPropagation();FE.cur&&FE.cur.input&&FE.cur.input({p:0,a:dir})});
+  /* cover flow: one row of stages; the one under the cursor faces front, its neighbours turn away.
+     Left/right (D-pad, stick, arrows, mouse wheel, a swipe, the side arrows) move it; tapping a side stage brings it to the
+     front; tapping the front one, or OK, picks it. Down goes to Back, up comes back. */
+  const flowEl=document.getElementById('ssFlow'),cards=[];let cur=k0;
+  STAGES.forEach((st,k)=>{const b=document.createElement('button');b.type='button';b.className='sfl';b.dataset.k=k;b.setAttribute('aria-label',st.name);b.tabIndex=-1;
+    const c=document.createElement('canvas');c.width=240;c.height=135;b.appendChild(c);
+    if(!ssThumbDraw(st.id,c)){c.getContext('2d').drawImage(stageThumb(k,240),0,0,240,135)}
+    strip.appendChild(b);cards.push(b)});
+  const flow=()=>{const tw=cards[0].offsetWidth||160,step=tw*.5,depth=95;
+    cards.forEach((el,k)=>{const d=k-cur,ad=Math.abs(d);if(ad>7){el.style.visibility='hidden';return}el.style.visibility='';
+      const rot=d===0?0:(d<0?42:-42),sc=d===0?1.2:Math.max(.6,.95-ad*.06),x=d===0?0:Math.sign(d)*(tw*.5+ad*step);
+      el.style.transform=`translate(-50%,-50%) translateX(${x}px) translateZ(${-ad*depth}px) rotateY(${rot}deg) scale(${sc})`;
+      el.style.opacity=String(ad<=5?1:Math.max(0,1-(ad-5)*.45));el.style.zIndex=String(100-ad);el.classList.toggle('on',d===0)})};
+  const go=(k,quiet)=>{k=Math.max(0,Math.min(N-1,k));if(k===cur&&!quiet)return;cur=k;flow();show(k);
+    const b=cards[k];if(document.activeElement!==b)b.focus({preventScroll:true})};
+  const arwL=document.createElement('button'),arwR=document.createElement('button');arwL.className='ss2-arw l';arwR.className='ss2-arw r';arwL.type=arwR.type='button';arwL.textContent='‹';arwR.textContent='›';
+  arwL.setAttribute('aria-label','Previous stage');arwR.setAttribute('aria-label','Next stage');arwL.tabIndex=arwR.tabIndex=-1;flowEl.append(arwL,arwR);
+  arwL.addEventListener('click',e=>{e.stopPropagation();go(cur-1)});arwR.addEventListener('click',e=>{e.stopPropagation();go(cur+1)});
+  // tap / click: a side stage comes to the front, the front one is picked
+  cards.forEach((b,k)=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(flowEl._dragged)return;if(k===cur)launchPicked(k);else go(k)}));
+  // swipe: drag along the row; each card-width of travel moves one stage
+  {let px=null,acc=0;flowEl.addEventListener('pointerdown',e=>{if(e.target.closest('.ss2-arw'))return;px=e.clientX;acc=0;flowEl._dragged=false});
+    flowEl.addEventListener('pointermove',e=>{if(px===null)return;const st=(cards[0].offsetWidth||160)*.5;acc+=e.clientX-px;px=e.clientX;
+      while(Math.abs(acc)>st){const s2=Math.sign(acc);acc-=s2*st;flowEl._dragged=true;go(cur-s2);SFX.navtick()}});
+    const up=()=>{px=null;setTimeout(()=>{flowEl._dragged=false},0)};flowEl.addEventListener('pointerup',up);flowEl.addEventListener('pointercancel',up);flowEl.addEventListener('pointerleave',up)}
+  // mouse wheel / trackpad
+  {let wacc=0;flowEl.addEventListener('wheel',e=>{e.preventDefault();wacc+=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(Math.abs(wacc)>40){go(cur+Math.sign(wacc));SFX.navtick();wacc=0}},{passive:false})}
+  const bk=root.querySelector('[data-act="stageback"]');
+  FE.cur={id:'stage',back(){showSelect()},input(m){const d=m.a,a=document.activeElement;
+    if(a===bk){if(d==='up'){cards[cur].focus({preventScroll:true});SFX.navtick();return true}if(d==='ok'){bk.click();return true}return d==='left'||d==='right'||d==='down'}
+    if(d==='left'||d==='right'){const n=cur+(d==='right'?1:-1);if(n>=0&&n<N){go(n);SFX.navtick()}return true}
+    if(d==='down'){bk.focus({preventScroll:true});SFX.navtick();return true}
+    if(d==='up')return true;
+    if(d==='ok'){SFX.navok&&SFX.navok();launchPicked(cur);return true}
+    return false}};
+  flowEl.addEventListener('keydown',e=>{const dir={ArrowRight:'right',ArrowLeft:'left',ArrowDown:'down',ArrowUp:'up',Enter:'ok'}[e.key];if(!dir)return;e.preventDefault();e.stopPropagation();FE.cur.input({p:0,a:dir})});
   B.k=k0;setStage(k0,true);nm.textContent=STAGES[k0].name;num.textContent=`Stage ${k0+1} of ${N}`;nm.classList.add('pop');
-  const f0=strip.querySelector(`.scard[data-k="${k0}"]`)||strip.querySelector('.scard');f0.focus({preventScroll:true});
+  flow();cards[k0].focus({preventScroll:true});addEventListener('resize',function rs(){if(!flowEl.isConnected)return removeEventListener('resize',rs);flow()});
   requestAnimationFrame(frame);
 }
 Object.assign(ACT,{
