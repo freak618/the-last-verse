@@ -5327,7 +5327,7 @@ let padBlocked=false;
 /* a controller only counts once one of its buttons has actually been pressed: some phones report built-in sensors (the
    fingerprint reader and so on) as "gamepads" whose sticks drift or sit off-centre, which made menus move on their own.
    Each pad's resting stick and hat readings are remembered so a stick that sits off-centre is never read as held. */
-const PADSEEN={};const BUILD='11-27 b11';
+const PADSEEN={};const BUILD='11-27 b12';
 function padSeen(p){let s=PADSEEN[p.index];if(!s||s.id!==p.id){s=PADSEEN[p.index]={id:p.id,on:false,rest:(p.axes||[]).slice(),b0:p.buttons.map((_,k)=>rawPressed(p,k))}}
   if(!s.on&&p.buttons.some((_,k)=>rawPressed(p,k)&&!s.b0[k]))s.on=true;if(!s.on)s.b0=p.buttons.map((_,k)=>s.b0[k]&&rawPressed(p,k));return s}
 function padList(){
@@ -7974,38 +7974,39 @@ function showStageSelect(){
   ov.classList.add('sel','ssmode');
   const root=ov.querySelector('.ss2'),cv=document.getElementById('ssBg'),g=cv.getContext('2d'),nm=document.getElementById('ssName'),num=document.getElementById('ssNum'),strip=document.getElementById('ssStrip');
   const accOf=k=>{const m=/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(STAGES[k].rim||STAGES[k].grade||'');return m?`${m[1]},${m[2]},${m[3]}`:'255,90,40'};
-  const picOf=k=>{const stg=STAGES[k];if(stg.full){const im=STIMG[stg.img];if(im&&im.ok)return{im,id:stg.id,full:true};const c=dmCv(240,135);if(ssThumbDraw(stg.id,c))return{im:c,id:stg.id,full:false}}return{im:stageThumb(k,1280),id:stg.id,full:!stg.full}};
-  // background state: the stage on show, what it replaced (fades out), and when it changed
-  const B={k:-2,pic:null,acc:'255,90,40',t0:0,prev:dmCv(8,8),pa:0,ft:0,rnd:false,rk:0,rnext:0,embers:[]};
+  /* background: the stages sit side by side like a strip of film and slide sideways with the cards.
+     While moving, each stage shows its small picture; once the cursor rests, the sharp picture loads and fades in. */
+  const TH={},HI={};
+  const thumbOf=k=>TH[k]||(TH[k]=(()=>{const c=dmCv(240,135);if(!ssThumbDraw(STAGES[k].id,c))c.getContext('2d').drawImage(stageThumb(k,240),0,0,240,135);return c})());
+  const sharp=k=>{if(HI[k])return HI[k];const st=STAGES[k];if(st.full){const im=STIMG[st.img];if(im&&im.ok){delete STHUMB[k+'@1280'];return HI[k]={im:stageThumb(k,1280),at:performance.now()}}}return null};  // same framing as the small picture, so the fade lines up
+  const B={k:k0,pos:k0,lt:0,acc:accOf(k0),embers:[]};
   for(let i=0;i<26;i++)B.embers.push({x:Math.random(),y:Math.random(),v:.0006+Math.random()*.0016,r:1+Math.random()*2.6,ph:Math.random()*6.3});
-  const setStage=(k,quiet,spin)=>{const now=performance.now();B.spin=!!spin;clearTimeout(B.ld);B.want=-1;if(!spin)B.ld=setTimeout(()=>{if(B.k2===k){B.want=k;stageNeed(k)}},240);
-    if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1;B.pt=now}
-    B.pic=picOf(k);B.acc=accOf(k);B.t0=now;B.k2=k;root.style.setProperty('--acc',B.acc);if(!quiet&&SFX.navtick)try{SFX.navtick()}catch(e){}};
-  const RSPIN=2600,RHOLD=1500;
-  const show=k=>{if(k===B.k)return;B.k=k;B.rnd=k<0;
-    if(k<0){B.rk=Math.random()*N|0;B.rs=performance.now();setStage(B.rk,false,true);B.rnext=B.rs+60;nm.textContent='? ? ?';num.textContent='Random stage'}
-    else{clearTimeout(B.sw);B.sw=setTimeout(()=>{if(B.k===k&&cv.isConnected)setStage(k,true)},170);nm.textContent=STAGES[k].name;num.textContent=`Stage ${k+1} of ${N}`}
+  const settle=k=>{clearTimeout(B.ld);B.ld=setTimeout(()=>{if(B.k!==k||!cv.isConnected)return;const st=STAGES[k];
+    if(st.full)stageNeed(k);else if(!HI[k])HI[k]={im:stageThumb(k,1280),at:performance.now()}},220)};
+  const show=k=>{if(k===B.k)return;B.k=k;settle(k);root.style.setProperty('--acc',accOf(k));
+    nm.textContent=STAGES[k].name;num.textContent=`Stage ${k+1} of ${N}`;
     nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');num.classList.remove('pop');void num.offsetWidth;num.classList.add('pop')};
-  let ft=0;
+  // one panel of the strip: the picture covers the panel, breathing and drifting slowly so every part of it gets seen
+  const panel=(k,ox,W2,H2,now)=>{const draw=(im,a)=>{const iw=im.width,ih=im.height;if(!iw||!ih)return;
+      const z=Math.max(W2/iw,H2/ih)*(1.07+.05*Math.sin(now/4300)),dw=iw*z,dh=ih*z,u=.5+.5*Math.sin(now/5200+k),v=.5+.4*Math.sin(now/6300+k*1.7);
+      g.globalAlpha=a;g.drawImage(im,ox-(dw-W2)*u,-(dh-H2)*v,dw,dh)};
+    g.save();g.beginPath();g.rect(Math.floor(ox),0,Math.ceil(W2)+1,H2);g.clip();
+    const hi=sharp(k),fa=hi?Math.min(1,(now-hi.at)/320):0;
+    if(fa<1)draw(thumbOf(k),1);if(hi)draw(hi.im,fa*fa*(3-2*fa));
+    g.restore();g.globalAlpha=1};
   const frame=()=>{if(!cv.isConnected)return;requestAnimationFrame(frame);
-    const dpr=1,W2=Math.round(cv.clientWidth*dpr),H2=Math.round(cv.clientHeight*dpr);if(!W2||!H2)return;
+    const W2=Math.round(cv.clientWidth),H2=Math.round(cv.clientHeight);if(!W2||!H2)return;
     if(cv.width!==W2||cv.height!==H2){cv.width=W2;cv.height=H2}
-    const now=performance.now();ft++;
-    if(B.rnd&&now>B.rnext){const el=now-B.rs;
-      if(el>RSPIN+RHOLD){B.rs=now;B.rnext=now+60}                                        // spin again
-      else if(el<RSPIN){let r;do{r=Math.random()*N|0}while(r===B.rk&&N>1);B.rk=r;const p=el/RSPIN;   // spinning, slowing down
-        if(p>.82){setStage(r);nm.textContent=STAGES[r].name+'?';num.textContent='Random stage';nm.classList.remove('pop');void nm.offsetWidth;nm.classList.add('pop');B.rnext=B.rs+RSPIN+RHOLD+1}
-        else{setStage(r,!(p>.4||Math.random()<.5),true);nm.textContent='? ? ?';B.rnext=now+55+p*p*420}}
-    }
-    if(B.pic&&!B.pic.full&&B.want===B.k2){const p2=picOf(B.k2);if(p2.full){if(cv.width>8){if(B.prev.width!==cv.width||B.prev.height!==cv.height){B.prev.width=cv.width;B.prev.height=cv.height}const pg=B.prev.getContext('2d');pg.clearRect(0,0,cv.width,cv.height);pg.drawImage(cv,0,0);B.pa=1;B.pt=now}B.pic=p2}}
-    const P=B.pic;if(!P)return;const age=now-B.t0,im=P.im,iw=im.width,ih=im.height;
-    // cover the screen, breathing slowly, drifting across the whole painting so every part of it gets seen;
-    // a change of stage lands with a punch-in zoom
-    const cov=Math.max(W2/iw,H2/ih),punch=1+(B.spin?.03:.05)*Math.exp(-age/260),z=cov*(1.07+.05*Math.sin(now/4300))*punch,dw=iw*z,dh=ih*z;
-    const u=.5+.5*Math.sin(now/5200+B.k2),v=.5+.4*Math.sin(now/6300+B.k2*1.7),x=-(dw-W2)*u,y=-(dh-H2)*v;
-    g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle='#000';g.fillRect(0,0,W2,H2);g.imageSmoothingQuality='high';g.drawImage(im,x,y,dw,dh);
-    // the old stage melts away behind a light sweep
-    if(B.pa>0){B.pa=Math.max(0,1-(now-(B.pt||B.t0))/(B.spin?120:300));const e2=B.pa*B.pa*(3-2*B.pa);g.globalAlpha=e2;g.drawImage(B.prev,0,0,W2,H2);g.globalAlpha=1}
+    const now=performance.now(),dt=B.lt?Math.min(100,now-B.lt):16;B.lt=now;
+    // glide toward the stage under the cursor (never more than a couple of stages behind when the D-pad is held)
+    let d=B.k-B.pos;if(Math.abs(d)>2.4){B.pos=B.k-Math.sign(d)*2.4;d=B.k-B.pos}
+    B.pos=Math.abs(d)<.0015?B.k:B.pos+d*(1-Math.exp(-dt/90));
+    const i0=Math.floor(B.pos),f=B.pos-i0;B.acc=accOf(Math.max(0,Math.min(N-1,Math.round(B.pos))));
+    g.globalCompositeOperation='source-over';g.globalAlpha=1;g.fillStyle='#000';g.fillRect(0,0,W2,H2);g.imageSmoothingQuality='high';
+    panel(i0,-f*W2,W2,H2,now);
+    if(f>.0015&&i0+1<N){const ox=(1-f)*W2;panel(i0+1,ox,W2,H2,now);
+      // a soft shadow where the two pictures meet
+      const sw=W2*.05,gr=g.createLinearGradient(ox-sw,0,ox+sw,0);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(.5,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(ox-sw,0,sw*2,H2)}
     g.globalCompositeOperation='lighter';
     // sparks drifting up in the stage's own colour
     for(const e of B.embers){e.y-=e.v;if(e.y<-.05){e.y=1.05;e.x=Math.random()}const ex=(e.x+Math.sin(now/1300+e.ph)*.015)*W2,ey=e.y*H2,a=.25+.25*Math.sin(now/300+e.ph*3),r=e.r*3;if(B.spr_acc!==B.acc){B.spr_acc=B.acc;const c=B.spr||(B.spr=dmCv(32,32)),q=c.getContext('2d'),gr=q.createRadialGradient(16,16,0,16,16,16);q.clearRect(0,0,32,32);gr.addColorStop(0,`rgba(${B.acc},1)`);gr.addColorStop(1,`rgba(${B.acc},0)`);q.fillStyle=gr;q.fillRect(0,0,32,32)}g.globalAlpha=a;g.drawImage(B.spr,ex-r,ey-r,2*r,2*r);g.globalAlpha=1}
@@ -8027,7 +8028,7 @@ function showStageSelect(){
     const b=cards[k];if(document.activeElement!==b)b.focus({preventScroll:true})};
   const arwL=document.createElement('button'),arwR=document.createElement('button');arwL.className='ss2-arw l';arwR.className='ss2-arw r';arwL.type=arwR.type='button';arwL.textContent='‹';arwR.textContent='›';
   arwL.setAttribute('aria-label','Previous stage');arwR.setAttribute('aria-label','Next stage');arwL.tabIndex=arwR.tabIndex=-1;flowEl.append(arwL,arwR);
-  arwL.addEventListener('click',e=>{e.stopPropagation();go(cur-1)});arwR.addEventListener('click',e=>{e.stopPropagation();go(cur+1)});
+  arwL.addEventListener('click',e=>{e.stopPropagation();if(cur>0){go(cur-1);SFX.navtick()}});arwR.addEventListener('click',e=>{e.stopPropagation();if(cur<N-1){go(cur+1);SFX.navtick()}});
   // tap / click: a side stage comes to the front, the front one is picked
   cards.forEach((b,k)=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(flowEl._dragged)return;if(k===cur)launchPicked(k);else go(k)}));
   // swipe: drag along the row; each card-width of travel moves one stage
@@ -8046,7 +8047,7 @@ function showStageSelect(){
     if(d==='ok'){SFX.navok&&SFX.navok();launchPicked(cur);return true}
     return false}};
   flowEl.addEventListener('keydown',e=>{const dir={ArrowRight:'right',ArrowLeft:'left',ArrowDown:'down',ArrowUp:'up',Enter:'ok'}[e.key];if(!dir)return;e.preventDefault();e.stopPropagation();FE.cur.input({p:0,a:dir})});
-  B.k=k0;setStage(k0,true);nm.textContent=STAGES[k0].name;num.textContent=`Stage ${k0+1} of ${N}`;nm.classList.add('pop');
+  settle(k0);root.style.setProperty('--acc',B.acc);nm.textContent=STAGES[k0].name;num.textContent=`Stage ${k0+1} of ${N}`;nm.classList.add('pop');
   flow();cards[k0].focus({preventScroll:true});addEventListener('resize',function rs(){if(!flowEl.isConnected)return removeEventListener('resize',rs);flow()});
   requestAnimationFrame(frame);
 }
