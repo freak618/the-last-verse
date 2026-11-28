@@ -7983,7 +7983,7 @@ function showStageSelect(){
     // sparks drifting up in the stage's own colour
     for(const e of B.embers){e.y-=e.v;if(e.y<-.05){e.y=1.05;e.x=Math.random()}const ex=(e.x+Math.sin(now/1300+e.ph)*.015)*W2,ey=e.y*H2,a=.25+.25*Math.sin(now/300+e.ph*3),r=e.r*3;if(B.spr_acc!==B.acc){B.spr_acc=B.acc;const c=B.spr||(B.spr=dmCv(32,32)),q=c.getContext('2d'),gr=q.createRadialGradient(16,16,0,16,16,16);q.clearRect(0,0,32,32);gr.addColorStop(0,`rgba(${B.acc},1)`);gr.addColorStop(1,`rgba(${B.acc},0)`);q.fillStyle=gr;q.fillRect(0,0,32,32)}g.globalAlpha=a;g.drawImage(B.spr,ex-r,ey-r,2*r,2*r);g.globalAlpha=1}
     g.globalCompositeOperation='source-over'};
-  [-1,...STAGES.map((_,k)=>k)].forEach(k=>{
+  STAGES.map((_,k)=>k).forEach(k=>{
     const b=document.createElement('button');b.type='button';b.className='scard';b.dataset.act='stagepick';b.dataset.k=k;
     if(k<0){const q=document.createElement('span');q.className='ss-q sm ss2-rand';q.textContent='?';b.appendChild(q)}
     else{const c=document.createElement('canvas');c.width=240;c.height=135;b.appendChild(c);b.style.setProperty('--acc',accOf(k));
